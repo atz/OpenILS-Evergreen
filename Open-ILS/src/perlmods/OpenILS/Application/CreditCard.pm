@@ -30,6 +30,8 @@ my $U = "OpenILS::Application::AppUtils";
 
 my @ALLOWED_PROCESSORS = qw/AuthorizeNet PayPal/;
 
+use constant CREDIT_OPTS_NS => "global.credit.processor";
+
 # Given the argshash from process_payment(), this helper function just finds
 # a function in the current namespace named "bop_args_{processor}" and calls
 # it with $argshash as an argument, returning the result, or returning an
@@ -75,24 +77,19 @@ __PACKAGE__->register_method(
         params => [
             { desc => q/Hash of arguments with these keys:
                 patron_id: Not a barcode, but a patron's internal ID
-                processor: the transaction "clearing house" (e.g. PayPal)
-                    login: supplied by processor to institution for their API
-                 password: supplied by processor to institution for their API
+                       ou: Org unit where transaction happens.
                        cc: credit card number
                      cvv2: 3 or 4 digits from back of card
                    amount: transaction value
-                 testmode: optional (default: NO, i.e. a REAL transaction), note this is different than targeting the processor's test server
                    action: optional (default: Normal Authorization)
-                signature: optional (required by some processor APIs)
                first_name: optional (default: patron's first_given_name field)
                 last_name: optional (default: patron's family_name field)
                   address: optional (default: patron's street1 field)
                      city: optional (default: patron's city field)
                     state: optional (default: patron's state field)
                       zip: optional (default: patron's zip field)
-                  country: optional (some processor APIs. 2 letter code.)
+                  country: optional (some processor APIs: 2 letter code.)
               description: optional
-                   server: optional (for testing some APIs, i.e. AuthorizeNet)
                 /, type => 'hash' }
         ],
         return => { desc => 'Hash of status information', type =>'hash' }
@@ -102,17 +99,31 @@ __PACKAGE__->register_method(
 sub process_payment {
     my ($self, $client, $argshash) = @_; # $client is unused in this sub
 
-    # Confirm required arguments.
+    # Confirm some required arguments.
     return OpenILS::Event->new('BAD_PARAMS')
-      unless $argshash
-         and $argshash->{login}
-         and $argshash->{password}
-         and $argshash->{processor}
-         and $argshash->{cc};
+        unless $argshash
+            and $argshash->{cc}
+            and $argshash->{amount}
+            and $argshash->{expiration}
+            and $argshash->{ou};
 
-     # A valid patron_id is also required.
-     my $e = new_editor();
-     my $patron = $e->retrieve_actor_user(
+    # A valid ou is required.
+    foreach (qw/login password processor signature server testmode/) {
+        my $val = $U->ou_ancestor_setting_value(
+            $argshash->{ou}, CREDIT_OPTS_NS . ".$_"
+        );
+        $argshash->{$_} = $val;
+    }
+
+    # At least the following (derived from org unit settings) are required.
+    return OpenILS::Event->new('BAD_PARAMS')
+        unless $argshash->{login}
+            and $argshash->{password}
+            and $argshash->{processor};
+
+    # A valid patron_id is also required.
+    my $e = new_editor();
+    my $patron = $e->retrieve_actor_user(
         [
             $argshash->{patron_id},
             {
@@ -171,6 +182,7 @@ sub prepare_bop_content {
     $content{city}       ||= $patron->mailing_address->city;
     $content{state}      ||= $patron->mailing_address->state;
     $content{zip}        ||= $patron->mailing_address->post_code;
+    $content{country}    ||= $patron->mailing_address->country;
 
     %content;
 }
