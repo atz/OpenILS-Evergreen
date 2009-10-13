@@ -1227,7 +1227,15 @@ INSERT INTO permission.perm_list VALUES
     (345,'UPDATE_PATRON_CLAIM_RETURN_COUNT', oils_i18n_gettext(345,'Allows staff to manually change a patron''s claims returned count', 'ppl', 'description')),
 
     (346,'UPDATE_BILL_NOTE', oils_i18n_gettext(346,'Allows staff to edit the note for a bill on a transaction', 'ppl', 'description')),
-    (347,'UPDATE_PAYMENT_NOTE', oils_i18n_gettext(346,'Allows staff to edit the note for a payment on a transaction', 'ppl', 'description'));
+    (347,'UPDATE_PAYMENT_NOTE', oils_i18n_gettext(347,'Allows staff to edit the note for a payment on a transaction', 'ppl', 'description')),
+
+-- perms for payment card processor org settings
+    (348,'UPDATE_ORG_UNIT_SETTING.global.credit.processor.processor', oils_i18n_gettext(348,'Allows staff to edit the credit card processor in use', 'ppl', 'description')),
+    (349,'UPDATE_ORG_UNIT_SETTING.global.credit.processor.login', oils_i18n_gettext(349,'Allows staff to edit the credit card processor API login', 'ppl', 'description')),
+    (350,'UPDATE_ORG_UNIT_SETTING.global.credit.processor.password', oils_i18n_gettext(350,'Allows staff to edit the credit card processor API password', 'ppl', 'description')),
+    (351,'UPDATE_ORG_UNIT_SETTING.global.credit.processor.signature', oils_i18n_gettext(351,'Allows staff to edit the credit card processor API signature', 'ppl', 'description')),
+    (352,'UPDATE_ORG_UNIT_SETTING.global.credit.processor.server', oils_i18n_gettext(352,'Allows staff to edit the credit card processor API server', 'ppl', 'description')),
+    (353,'UPDATE_ORG_UNIT_SETTING.global.credit.processor.testmode', oils_i18n_gettext(353,'Allows staff to edit the credit card processor API test mode', 'ppl', 'description'));
 
 SELECT SETVAL('permission.perm_list_id_seq'::TEXT, 1000);
 
@@ -1691,7 +1699,38 @@ INSERT into config.org_unit_setting_type
 ( 'circ.obscure_dob',
     'Obscure the Date of Birth field',
     'When true, the Date of Birth column in patron lists will default to Not Visible, and in the Patron Summary sidebar the value will display as <Hidden> unless the field label is clicked.',
-    'bool' );
+    'bool' ),
+
+( 'global.credit.processor.processor',
+    'Credit card processing: Processor API name',
+    'Required for credit card processing. Might be AuthorizeNet, PayPal, etc.',
+    'string' ),
+
+( 'global.credit.processor.login',
+    'Credit card processing: Processor API login',
+    'Processors generally require this.',
+    'string' ),
+
+( 'global.credit.processor.password',
+    'Credit card processing: Processor API password',
+    'Processors generally require this.',
+    'string' ),
+
+( 'global.credit.processor.signature',
+    'Credit card processing: Processor API signature',
+    'Only some processors require this.',
+    'string' ),
+
+( 'global.credit.processor.server',
+    'Credit card processing: Processor API server',
+    'Only some processors use this value (e.g. AuthorizeNet).',
+    'string' ),
+
+( 'global.credit.processor.testmode',
+    'Credit card processing: Processor API test mode',
+    'Set to true if only testing a credit card processing API.',
+    'bool' )
+;
 
 -- Org_unit_setting_type(s) that need an fm_class:
 INSERT into config.org_unit_setting_type
