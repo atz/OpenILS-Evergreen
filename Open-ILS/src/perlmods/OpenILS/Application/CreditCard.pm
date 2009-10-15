@@ -28,8 +28,6 @@ use OpenILS::Utils::CStoreEditor qw/:funcs/;
 use OpenILS::Application::AppUtils;
 my $U = "OpenILS::Application::AppUtils";
 
-my @ALLOWED_PROCESSORS = qw/AuthorizeNet PayPal/;
-
 use constant CREDIT_OPTS_NS => "global.credit.processor";
 
 # Given the argshash from process_payment(), this helper function just finds
@@ -69,6 +67,17 @@ sub bop_args_PayPal {
     );
 }
 
+sub get_processor_settings {
+    my $org_unit = shift;
+    my $processor = lc shift;
+
+    +{ map { ($_ =>
+        $U->ou_ancestor_setting_value(
+            $org_unit, CREDIT_OPTS_NS . ".${processor}.${_}"
+        )) } qw/enabled login password signature server testmode/
+    };
+}
+
 __PACKAGE__->register_method(
     method    => 'process_payment',
     api_name  => 'open-ils.credit.process',
@@ -77,7 +86,8 @@ __PACKAGE__->register_method(
         params => [
             { desc => q/Hash of arguments with these keys:
                 patron_id: Not a barcode, but a patron's internal ID
-                       ou: Org unit where transaction happens.
+                       ou: Org unit where transaction happens
+                processor: Payment processor to use (AuthorizeNet, PayPal, etc)
                        cc: credit card number
                      cvv2: 3 or 4 digits from back of card
                    amount: transaction value
@@ -105,21 +115,30 @@ sub process_payment {
             and $argshash->{cc}
             and $argshash->{amount}
             and $argshash->{expiration}
-            and $argshash->{ou};
+            and $argshash->{ou}
+            and $argshash->{processor};
 
-    # A valid ou is required.
-    foreach (qw/login password processor signature server testmode/) {
-        my $val = $U->ou_ancestor_setting_value(
-            $argshash->{ou}, CREDIT_OPTS_NS . ".$_"
-        );
-        $argshash->{$_} = $val;
+    # Basic sanity check on processor name.
+    if ($argshash->{processor} !~ /^[a-z0-9_\-]+$/i) {
+        return OpenILS::Event->new('CREDIT_PROCESSOR_NOT_ALLOWED');
     }
 
+    # Get org unit settings related to our processor
+    my $psettings = get_processor_settings(
+        $argshash->{ou}, $argshash->{processor}
+    );
+
+    if (!$psettings->{enabled}) {
+        return OpenILS::Event->new('CREDIT_PROCESSOR_NOT_ENABLED');
+    }
+
+    # Add the org unit settings for the chosen processor to our argshash.
+    $argshash = +{ %{$argshash}, %{$psettings} };
+
     # At least the following (derived from org unit settings) are required.
-    return OpenILS::Event->new('BAD_PARAMS')
+    return OpenILS::Event->new('CREDIT_PROCESSOR_BAD_PARAMS')
         unless $argshash->{login}
-            and $argshash->{password}
-            and $argshash->{processor};
+            and $argshash->{password};
 
     # A valid patron_id is also required.
     my $e = new_editor();
@@ -133,11 +152,7 @@ sub process_payment {
         ]
     ) or return $e->event;
 
-    if (grep { $_ eq $argshash->{processor} } @ALLOWED_PROCESSORS) {
-        return dispatch($argshash, $patron);
-    } else {
-        return OpenILS::Event->new('BAD_PARAMS');   # no supported processor
-    }
+    return dispatch($argshash, $patron);
 }
 
 sub prepare_bop_content {
