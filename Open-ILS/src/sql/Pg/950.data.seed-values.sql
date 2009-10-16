@@ -1695,6 +1695,11 @@ INSERT into config.org_unit_setting_type
     'When true, the Date of Birth column in patron lists will default to Not Visible, and in the Patron Summary sidebar the value will display as <Hidden> unless the field label is clicked.',
     'bool' ),
 
+( 'global.credit.processor.default',
+    'Credit card processing: Name default credit processor',
+    'This might be "AuthorizeNet", "PayPal", etc.',
+    'string' ),
+
 ( 'global.credit.processor.authorizenet.enabled',
     'Credit card processing: Enable AuthorizeNet payments',
     '',

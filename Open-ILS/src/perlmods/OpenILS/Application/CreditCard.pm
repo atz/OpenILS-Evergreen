@@ -21,6 +21,7 @@ use strict; use warnings;
 
 use Business::CreditCard;
 use Business::OnlinePayment;
+use Locale::Country;
 
 use OpenILS::Event;
 use OpenSRF::Utils::Logger qw/:logger/;
@@ -198,6 +199,12 @@ sub prepare_bop_content {
     $content{state}      ||= $patron->mailing_address->state;
     $content{zip}        ||= $patron->mailing_address->post_code;
     $content{country}    ||= $patron->mailing_address->country;
+
+    # Yet another fantastic kludge. country2code() comes from Locale::Country.
+    # PayPal must have 2 letter country field (ISO 3166) that's uppercase.
+    if (length($content{country}) > 2 && $argshash->{processor} eq 'PayPal') {
+        $content{country} = uc country2code($content{country});
+    }
 
     %content;
 }

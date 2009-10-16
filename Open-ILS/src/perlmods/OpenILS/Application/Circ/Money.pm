@@ -200,11 +200,45 @@ sub make_payments {
     }
 
     if($type eq 'credit_card_payment') {
-        # TODO send to credit card processor
-        # amount == $total_paid
-        # user == $user_id
-        # other args == $cc_args (hash, see api docs)
-        # $e->rollback if processing fails.  This will undo everything.
+        my $this_ou = $e->requestor->ws_ou;
+        my $use_processor = $U->ou_ancestor_setting_value(
+            $this_ou, 'global.credit.processor.default'
+        );
+        if (not $use_processor) {
+            return OpenILS::Event->new('CREDIT_PROCESSOR_NO_DEFAULT_SELECTED');
+        }
+        my $response = $apputils->simplereq(
+            'open-ils.credit',
+            'open-ils.credit.process',
+            {
+                "desc" => $payments->{note},
+                "amount" => $total_paid,
+                "patron_id" => $user_id,
+                "cc" => $payments->{cc_number},
+                "expiration" => sprintf(
+                    "%02d-%04d",
+                    $payments->{expire_month},
+                    $payments->{expire_year}
+                ),
+                "ou" => $this_ou,
+                "processor" => $use_processor
+            }
+        );
+        # senator: Should failures and/or declines be logged somewhere?  Is
+        # some other cog taking care of this?  Actually, what about the
+        # successes, too?  There's an approval code from the payment processor
+        # that could go somewhere...
+        if (exists $response->{ilsevent}) {
+            $e->rollback;
+            return $response;
+        }
+        if ($response->{statusCode} != 200) {
+            $e->rollback;
+            return OpenILS::Event->new(
+                'CREDIT_PROCESSOR_DECLINED_TRANSACTION',
+                note => $response->{statusText}
+            );
+        }
     }
 
     $e->commit;
