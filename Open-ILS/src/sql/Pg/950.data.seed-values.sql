@@ -1229,18 +1229,6 @@ INSERT INTO permission.perm_list VALUES
     (346,'UPDATE_BILL_NOTE', oils_i18n_gettext(346,'Allows staff to edit the note for a bill on a transaction', 'ppl', 'description')),
     (347,'UPDATE_PAYMENT_NOTE', oils_i18n_gettext(347,'Allows staff to edit the note for a payment on a transaction', 'ppl', 'description')),
     (348, 'UPDATE_RECORD', oils_i18n_gettext(348, 'Allow a user to update and undelete records.', 'ppl', 'description'));
--- perms for payment card processor org settings
-    (349,'UPDATE_ORG_UNIT_SETTING.global.credit.processor.authorizenet.enabled', oils_i18n_gettext(349,'Allows staff to enable/disable AuthorizeNet credit card payments', 'ppl', 'description')),
-    (350,'UPDATE_ORG_UNIT_SETTING.global.credit.processor.authorizenet.login', oils_i18n_gettext(350,'Allows staff to change AuthorizeNet API login', 'ppl', 'description')),
-    (351,'UPDATE_ORG_UNIT_SETTING.global.credit.processor.authorizenet.password', oils_i18n_gettext(351,'Allows staff to change AuthorizeNet API password', 'ppl', 'description')),
-    (352,'UPDATE_ORG_UNIT_SETTING.global.credit.processor.authorizenet.server', oils_i18n_gettext(352,'Allows staff to change AuthorizeNet API server', 'ppl', 'description')),
-    (353,'UPDATE_ORG_UNIT_SETTING.global.credit.processor.authorizenet.testmode', oils_i18n_gettext(353,'Allows staff to change AuthorizeNet API test mode', 'ppl', 'description')),
-
-    (354,'UPDATE_ORG_UNIT_SETTING.global.credit.processor.paypal.enabled', oils_i18n_gettext(354,'Allows staff to enable/disable PayPal credit card payments', 'ppl', 'description')),
-    (355,'UPDATE_ORG_UNIT_SETTING.global.credit.processor.paypal.login', oils_i18n_gettext(355,'Allows staff to change PayPal API login', 'ppl', 'description')),
-    (356,'UPDATE_ORG_UNIT_SETTING.global.credit.processor.paypal.password', oils_i18n_gettext(356,'Allows staff to change PayPal API password', 'ppl', 'description')),
-    (357,'UPDATE_ORG_UNIT_SETTING.global.credit.processor.paypal.signature', oils_i18n_gettext(357,'Allows staff to change PayPal API signature', 'ppl', 'description')),
-    (358,'UPDATE_ORG_UNIT_SETTING.global.credit.processor.paypal.testmode', oils_i18n_gettext(358,'Allows staff to change PayPal API test mode', 'ppl', 'description'));
 
 SELECT SETVAL('permission.perm_list_id_seq'::TEXT, 1000);
 
