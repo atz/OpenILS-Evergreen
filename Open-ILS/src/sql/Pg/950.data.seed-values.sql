@@ -1718,7 +1718,7 @@ INSERT into config.org_unit_setting_type
 ( 'global.credit.processor.authorizenet.testmode',
     'Credit card processing: AuthorizeNet test mode',
     '',
-    'bool' )
+    'bool' ),
 
 ( 'global.credit.processor.paypal.enabled',
     'Credit card processing: Enable PayPal payments',
