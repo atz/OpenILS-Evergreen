@@ -29,7 +29,7 @@ use OpenILS::Utils::CStoreEditor qw/:funcs/;
 use OpenILS::Application::AppUtils;
 my $U = "OpenILS::Application::AppUtils";
 
-use constant CREDIT_OPTS_NS => "global.credit.processor";
+use constant CREDIT_NS => "credit";
 
 # Given the argshash from process_payment(), this helper function just finds
 # a function in the current namespace named "bop_args_{processor}" and calls
@@ -74,7 +74,7 @@ sub get_processor_settings {
 
     +{ map { ($_ =>
         $U->ou_ancestor_setting_value(
-            $org_unit, CREDIT_OPTS_NS . ".${processor}.${_}"
+            $org_unit, CREDIT_NS . ".processor.${processor}.${_}"
         )) } qw/enabled login password signature server testmode/
     };
 }
@@ -116,9 +116,15 @@ sub process_payment {
             and $argshash->{cc}
             and $argshash->{amount}
             and $argshash->{expiration}
-            and $argshash->{ou}
-            and $argshash->{processor};
+            and $argshash->{ou};
 
+    if (!$argshash->{processor}) {
+        if (!($argshash->{processor} =
+                $U->ou_ancestor_setting_value(
+                    $argshash->{ou}, CREDIT_NS . '.processor.default'))) {
+            return OpenILS::Event->new('CREDIT_PROCESSOR_NOT_SPECIFIED');
+        }
+    }
     # Basic sanity check on processor name.
     if ($argshash->{processor} !~ /^[a-z0-9_\-]+$/i) {
         return OpenILS::Event->new('CREDIT_PROCESSOR_NOT_ALLOWED');
@@ -329,7 +335,7 @@ sub retrieve_payable_balance {
         my $o = $org->{billing_location};
         $o = $org->{circ_lib} unless $o;
         next if $hash{$o};    # was $hash{$org}, but that doesn't make sense.  $org is a hashref and $o gets added in the next line.
-        $hash{$o} = $U->ou_ancestor_setting_value($o, 'global.credit.allow', $e);
+        $hash{$o} = $U->ou_ancestor_setting_value($o, CREDIT_NS . '.payments.allow', $e);
     }
 
     my @credit_orgs = map { $hash{$_} ? ($_) : () } keys %hash;

@@ -201,12 +201,6 @@ sub make_payments {
 
     if($type eq 'credit_card_payment') {
         my $this_ou = $e->requestor->ws_ou;
-        my $use_processor = $U->ou_ancestor_setting_value(
-            $this_ou, 'global.credit.processor.default'
-        );
-        if (not $use_processor) {
-            return OpenILS::Event->new('CREDIT_PROCESSOR_NO_DEFAULT_SELECTED');
-        }
         my $response = $apputils->simplereq(
             'open-ils.credit',
             'open-ils.credit.process',
@@ -220,8 +214,7 @@ sub make_payments {
                     $payments->{expire_month},
                     $payments->{expire_year}
                 ),
-                "ou" => $this_ou,
-                "processor" => $use_processor
+                "ou" => $this_ou
             }
         );
         # senator: Should failures and/or declines be logged somewhere?  Is
