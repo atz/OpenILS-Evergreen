@@ -1,7 +1,7 @@
 -- org_unit setting types
 BEGIN;
 
-INSERT INTO config.upgrade_log (version) VALUES ('0037'); -- atz
+INSERT INTO config.upgrade_log (version) VALUES ('0037');
 
 INSERT into config.org_unit_setting_type
 ( name, label, description, datatype ) VALUES
@@ -50,7 +50,6 @@ INSERT into config.org_unit_setting_type
 ( 'global.credit.processor.paypal.testmode',
     'Credit card processing: PayPal test mode',
     '',
-    'bool' )
-;
+    'bool' );
 
 COMMIT;
