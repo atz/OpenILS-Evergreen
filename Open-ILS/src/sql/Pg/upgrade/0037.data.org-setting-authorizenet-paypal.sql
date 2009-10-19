@@ -51,7 +51,6 @@ INSERT into config.org_unit_setting_type
     'Credit card processing: PayPal test mode',
     '',
     'bool' )
-
 ;
 
 COMMIT;
