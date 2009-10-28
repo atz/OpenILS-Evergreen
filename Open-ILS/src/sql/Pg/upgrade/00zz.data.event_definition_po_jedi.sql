@@ -29,7 +29,10 @@ INSERT INTO event_definition (active, owner, name, hook, validator, reactor, cle
         {"id":"3472205","reference":{"API":"3472205 0001"}}
     ],
 
-    "vendor":[ "1556150", {"id-qualifier":"91","reference":{"IA":"1865"},"id":"1556150"} ],
+    "vendor":[
+        "[% target.provider.san %]",
+        {"id-qualifier":"91", "reference":{"IA":"1865"}, "id":"[% target.provider.san %]"}
+    ],
 
     "currency":"[% target.provider.currency_type %]",
 
