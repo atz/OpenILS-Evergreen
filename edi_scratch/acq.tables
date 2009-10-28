@@ -1,0 +1,530 @@
+ Table "acq.currency_type"
+ Column | Type | Modifiers 
+--------+------+-----------
+ code   | text | not null
+ label  | text | 
+Indexes:
+    "currency_type_pkey" PRIMARY KEY, btree (code)
+
+                               Table "acq.distribution_formula"
+   Column   |  Type   |                               Modifiers                               
+------------+---------+-----------------------------------------------------------------------
+ id         | integer | not null default nextval('acq.distribution_formula_id_seq'::regclass)
+ owner      | integer | not null
+ name       | text    | not null
+ skip_count | integer | not null default 0
+Indexes:
+    "distribution_formula_pkey" PRIMARY KEY, btree (id)
+    "acqdf_name_once_per_owner" UNIQUE, btree (name, owner)
+Foreign-key constraints:
+    "distribution_formula_owner_fkey" FOREIGN KEY (owner) REFERENCES actor.org_unit(id) DEFERRABLE INITIALLY DEFERRED
+
+                               Table "acq.distribution_formula_entry"
+   Column   |  Type   |                                  Modifiers                                  
+------------+---------+-----------------------------------------------------------------------------
+ id         | integer | not null default nextval('acq.distribution_formula_entry_id_seq'::regclass)
+ formula    | integer | not null
+ position   | integer | not null
+ item_count | integer | not null
+ owning_lib | integer | 
+ location   | integer | 
+Indexes:
+    "distribution_formula_entry_pkey" PRIMARY KEY, btree (id)
+    "acqdfe_lib_once_per_formula" UNIQUE, btree (formula, "position")
+Check constraints:
+    "acqdfe_must_be_somewhere" CHECK (owning_lib IS NOT NULL OR location IS NOT NULL)
+Foreign-key constraints:
+    "distribution_formula_entry_formula_fkey" FOREIGN KEY (formula) REFERENCES acq.distribution_formula(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+    "distribution_formula_entry_location_fkey" FOREIGN KEY (location) REFERENCES asset.copy_location(id)
+    "distribution_formula_entry_owning_lib_fkey" FOREIGN KEY (owning_lib) REFERENCES actor.org_unit(id) DEFERRABLE INITIALLY DEFERRED
+
+                                Table "acq.exchange_rate"
+    Column     |  Type   |                           Modifiers                            
+---------------+---------+----------------------------------------------------------------
+ id            | integer | not null default nextval('acq.exchange_rate_id_seq'::regclass)
+ from_currency | text    | not null
+ to_currency   | text    | not null
+ ratio         | numeric | not null
+Indexes:
+    "exchange_rate_pkey" PRIMARY KEY, btree (id)
+    "exchange_rate_from_to_once" UNIQUE, btree (from_currency, to_currency)
+Foreign-key constraints:
+    "exchange_rate_from_currency_fkey" FOREIGN KEY (from_currency) REFERENCES acq.currency_type(code) DEFERRABLE INITIALLY DEFERRED
+    "exchange_rate_to_currency_fkey" FOREIGN KEY (to_currency) REFERENCES acq.currency_type(code) DEFERRABLE INITIALLY DEFERRED
+
+                             Table "acq.fiscal_calendar"
+ Column |  Type   |                            Modifiers                             
+--------+---------+------------------------------------------------------------------
+ id     | integer | not null default nextval('acq.fiscal_calendar_id_seq'::regclass)
+ name   | text    | not null
+Indexes:
+    "fiscal_calendar_pkey" PRIMARY KEY, btree (id)
+
+                                       Table "acq.fiscal_year"
+   Column   |           Type           |                          Modifiers                           
+------------+--------------------------+--------------------------------------------------------------
+ id         | integer                  | not null default nextval('acq.fiscal_year_id_seq'::regclass)
+ calendar   | integer                  | not null
+ year       | integer                  | not null
+ year_begin | timestamp with time zone | not null
+ year_end   | timestamp with time zone | not null
+Indexes:
+    "fiscal_year_pkey" PRIMARY KEY, btree (id)
+    "acq_fy_logical_key" UNIQUE, btree (calendar, year)
+    "acq_fy_physical_key" UNIQUE, btree (calendar, year_begin)
+Foreign-key constraints:
+    "fiscal_year_calendar_fkey" FOREIGN KEY (calendar) REFERENCES acq.fiscal_calendar(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+
+                                Table "acq.fund"
+    Column     |  Type   |                       Modifiers                       
+---------------+---------+-------------------------------------------------------
+ id            | integer | not null default nextval('acq.fund_id_seq'::regclass)
+ org           | integer | not null
+ name          | text    | not null
+ year          | integer | not null default date_part('year'::text, now())
+ currency_type | text    | not null
+ code          | text    | 
+Indexes:
+    "fund_pkey" PRIMARY KEY, btree (id)
+    "code_once_per_org_year" UNIQUE, btree (org, code, year)
+    "name_once_per_org_year" UNIQUE, btree (org, name, year)
+Foreign-key constraints:
+    "fund_currency_type_fkey" FOREIGN KEY (currency_type) REFERENCES acq.currency_type(code) DEFERRABLE INITIALLY DEFERRED
+    "fund_org_fkey" FOREIGN KEY (org) REFERENCES actor.org_unit(id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+
+                                         Table "acq.fund_allocation"
+     Column     |           Type           |                            Modifiers                             
+----------------+--------------------------+------------------------------------------------------------------
+ id             | integer                  | not null default nextval('acq.fund_allocation_id_seq'::regclass)
+ funding_source | integer                  | not null
+ fund           | integer                  | not null
+ amount         | numeric                  | 
+ percent        | numeric                  | 
+ allocator      | integer                  | not null
+ note           | text                     | 
+ create_time    | timestamp with time zone | not null default now()
+Indexes:
+    "fund_allocation_pkey" PRIMARY KEY, btree (id)
+    "fund_alloc_allocator_idx" btree (allocator)
+Check constraints:
+    "allocation_amount_or_percent" CHECK (percent IS NULL AND amount IS NOT NULL OR percent IS NOT NULL AND amount IS NULL)
+    "fund_allocation_percent_check" CHECK (percent IS NULL OR percent >= 0.0 AND percent <= 100.0)
+Foreign-key constraints:
+    "fund_allocation_allocator_fkey" FOREIGN KEY (allocator) REFERENCES actor.usr(id) DEFERRABLE INITIALLY DEFERRED
+    "fund_allocation_fund_fkey" FOREIGN KEY (fund) REFERENCES acq.fund(id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+    "fund_allocation_funding_source_fkey" FOREIGN KEY (funding_source) REFERENCES acq.funding_source(id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+
+                                            Table "acq.fund_debit"
+        Column        |           Type           |                          Modifiers                          
+----------------------+--------------------------+-------------------------------------------------------------
+ id                   | integer                  | not null default nextval('acq.fund_debit_id_seq'::regclass)
+ fund                 | integer                  | not null
+ origin_amount        | numeric                  | not null
+ origin_currency_type | text                     | not null
+ amount               | numeric                  | not null
+ encumbrance          | boolean                  | not null default true
+ debit_type           | text                     | not null
+ xfer_destination     | integer                  | 
+ create_time          | timestamp with time zone | not null default now()
+Indexes:
+    "fund_debit_pkey" PRIMARY KEY, btree (id)
+Foreign-key constraints:
+    "fund_debit_fund_fkey" FOREIGN KEY (fund) REFERENCES acq.fund(id) DEFERRABLE INITIALLY DEFERRED
+    "fund_debit_origin_currency_type_fkey" FOREIGN KEY (origin_currency_type) REFERENCES acq.currency_type(code) DEFERRABLE INITIALLY DEFERRED
+    "fund_debit_xfer_destination_fkey" FOREIGN KEY (xfer_destination) REFERENCES acq.fund(id) DEFERRABLE INITIALLY DEFERRED
+
+                             Table "acq.fund_tag"
+ Column |  Type   |                         Modifiers                         
+--------+---------+-----------------------------------------------------------
+ id     | integer | not null default nextval('acq.fund_tag_id_seq'::regclass)
+ owner  | integer | not null
+ name   | text    | not null
+Indexes:
+    "fund_tag_pkey" PRIMARY KEY, btree (id)
+    "acqft_tag_once_per_owner" UNIQUE, btree (name, owner)
+Foreign-key constraints:
+    "fund_tag_owner_fkey" FOREIGN KEY (owner) REFERENCES actor.org_unit(id) DEFERRABLE INITIALLY DEFERRED
+
+                             Table "acq.fund_tag_map"
+ Column |  Type   |                           Modifiers                           
+--------+---------+---------------------------------------------------------------
+ id     | integer | not null default nextval('acq.fund_tag_map_id_seq'::regclass)
+ fund   | integer | not null
+ tag    | integer | 
+Indexes:
+    "fund_tag_map_pkey" PRIMARY KEY, btree (id)
+    "acqftm_fund_once_per_tag" UNIQUE, btree (fund, tag)
+Foreign-key constraints:
+    "fund_tag_map_fund_fkey" FOREIGN KEY (fund) REFERENCES acq.fund(id) DEFERRABLE INITIALLY DEFERRED
+    "fund_tag_map_tag_fkey" FOREIGN KEY (tag) REFERENCES acq.fund_tag(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+
+                                Table "acq.funding_source"
+    Column     |  Type   |                            Modifiers                            
+---------------+---------+-----------------------------------------------------------------
+ id            | integer | not null default nextval('acq.funding_source_id_seq'::regclass)
+ name          | text    | not null
+ owner         | integer | not null
+ currency_type | text    | not null
+ code          | text    | 
+Indexes:
+    "funding_source_pkey" PRIMARY KEY, btree (id)
+    "funding_source_code_key" UNIQUE, btree (code)
+    "funding_source_name_once_per_owner" UNIQUE, btree (name, owner)
+Foreign-key constraints:
+    "funding_source_currency_type_fkey" FOREIGN KEY (currency_type) REFERENCES acq.currency_type(code) DEFERRABLE INITIALLY DEFERRED
+    "funding_source_owner_fkey" FOREIGN KEY (owner) REFERENCES actor.org_unit(id) DEFERRABLE INITIALLY DEFERRED
+
+                                 Table "acq.funding_source_credit"
+     Column     |  Type   |                               Modifiers                                
+----------------+---------+------------------------------------------------------------------------
+ id             | integer | not null default nextval('acq.funding_source_credit_id_seq'::regclass)
+ funding_source | integer | not null
+ amount         | numeric | not null
+ note           | text    | 
+Indexes:
+    "funding_source_credit_pkey" PRIMARY KEY, btree (id)
+Foreign-key constraints:
+    "funding_source_credit_funding_source_fkey" FOREIGN KEY (funding_source) REFERENCES acq.funding_source(id) DEFERRABLE INITIALLY DEFERRED
+
+                                           Table "acq.lineitem"
+       Column       |           Type           |                         Modifiers                         
+--------------------+--------------------------+-----------------------------------------------------------
+ id                 | bigint                   | not null default nextval('acq.lineitem_id_seq'::regclass)
+ creator            | integer                  | not null
+ editor             | integer                  | not null
+ selector           | integer                  | not null
+ provider           | integer                  | 
+ purchase_order     | integer                  | 
+ picklist           | integer                  | 
+ expected_recv_time | timestamp with time zone | 
+ create_time        | timestamp with time zone | not null default now()
+ edit_time          | timestamp with time zone | not null default now()
+ marc               | text                     | not null
+ eg_bib_id          | integer                  | 
+ source_label       | text                     | 
+ item_count         | integer                  | not null default 0
+ state              | text                     | not null default 'new'::text
+Indexes:
+    "lineitem_pkey" PRIMARY KEY, btree (id)
+    "li_creator_idx" btree (creator)
+    "li_editor_idx" btree (editor)
+    "li_pl_idx" btree (picklist)
+    "li_po_idx" btree (purchase_order)
+    "li_selector_idx" btree (selector)
+Check constraints:
+    "picklist_or_po" CHECK (picklist IS NOT NULL OR purchase_order IS NOT NULL)
+Foreign-key constraints:
+    "lineitem_creator_fkey" FOREIGN KEY (creator) REFERENCES actor.usr(id) DEFERRABLE INITIALLY DEFERRED
+    "lineitem_editor_fkey" FOREIGN KEY (editor) REFERENCES actor.usr(id) DEFERRABLE INITIALLY DEFERRED
+    "lineitem_eg_bib_id_fkey" FOREIGN KEY (eg_bib_id) REFERENCES biblio.record_entry(id) DEFERRABLE INITIALLY DEFERRED
+    "lineitem_picklist_fkey" FOREIGN KEY (picklist) REFERENCES acq.picklist(id) DEFERRABLE INITIALLY DEFERRED
+    "lineitem_provider_fkey" FOREIGN KEY (provider) REFERENCES acq.provider(id) DEFERRABLE INITIALLY DEFERRED
+    "lineitem_purchase_order_fkey" FOREIGN KEY (purchase_order) REFERENCES acq.purchase_order(id) DEFERRABLE INITIALLY DEFERRED
+    "lineitem_selector_fkey" FOREIGN KEY (selector) REFERENCES actor.usr(id) DEFERRABLE INITIALLY DEFERRED
+Triggers:
+    cleanup_lineitem_trigger BEFORE DELETE OR UPDATE ON acq.lineitem FOR EACH ROW EXECUTE PROCEDURE cleanup_acq_marc()
+    ingest_lineitem_trigger AFTER INSERT OR UPDATE ON acq.lineitem FOR EACH ROW EXECUTE PROCEDURE ingest_acq_marc()
+
+                              Table "acq.lineitem_attr"
+   Column   |  Type  |                           Modifiers                            
+------------+--------+----------------------------------------------------------------
+ id         | bigint | not null default nextval('acq.lineitem_attr_id_seq'::regclass)
+ definition | bigint | not null
+ lineitem   | bigint | not null
+ attr_type  | text   | not null
+ attr_name  | text   | not null
+ attr_value | text   | not null
+Indexes:
+    "lineitem_attr_pkey" PRIMARY KEY, btree (id)
+    "li_attr_definition_idx" btree (definition)
+    "li_attr_li_idx" btree (lineitem)
+    "li_attr_value_idx" btree (attr_value)
+Foreign-key constraints:
+    "lineitem_attr_lineitem_fkey" FOREIGN KEY (lineitem) REFERENCES acq.lineitem(id) DEFERRABLE INITIALLY DEFERRED
+
+                               Table "acq.lineitem_attr_definition"
+   Column    |  Type   |                                 Modifiers                                 
+-------------+---------+---------------------------------------------------------------------------
+ id          | bigint  | not null default nextval('acq.lineitem_attr_definition_id_seq'::regclass)
+ code        | text    | not null
+ description | text    | not null
+ remove      | text    | not null default ''::text
+ ident       | boolean | not null default false
+Indexes:
+    "lineitem_attr_definition_pkey" PRIMARY KEY, btree (id)
+
+                                          Table "acq.lineitem_detail"
+     Column      |           Type           |                            Modifiers                             
+-----------------+--------------------------+------------------------------------------------------------------
+ id              | bigint                   | not null default nextval('acq.lineitem_detail_id_seq'::regclass)
+ lineitem        | integer                  | not null
+ fund            | integer                  | 
+ fund_debit      | integer                  | 
+ eg_copy_id      | bigint                   | 
+ barcode         | text                     | 
+ cn_label        | text                     | 
+ note            | text                     | 
+ collection_code | text                     | 
+ circ_modifier   | text                     | 
+ owning_lib      | integer                  | 
+ location        | integer                  | 
+ recv_time       | timestamp with time zone | 
+Indexes:
+    "lineitem_detail_pkey" PRIMARY KEY, btree (id)
+    "li_detail_li_idx" btree (lineitem)
+Foreign-key constraints:
+    "lineitem_detail_circ_modifier_fkey" FOREIGN KEY (circ_modifier) REFERENCES config.circ_modifier(code) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED
+    "lineitem_detail_eg_copy_id_fkey" FOREIGN KEY (eg_copy_id) REFERENCES asset.copy(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED
+    "lineitem_detail_fund_debit_fkey" FOREIGN KEY (fund_debit) REFERENCES acq.fund_debit(id) DEFERRABLE INITIALLY DEFERRED
+    "lineitem_detail_fund_fkey" FOREIGN KEY (fund) REFERENCES acq.fund(id) DEFERRABLE INITIALLY DEFERRED
+    "lineitem_detail_lineitem_fkey" FOREIGN KEY (lineitem) REFERENCES acq.lineitem(id) DEFERRABLE INITIALLY DEFERRED
+    "lineitem_detail_location_fkey" FOREIGN KEY (location) REFERENCES asset.copy_location(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED
+    "lineitem_detail_owning_lib_fkey" FOREIGN KEY (owning_lib) REFERENCES actor.org_unit(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED
+
+                          Table "acq.lineitem_generated_attr_definition"
+   Column    |  Type   |                                 Modifiers                                 
+-------------+---------+---------------------------------------------------------------------------
+ id          | bigint  | not null default nextval('acq.lineitem_attr_definition_id_seq'::regclass)
+ code        | text    | not null
+ description | text    | not null
+ remove      | text    | not null default ''::text
+ ident       | boolean | not null default false
+ xpath       | text    | not null
+Indexes:
+    "lineitem_generated_attr_definition_pkey" PRIMARY KEY, btree (id)
+Inherits: acq.lineitem_attr_definition
+
+                            Table "acq.lineitem_local_attr_definition"
+   Column    |  Type   |                                 Modifiers                                 
+-------------+---------+---------------------------------------------------------------------------
+ id          | bigint  | not null default nextval('acq.lineitem_attr_definition_id_seq'::regclass)
+ code        | text    | not null
+ description | text    | not null
+ remove      | text    | not null default ''::text
+ ident       | boolean | not null default false
+Indexes:
+    "lineitem_local_attr_definition_pkey" PRIMARY KEY, btree (id)
+Inherits: acq.lineitem_attr_definition
+
+                             Table "acq.lineitem_marc_attr_definition"
+   Column    |  Type   |                                 Modifiers                                 
+-------------+---------+---------------------------------------------------------------------------
+ id          | bigint  | not null default nextval('acq.lineitem_attr_definition_id_seq'::regclass)
+ code        | text    | not null
+ description | text    | not null
+ remove      | text    | not null default ''::text
+ ident       | boolean | not null default false
+ xpath       | text    | not null
+Indexes:
+    "lineitem_marc_attr_definition_pkey" PRIMARY KEY, btree (id)
+Inherits: acq.lineitem_attr_definition
+
+                                        Table "acq.lineitem_note"
+   Column    |           Type           |                           Modifiers                            
+-------------+--------------------------+----------------------------------------------------------------
+ id          | integer                  | not null default nextval('acq.lineitem_note_id_seq'::regclass)
+ lineitem    | integer                  | not null
+ creator     | integer                  | not null
+ editor      | integer                  | not null
+ create_time | timestamp with time zone | not null default now()
+ edit_time   | timestamp with time zone | not null default now()
+ value       | text                     | not null
+Indexes:
+    "lineitem_note_pkey" PRIMARY KEY, btree (id)
+    "li_note_creator_idx" btree (creator)
+    "li_note_editor_idx" btree (editor)
+    "li_note_li_idx" btree (lineitem)
+Foreign-key constraints:
+    "lineitem_note_creator_fkey" FOREIGN KEY (creator) REFERENCES actor.usr(id) DEFERRABLE INITIALLY DEFERRED
+    "lineitem_note_editor_fkey" FOREIGN KEY (editor) REFERENCES actor.usr(id) DEFERRABLE INITIALLY DEFERRED
+    "lineitem_note_lineitem_fkey" FOREIGN KEY (lineitem) REFERENCES acq.lineitem(id) DEFERRABLE INITIALLY DEFERRED
+
+                           Table "acq.lineitem_provider_attr_definition"
+   Column    |  Type   |                                 Modifiers                                 
+-------------+---------+---------------------------------------------------------------------------
+ id          | bigint  | not null default nextval('acq.lineitem_attr_definition_id_seq'::regclass)
+ code        | text    | not null
+ description | text    | not null
+ remove      | text    | not null default ''::text
+ ident       | boolean | not null default false
+ xpath       | text    | not null
+ provider    | integer | not null
+Indexes:
+    "lineitem_provider_attr_definition_pkey" PRIMARY KEY, btree (id)
+Foreign-key constraints:
+    "lineitem_provider_attr_definition_provider_fkey" FOREIGN KEY (provider) REFERENCES acq.provider(id) DEFERRABLE INITIALLY DEFERRED
+Inherits: acq.lineitem_attr_definition
+
+                             Table "acq.lineitem_usr_attr_definition"
+   Column    |  Type   |                                 Modifiers                                 
+-------------+---------+---------------------------------------------------------------------------
+ id          | bigint  | not null default nextval('acq.lineitem_attr_definition_id_seq'::regclass)
+ code        | text    | not null
+ description | text    | not null
+ remove      | text    | not null default ''::text
+ ident       | boolean | not null default false
+ usr         | integer | not null
+Indexes:
+    "lineitem_usr_attr_definition_pkey" PRIMARY KEY, btree (id)
+    "li_usr_attr_def_usr_idx" btree (usr)
+Foreign-key constraints:
+    "lineitem_usr_attr_definition_usr_fkey" FOREIGN KEY (usr) REFERENCES actor.usr(id) DEFERRABLE INITIALLY DEFERRED
+Inherits: acq.lineitem_attr_definition
+
+                                        Table "acq.picklist"
+   Column    |           Type           |                         Modifiers                         
+-------------+--------------------------+-----------------------------------------------------------
+ id          | integer                  | not null default nextval('acq.picklist_id_seq'::regclass)
+ owner       | integer                  | not null
+ creator     | integer                  | not null
+ editor      | integer                  | not null
+ org_unit    | integer                  | not null
+ name        | text                     | not null
+ create_time | timestamp with time zone | not null default now()
+ edit_time   | timestamp with time zone | not null default now()
+Indexes:
+    "picklist_pkey" PRIMARY KEY, btree (id)
+    "name_once_per_owner" UNIQUE, btree (name, owner)
+    "acq_picklist_creator_idx" btree (creator)
+    "acq_picklist_editor_idx" btree (editor)
+    "acq_picklist_owner_idx" btree (owner)
+Foreign-key constraints:
+    "picklist_creator_fkey" FOREIGN KEY (creator) REFERENCES actor.usr(id) DEFERRABLE INITIALLY DEFERRED
+    "picklist_editor_fkey" FOREIGN KEY (editor) REFERENCES actor.usr(id) DEFERRABLE INITIALLY DEFERRED
+    "picklist_org_unit_fkey" FOREIGN KEY (org_unit) REFERENCES actor.org_unit(id) DEFERRABLE INITIALLY DEFERRED
+    "picklist_owner_fkey" FOREIGN KEY (owner) REFERENCES actor.usr(id) DEFERRABLE INITIALLY DEFERRED
+
+                                         Table "acq.po_note"
+     Column     |           Type           |                        Modifiers                         
+----------------+--------------------------+----------------------------------------------------------
+ id             | integer                  | not null default nextval('acq.po_note_id_seq'::regclass)
+ purchase_order | integer                  | not null
+ creator        | integer                  | not null
+ editor         | integer                  | not null
+ create_time    | timestamp with time zone | not null default now()
+ edit_time      | timestamp with time zone | not null default now()
+ value          | text                     | not null
+Indexes:
+    "po_note_pkey" PRIMARY KEY, btree (id)
+    "acq_po_note_creator_idx" btree (creator)
+    "acq_po_note_editor_idx" btree (editor)
+    "po_note_po_idx" btree (purchase_order)
+Foreign-key constraints:
+    "po_note_creator_fkey" FOREIGN KEY (creator) REFERENCES actor.usr(id) DEFERRABLE INITIALLY DEFERRED
+    "po_note_editor_fkey" FOREIGN KEY (editor) REFERENCES actor.usr(id) DEFERRABLE INITIALLY DEFERRED
+    "po_note_purchase_order_fkey" FOREIGN KEY (purchase_order) REFERENCES acq.purchase_order(id) DEFERRABLE INITIALLY DEFERRED
+
+                                Table "acq.provider"
+    Column     |  Type   |                         Modifiers                         
+---------------+---------+-----------------------------------------------------------
+ id            | integer | not null default nextval('acq.provider_id_seq'::regclass)
+ name          | text    | not null
+ owner         | integer | not null
+ currency_type | text    | not null
+ code          | text    | not null
+ holding_tag   | text    | 
+Indexes:
+    "provider_pkey" PRIMARY KEY, btree (id)
+    "code_once_per_owner" UNIQUE, btree (code, owner)
+    "provider_name_once_per_owner" UNIQUE, btree (name, owner)
+Foreign-key constraints:
+    "provider_currency_type_fkey" FOREIGN KEY (currency_type) REFERENCES acq.currency_type(code) DEFERRABLE INITIALLY DEFERRED
+    "provider_owner_fkey" FOREIGN KEY (owner) REFERENCES actor.org_unit(id) DEFERRABLE INITIALLY DEFERRED
+
+                                Table "acq.provider_address"
+    Column    |  Type   |                             Modifiers                             
+--------------+---------+-------------------------------------------------------------------
+ id           | integer | not null default nextval('acq.provider_address_id_seq'::regclass)
+ valid        | boolean | not null default true
+ address_type | text    | 
+ provider     | integer | not null
+ street1      | text    | not null
+ street2      | text    | 
+ city         | text    | not null
+ county       | text    | 
+ state        | text    | not null
+ country      | text    | not null
+ post_code    | text    | not null
+Indexes:
+    "provider_address_pkey" PRIMARY KEY, btree (id)
+Foreign-key constraints:
+    "provider_address_provider_fkey" FOREIGN KEY (provider) REFERENCES acq.provider(id) DEFERRABLE INITIALLY DEFERRED
+
+                              Table "acq.provider_contact"
+  Column  |  Type   |                             Modifiers                             
+----------+---------+-------------------------------------------------------------------
+ id       | integer | not null default nextval('acq.provider_contact_id_seq'::regclass)
+ provider | integer | not null
+ name     | text    | 
+ role     | text    | 
+ email    | text    | 
+ phone    | text    | 
+Indexes:
+    "provider_contact_pkey" PRIMARY KEY, btree (id)
+Foreign-key constraints:
+    "provider_contact_provider_fkey" FOREIGN KEY (provider) REFERENCES acq.provider(id) DEFERRABLE INITIALLY DEFERRED
+
+                                Table "acq.provider_contact_address"
+    Column    |  Type   |                                 Modifiers                                 
+--------------+---------+---------------------------------------------------------------------------
+ id           | integer | not null default nextval('acq.provider_contact_address_id_seq'::regclass)
+ valid        | boolean | not null default true
+ address_type | text    | 
+ contact      | integer | not null
+ street1      | text    | not null
+ street2      | text    | 
+ city         | text    | not null
+ county       | text    | 
+ state        | text    | not null
+ country      | text    | not null
+ post_code    | text    | not null
+Indexes:
+    "provider_contact_address_pkey" PRIMARY KEY, btree (id)
+Foreign-key constraints:
+    "provider_contact_address_contact_fkey" FOREIGN KEY (contact) REFERENCES acq.provider_contact(id) DEFERRABLE INITIALLY DEFERRED
+
+                              Table "acq.provider_holding_subfield_map"
+  Column  |  Type   |                                   Modifiers                                    
+----------+---------+--------------------------------------------------------------------------------
+ id       | integer | not null default nextval('acq.provider_holding_subfield_map_id_seq'::regclass)
+ provider | integer | not null
+ name     | text    | not null
+ subfield | text    | not null
+Indexes:
+    "provider_holding_subfield_map_pkey" PRIMARY KEY, btree (id)
+    "name_once_per_provider" UNIQUE, btree (provider, name)
+Foreign-key constraints:
+    "provider_holding_subfield_map_provider_fkey" FOREIGN KEY (provider) REFERENCES acq.provider(id) DEFERRABLE INITIALLY DEFERRED
+
+                                          Table "acq.purchase_order"
+     Column      |           Type           |                            Modifiers                            
+-----------------+--------------------------+-----------------------------------------------------------------
+ id              | integer                  | not null default nextval('acq.purchase_order_id_seq'::regclass)
+ owner           | integer                  | not null
+ creator         | integer                  | not null
+ editor          | integer                  | not null
+ ordering_agency | integer                  | not null
+ create_time     | timestamp with time zone | not null default now()
+ edit_time       | timestamp with time zone | not null default now()
+ provider        | integer                  | not null
+ state           | text                     | not null default 'new'::text
+ order_date      | timestamp with time zone | 
+ name            | text                     | not null
+Indexes:
+    "purchase_order_pkey" PRIMARY KEY, btree (id)
+    "acq_po_org_name_order_date_idx" btree (ordering_agency, name, order_date)
+    "po_creator_idx" btree (creator)
+    "po_editor_idx" btree (editor)
+    "po_owner_idx" btree (owner)
+    "po_provider_idx" btree (provider)
+    "po_state_idx" btree (state)
+Foreign-key constraints:
+    "purchase_order_creator_fkey" FOREIGN KEY (creator) REFERENCES actor.usr(id) DEFERRABLE INITIALLY DEFERRED
+    "purchase_order_editor_fkey" FOREIGN KEY (editor) REFERENCES actor.usr(id) DEFERRABLE INITIALLY DEFERRED
+    "purchase_order_ordering_agency_fkey" FOREIGN KEY (ordering_agency) REFERENCES actor.org_unit(id) DEFERRABLE INITIALLY DEFERRED
+    "purchase_order_owner_fkey" FOREIGN KEY (owner) REFERENCES actor.usr(id) DEFERRABLE INITIALLY DEFERRED
+    "purchase_order_provider_fkey" FOREIGN KEY (provider) REFERENCES acq.provider(id) DEFERRABLE INITIALLY DEFERRED
+Triggers:
+    po_name_default_trg BEFORE INSERT OR UPDATE ON acq.purchase_order FOR EACH ROW EXECUTE PROCEDURE acq.purchase_order_name_default()
+    po_org_name_date_unique_trg BEFORE INSERT OR UPDATE ON acq.purchase_order FOR EACH ROW EXECUTE PROCEDURE acq.po_org_name_date_unique()
+
