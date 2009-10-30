@@ -1,0 +1,35 @@
+from http://www.wmusers.com/forum/showthread.php?s=7289a6d776b0c35e8b835a6715f2f21f&t=6008&page=2
+
+ExternalID's and Types:
+01 X12=Duns, EDIFACT=Duns
+02 X12=SCAC
+03 X12=FMC,
+04 X12=IATA, EDIFACT=IATA
+05 EDIFACT= INSEE
+07 X12=GLN,
+08 X12=UCC Comm ID, EDIFACT= UCC Id
+09 X12=X 121 CCITT, EDIFACT = Duns with 4 digit suffix
+10 X12=DoD Activity Address
+11 X12=DEA
+12 X12=Phone, EDIFACT=Telephone Number
+13 X12=UCS
+14 X12=Duns Plus Suffix, EDIFACT=EAN
+15 X12=PAS of Canada Code
+16 X12=Duns Number with 4-char suffix
+17 X12= ABA routing number
+18 X12=AAR Std Distribution Code, EDIFACT=AIAG
+19 X12=EDICA Comm Id
+20 X12=HIN
+21 X12=IPEDS
+22 X12=FICE, EDIFACT=INSEE
+23 X12= NCES
+24 X12=ATP
+25 X12=ACT, Inc. 4-digit Code postsecondary institutions
+26 X12=Statistics of Canada list of postsecondary institutions
+27 X12=HCFA carrier
+28 X12=HCFA Fiscal Intermediary
+29 X12=HCFA Medicare provider
+30 X12=US Federal Tax Id, EDIFACT=ISO 6523 id
+31 X12=IAIABC Jurisdiction id plus 4, EDIFACT=DIN
+32 X12=US Federal Employer Id (FEIN)
+33 X12=NAIC code, EDIFACT=BIA 
