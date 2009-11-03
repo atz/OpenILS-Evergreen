@@ -5,16 +5,16 @@ BEGIN;
 INSERT INTO config.org_unit_setting_type ( name, label, description, datatype )
     VALUES 
 ( 'notice.telephony.enabled',
-  'Enable or disable telephony',
+  'Telephony: Enable or disable',
   'Select "SIP" or "PSTN" to enable telephony notices over the respective carriers.  If "Off", no telephony is used.  If "PSTN", then notice.telphony.channels_available must be specified.',
   'string' ),
 
-('notice.telephony.channels_available', 'PSTN channels to use for outgoing calls', 'Channels will be used in the order listed.', 'array'),
+('notice.telephony.channels_available', 'Telephony: PSTN channels to use for outgoing calls', 'Channels will be used in the order listed.', 'array'),
 
-('notice.telephony.channel_last_used',  'Index of the channel last used from channels_available',
+('notice.telephony.channel_last_used',  'Telephony: Index of the channel last used from channels_available',
     'Note: This is not the channel value itself.  Index is zero-based.', 'integer'),
 
-('notice.telephony.callfile_lines',     'Arbitrary line(s) to include in each notice callfile',
+('notice.telephony.callfile_lines',     'Telephony: Arbitrary line(s) to include in each notice callfile',
     'Line(s) must be valid for your target server and platform (e.g. Asterisk 1.4).', 'string'),
 
 ('notice.telephony.host.hostname', 'Telephony: hostname or IP', 'Specify the server that will make the calls', 'string'),
