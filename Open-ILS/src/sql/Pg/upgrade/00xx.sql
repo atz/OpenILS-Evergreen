@@ -20,7 +20,7 @@ INSERT INTO config.org_unit_setting_type ( name, label, description, datatype )
 ('notice.telephony.host.hostname', 'Telephony: hostname or IP', 'Specify the server that will make the calls', 'text'),
 ('notice.telephony.host.port',     'Telephony: port number',    'Server port where we find the listening agent. Default: 10080', 'integer'),
 ('notice.telephony.host.username', 'Telephony: username',       'Required by listening agent.', 'text'),
-('notice.telephony.host.password', 'Telephony: password',       'Required by listening agent.', 'text')
+('notice.telephony.host.password', 'Telephony: password',       'Required by listening agent.', 'text');
 
 COMMIT;
 
