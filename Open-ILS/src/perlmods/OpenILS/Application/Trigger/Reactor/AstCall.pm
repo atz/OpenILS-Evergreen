@@ -24,22 +24,21 @@ sub ABOUT {
 ABOUT
 }
 
-sub generate_callfile {
-    my ($phone_no, $num_items) = @_;
-    my $plurality = ($num_items == 1 ? "singular" : "plural");
+sub prepare_channel_line {
+    my ($blob) = @_;
 
-    # FIXME: uncoditional prepending of '1' is bad mkay
-    return <<END;
-Channel: SIP/ubab33/1${phone_no}
-Context: overdue-test
-MaxRetries: 1
-RetryTime: 60
-WaitTime: 30
-Extension: 10
-Archive: 1
-Set: items=${num_items}
-Set: plurality=${plurality}
-END
+    my $phone_no = ($blob =~ /\A; (\d+)$/ms)[0];
+
+    # FIXME: begin North America-centric behavior
+    if ($phone_no !~ /^1/) {
+        $phone_no = "1" . $phone_no;
+    }
+    return undef if length $phone_no != 11;
+    # FIXME: end North America-centric behavior
+
+    # TODO: Here is where we would introduce logic determining
+    # technology, channel or context name, and so on. 
+    return "Channel: SIP/ubab33/$phone_no\n" . $blob;
 }
 
 sub handler {
@@ -71,17 +70,11 @@ sub handler {
         $logger->warn(__PACKAGE__ . ": couldn't write to debug file");
     };
 
-    $tmpl_output =~ /phone number:\s*(.+)$/im;
-    (my $phone_no = $1) =~ s/[\-\s\(\)]//g;
-    $tmpl_output =~ /items:\s*(\d+)/im;
-    my $num_items = $1;
-
-    if (not $phone_no or not $num_items) {
-        $logger->warn(__PACKAGE__ . ": bad template input; phone_no=$phone_no; num_items=$num_items");
+    my $callfile;
+    if (not defined ($callfile = prepare_channel_line($tmpl_output))) {
+        $logger->error(__PACKAGE__ . ": prepare_channel_line() failed");
         return 0;
     }
-
-    my $callfile = generate_callfile($phone_no, $num_items);
     if (not open FH, ">>" . DEBUG_FILE) { # XXX
         $logger->error(__PACKAGE__ . ": " . DEBUG_FILE . ": $!");
         return 0;
