@@ -27,9 +27,12 @@ INSERT INTO config.org_unit_setting_type ( name, label, description, datatype )
 INSERT INTO action_trigger.reactor VALUES
     ('AstCall', 'Possibly place a phone call with Asterisk');
 
-INSERT INTO action_trigger.event_definition VALUES
-    (9, TRUE, 1, 'Telephone Overdue Notice', 'checkout.due', 'NOOP_True',
-        'AstCall', DEFAULT, DEFAULT, DEFAULT, 'due_date', 'usr',
+INSERT INTO action_trigger.event_definition
+    (active, owner, name, hook, validator, reactor,
+     cleanup_success, cleanup_failure, delay, delay_field, group_field, template)
+    VALUES
+    (TRUE, 1, 'Telephone Overdue Notice', 'checkout.due', 'NOOP_True', 'AstCall',
+     DEFAULT, DEFAULT, DEFAULT, 'due_date', 'usr',
         '[%- user = target.0.usr -%]
 phone number: [% user.day_phone %]
 items: [% target.size %]
