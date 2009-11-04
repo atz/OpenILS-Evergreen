@@ -22,5 +22,19 @@ INSERT INTO config.org_unit_setting_type ( name, label, description, datatype )
 ('notice.telephony.host.username', 'Telephony: username',       'Required by listening agent.', 'string'),
 ('notice.telephony.host.password', 'Telephony: password',       'Required by listening agent.', 'string');
 
+;
+
+INSERT INTO action_trigger.reactor VALUES
+    ('AstCall', 'Possibly place a phone call with Asterisk');
+
+INSERT INTO action_trigger.event_definition VALUES
+    (9, TRUE, 1, 'Telephone Overdue Notice', 'checkout.due', 'NOOP_True',
+        'AstCall', DEFAULT, DEFAULT, DEFAULT, 'due_date', 'usr',
+        '[%- user = target.0.usr -%]
+phone number: [% user.day_phone %]
+items: [% target.size %]
+        '
+    );
+
 COMMIT;
 
