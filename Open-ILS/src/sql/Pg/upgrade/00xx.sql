@@ -4,25 +4,27 @@ BEGIN;
 
 INSERT INTO config.org_unit_setting_type ( name, label, description, datatype )
     VALUES 
-( 'notice.telephony.enabled',
-  'Telephony: Enable or disable',
-  'Select "SIP" or "PSTN" to enable telephony notices over the respective carriers.  If "Off", no telephony is used.  If "PSTN", then notice.telphony.channels_available must be specified.',
-  'string' ),
-
-('notice.telephony.channels_available', 'Telephony: PSTN channels to use for outgoing calls', 'Channels will be used in the order listed.', 'array'),
-
-('notice.telephony.channel_last_used',  'Telephony: Index of the channel last used from channels_available',
-    'Note: This is not the channel value itself.  Index is zero-based.', 'integer'),
+--
+-- DELETE FROM config.org_unit_setting_type where name LIKE 'notice.telephony.%' AND name != 'notice.telephony.callfile_lines';
+--
+----------- All this stuff is in opensrf.xml now:
+-- ( 'notice.telephony.enabled',
+--   'Telephony: Enable or disable',
+--   'Select "SIP" or "PSTN" to enable telephony notices over the respective carriers.  If "Off", no telephony is used.  If "PSTN", then notice.telphony.channels_available must be specified.',
+--   'string' ),
+-- 
+-- ('notice.telephony.channels_available', 'Telephony: PSTN channels to use for outgoing calls', 'Channels will be used in the order listed.', 'array'),
+-- 
+-- ('notice.telephony.channel_last_used',  'Telephony: Index of the channel last used from channels_available',
+--     'Note: This is not the channel value itself.  Index is zero-based.', 'integer'),
+-- ('notice.telephony.host.hostname', 'Telephony: hostname or IP', 'Specify the server that will make the calls', 'string'),
+-- ('notice.telephony.host.port',     'Telephony: port number',    'Server port where we find the listening agent. Default: 10080', 'integer'),
+-- ('notice.telephony.host.username', 'Telephony: username',       'Required by listening agent.', 'string'),
+-- ('notice.telephony.host.password', 'Telephony: password',       'Required by listening agent.', 'string'),
 
 ('notice.telephony.callfile_lines',     'Telephony: Arbitrary line(s) to include in each notice callfile',
-    'Line(s) must be valid for your target server and platform (e.g. Asterisk 1.4).', 'string'),
+    'This overrides lines from opensrf.xml.  Line(s) must be valid for your target server and platform (e.g. Asterisk 1.4).', 'string');
 
-('notice.telephony.host.hostname', 'Telephony: hostname or IP', 'Specify the server that will make the calls', 'string'),
-('notice.telephony.host.port',     'Telephony: port number',    'Server port where we find the listening agent. Default: 10080', 'integer'),
-('notice.telephony.host.username', 'Telephony: username',       'Required by listening agent.', 'string'),
-('notice.telephony.host.password', 'Telephony: password',       'Required by listening agent.', 'string');
-
-;
 
 INSERT INTO action_trigger.reactor VALUES
     ('AstCall', 'Possibly place a phone call with Asterisk');
