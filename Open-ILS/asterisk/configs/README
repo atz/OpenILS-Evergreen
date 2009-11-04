@@ -1,0 +1,4 @@
+In the configs.tar.gz archive, sip.conf has some lines that contain "XXX".
+
+These lines have stand-in values for credentials and other things, and they
+need to be uncommented and filled in with actual values for the SIP provider.
