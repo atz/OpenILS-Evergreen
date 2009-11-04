@@ -39,5 +39,17 @@ items: [% target.size %]
         '
     );
 
+INSERT INTO action_trigger.environment
+    (id, event_def, path) VALUES
+    (DEFAULT,
+    (SELECT id FROM action_trigger.event_definition
+        WHERE name = 'Telephone Overdue Notice'),
+    'target_copy.call_number.record.simple_record'),
+    (DEFAULT,
+    (SELECT id FROM action_trigger.event_definition
+        WHERE name = 'Telephone Overdue Notice'),
+    'usr')
+;
+
 COMMIT;
 
