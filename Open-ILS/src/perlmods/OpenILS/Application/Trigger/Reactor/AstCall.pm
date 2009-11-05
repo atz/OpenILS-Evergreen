@@ -13,23 +13,76 @@ use constant DEBUG_FILE => "/tmp/blusah"; #XXX
 
 my $log = 'OpenSRF::Utils::Logger';
 
+# $last_channel_used is:
+# ~ index (not literal value) of last channel used in a callfile
+# ~ index is of position in @channels
+# ~ cached at package level
+# ~ typically for Zap (PSTN), not VOIP
+
+our @channels;
+our $last_channel_used = 0;
+our $conf;
+
 sub ABOUT {
     return <<ABOUT;
 
     The AstCall reactor module creates a callfile for Asterisk, given a
-    template describing the message and an environment definining
+    template describing the message and an environment defining
     necessary information for contacting the Asterisk server and scheduling
     a call with it.
 
 ABOUT
 }
 
-#    Channel: SIP/ubab33/$phone_no
+sub get_conf {
+    $conf or $conf = OpenSRF::Utils::SettingsClient->new;   # conf object cached by package
+    return $conf;
+}
+
+sub get_channels {
+    @channels and return @channels;
+    # @channels = @{ $conf->config_value('notifications', 'telephony', 'channels') };
+    # TODO: real assignment from configs
+    return @channels;
+}
+sub last_channel_used {
+    my @chans = get_channels();
+    if (@_) { 
+        
+}
+
+sub prepare_channel_line {
+    my ($blob) = @_;
+
+    my $phone_no = ($blob =~ /\A; (\d+)$/ms)[0];
+
+    # FIXME: begin North America-centric behavior
+    if ($phone_no !~ /^1/) {
+        $phone_no = "1" . $phone_no;
+    }
+    return undef if length $phone_no != 11;
+    # FIXME: end North America-centric behavior
+
+    # TODO: Here is where we would introduce logic determining
+    # technology, channel or context name, and so on. 
+    my $config = get_conf();
+    my $tech = $config->config_value('notifications', 'telephony', 'driver');
+    my $techresource;
+    if ($tech != 'SIP') {
+        my @chans = get_channels();
+        if ($last_channel_used > $#chans) {
+            $last_channel_used = 0;
+        }
+    }
+    return sprintf "Channel: %s/%s\n" . "SIP/ubab33/$phone_no\n" . $blob;
+}
 
 sub handler {
     my ($self, $env) = @_;
-
+    
     $logger->info(__PACKAGE__ . ": entered handler");
+#    my $smtp = $conf->config_value('email_notify', 'smtp_server');
+#    $$env{default_sender} = $conf->config_value('email_notify', 'sender_address');
 
     # Here is where we'll later add logic to rotate through
     # multiple available analog channels.
