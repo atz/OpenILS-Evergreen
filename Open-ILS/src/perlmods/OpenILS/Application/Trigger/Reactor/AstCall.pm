@@ -45,11 +45,6 @@ sub get_channels {
     # TODO: real assignment from configs
     return @channels;
 }
-sub last_channel_used {
-    my @chans = get_channels();
-    if (@_) { 
-        
-}
 
 sub prepare_channel_line {
     my ($blob) = @_;
@@ -66,15 +61,22 @@ sub prepare_channel_line {
     # TODO: Here is where we would introduce logic determining
     # technology, channel or context name, and so on. 
     my $config = get_conf();
-    my $tech = $config->config_value('notifications', 'telephony', 'driver');
+    my $tech = $config->config_value('notifications', 'telephony', 'driver') || 'SIP';
     my $techresource;
-    if ($tech != 'SIP') {
+    if ($tech !~ /^SIP/) {
         my @chans = get_channels();
-        if ($last_channel_used > $#chans) {
+        unless(@chans) {
+            $logger->error(__PACKAGE__ . ":  Cannot call using $tech, no channels listed in config!");
+            return;
+        }
+        if (++$last_channel_used > $#chans) {
             $last_channel_used = 0;
         }
+        $techresource = $chans[$last_channel_used];
+    } else {
+        $techresource = $tech ;  # 'SIP/ubab33'
     }
-    return sprintf "Channel: %s/%s\n" . "SIP/ubab33/$phone_no\n" . $blob;
+    return sprintf("Channel: %s/%s\n", $techresource, $phone_no) . $blob;
 }
 
 sub handler {
