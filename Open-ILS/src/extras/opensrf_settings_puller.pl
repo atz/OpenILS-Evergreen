@@ -47,5 +47,8 @@ my $settings = OpenSRF::Utils::SettingsClient->new();
 my @terms = scalar(@ARGV) ? split('/', shift) : ();
 $verbose and print "Looking under: ", join(', ', map {"<$_>"} @terms), "\n";
 
-print Dumper($settings->config_value(@terms));
+my $target = $settings->config_value(@terms);
+print Dumper($target);
+
+# my $lines = $target->{callfile_lines};
 
