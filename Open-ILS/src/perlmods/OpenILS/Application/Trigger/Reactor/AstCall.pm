@@ -24,37 +24,17 @@ sub ABOUT {
 ABOUT
 }
 
-sub prepare_channel_line {
-    my ($blob) = @_;
-
-    my $phone_no = ($blob =~ /\A; (\d+)$/ms)[0];
-
-    # FIXME: begin North America-centric behavior
-    if ($phone_no !~ /^1/) {
-        $phone_no = "1" . $phone_no;
-    }
-    return undef if length $phone_no != 11;
-    # FIXME: end North America-centric behavior
-
-    # TODO: Here is where we would introduce logic determining
-    # technology, channel or context name, and so on. 
-    return "Channel: SIP/ubab33/$phone_no\n" . $blob;
-}
+#    Channel: SIP/ubab33/$phone_no
 
 sub handler {
     my ($self, $env) = @_;
 
-    # ??? Where do these config values really come from?  These are not
-    # org unit settings... are they?
-#    my $conf = OpenSRF::Utils::SettingsClient->new;
-#    my $smtp = $conf->config_value('email_notify', 'smtp_server');
-#    $$env{default_sender} =
-#        $conf->config_value('email_notify', 'sender_address');
-
-
-    # let's return 0 for failure, 1 for success
-
     $logger->info(__PACKAGE__ . ": entered handler");
+
+    # Here is where we'll later add logic to rotate through
+    # multiple available analog channels.
+    $env->{channel_prefix} = "SIP/ubab33/";
+
     my $tmpl_output = $self->run_TT($env);
     if (not $tmpl_output) {
         $logger->error(__PACKAGE__ . ": no template input");
@@ -70,24 +50,18 @@ sub handler {
         $logger->warn(__PACKAGE__ . ": couldn't write to debug file");
     };
 
-    my $callfile;
-    if (not defined ($callfile = prepare_channel_line($tmpl_output))) {
-        $logger->error(__PACKAGE__ . ": prepare_channel_line() failed");
-        return 0;
-    }
     if (not open FH, ">>" . DEBUG_FILE) { # XXX
         $logger->error(__PACKAGE__ . ": " . DEBUG_FILE . ": $!");
         return 0;
     }
-    print FH $callfile; # XXX
 
     my $client =  new RPC::XML::Client('http://192.168.71.50:10080/');
-    my $resp = $client->send_request('inject', $callfile, 0); # FIXME: 0 could be timestamp if deferred call needed
+    my $resp = $client->send_request('inject', $tmpl_output, 0); # FIXME: 0 could be timestamp if deferred call needed
 
     print FH ((ref $resp ? ("Response: " . Dumper($resp->value)) : "Error: $resp"), "\n");
     close FH; # XXX
 
-    return 1;
+    1;
 }
 
 1;
