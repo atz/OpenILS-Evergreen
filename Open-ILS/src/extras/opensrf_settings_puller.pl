@@ -40,7 +40,7 @@ my $conf   = OpenSRF::Utils::Config->current;
 my $cfile  = $conf->bootstrap->settings_config;
 my $parser = OpenSRF::Utils::SettingsParser->new();
 $parser->initialize( $cfile );
-# $OpenSRF::Utils::SettingsClient::host_config = $parser->get_server_config($conf->env->hostname);
+$OpenSRF::Utils::SettingsClient::host_config = $parser->get_server_config($conf->env->hostname);
 
 my $settings = OpenSRF::Utils::SettingsClient->new();
 # scalar(@ARGV) or die_usage("Argument is required");
