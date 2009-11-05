@@ -21,7 +21,7 @@ my $log = 'OpenSRF::Utils::Logger';
 
 our @channels;
 our $last_channel_used = 0;
-our $conf;
+our $pkg_conf;
 
 sub ABOUT {
     return <<ABOUT;
@@ -35,8 +35,8 @@ ABOUT
 }
 
 sub get_conf {
-    $conf or $conf = OpenSRF::Utils::SettingsClient->new;   # conf object cached by package
-    return $conf;
+    $pkg_conf or $pkg_conf = OpenSRF::Utils::SettingsClient->new;   # config object cached by package
+    return $pkg_conf;
 }
 
 sub get_channels {
@@ -46,49 +46,41 @@ sub get_channels {
     return @channels;
 }
 
-sub prepare_channel_line {
-    my ($blob) = @_;
-
-    my $phone_no = ($blob =~ /\A; (\d+)$/ms)[0];
-
-    # FIXME: begin North America-centric behavior
-    if ($phone_no !~ /^1/) {
-        $phone_no = "1" . $phone_no;
-    }
-    return undef if length $phone_no != 11;
-    # FIXME: end North America-centric behavior
-
-    # TODO: Here is where we would introduce logic determining
-    # technology, channel or context name, and so on. 
+sub tech_resource_string {
     my $config = get_conf();
     my $tech = $config->config_value('notifications', 'telephony', 'driver') || 'SIP';
-    my $techresource;
     if ($tech !~ /^SIP/) {
         my @chans = get_channels();
         unless(@chans) {
-            $logger->error(__PACKAGE__ . ":  Cannot call using $tech, no channels listed in config!");
+            $logger->error(__PACKAGE__ . ": Cannot build call using $tech, no notifications.telephony.channels found in config!");
             return;
         }
         if (++$last_channel_used > $#chans) {
             $last_channel_used = 0;
         }
-        $techresource = $chans[$last_channel_used];
-    } else {
-        $techresource = $tech ;  # 'SIP/ubab33'
+        return $chans[$last_channel_used];     # say, 'Zap/1' or 'Zap/12'
     }
-    return sprintf("Channel: %s/%s\n", $techresource, $phone_no) . $blob;
+    return $tech ;  #  say, 'SIP' or 'SIP/ubab33'
+}
+
+sub debug_print {
+    if (open (FH, ">>" . DEBUG_FILE)) {
+        print FH @_, "\n";
+        close FH;
+    } else {
+        $logger->warn(__PACKAGE__ . ": couldn't write to debug file (" . DEBUG_FILE . "): $!");
+    };
 }
 
 sub handler {
     my ($self, $env) = @_;
     
     $logger->info(__PACKAGE__ . ": entered handler");
-#    my $smtp = $conf->config_value('email_notify', 'smtp_server');
-#    $$env{default_sender} = $conf->config_value('email_notify', 'sender_address');
 
-    # Here is where we'll later add logic to rotate through
-    # multiple available analog channels.
-    $env->{channel_prefix} = "SIP/ubab33/";
+    unless ($env->{channel_prefix} = tech_resource_string()) {      # assignment, not comparison
+        $logger->error(__PACKAGE__ . ": Cannot find tech/resource in config");
+        return 0;
+    }
 
     my $tmpl_output = $self->run_TT($env);
     if (not $tmpl_output) {
@@ -96,26 +88,11 @@ sub handler {
         return 0;
     }
 
-    open (FH, ">>" . DEBUG_FILE) and do {
-        print FH "---------------------\n";
-        print FH $tmpl_output, "\n";
-        print FH "---------------------\n";
-        close FH;
-    } or do {
-        $logger->warn(__PACKAGE__ . ": couldn't write to debug file");
-    };
-
-    if (not open FH, ">>" . DEBUG_FILE) { # XXX
-        $logger->error(__PACKAGE__ . ": " . DEBUG_FILE . ": $!");
-        return 0;
-    }
-
-    my $client =  new RPC::XML::Client('http://192.168.71.50:10080/');
+    debug_print(join ("\n", "---------------------", $tmpl_output, "---------------------"));
+    my $client = new RPC::XML::Client('http://192.168.71.50:10080/');
     my $resp = $client->send_request('inject', $tmpl_output, 0); # FIXME: 0 could be timestamp if deferred call needed
 
-    print FH ((ref $resp ? ("Response: " . Dumper($resp->value)) : "Error: $resp"), "\n");
-    close FH; # XXX
-
+    debug_print((ref $resp ? ("Response: " . Dumper($resp->value)) : "Error: $resp"));
     1;
 }
 
