@@ -55,20 +55,19 @@ vim:et:ts=4:sw=4:
 
         <!-- global telephony (asterisk) settings -->
         <telephony>
+            <!-- replace all values below when telephony server is configured -->
             <enabled>0</enabled>
-            <server><!-- replace all values below when telephony server is configured -->
-                <driver>SIP</driver>    <!-- SIP (default) or multi -->
-                <channels>              <!-- explicit list of channels used if multi -->
-                                        <!-- A channel specifies technology/resource -->
-                    <channel>Zap/1</channel>
-                    <channel>Zap/2</channel>
-                    <channel>IAX/user:secret@widgets.biz</channel>
-                </channels>
-                <host>localhost</host>
-                <port>10080</port>
-                <user>evergreen</user>
-                <pw>evergreen</pw>
-            </server>
+            <driver>SIP</driver>    <!-- SIP (default) or multi -->
+            <channels>              <!-- explicit list of channels used if multi -->
+                                    <!-- A channel specifies technology/resource -->
+                <channel>Zap/1</channel>
+                <channel>Zap/2</channel>
+                <channel>IAX/user:secret@widgets.biz</channel>
+            </channels>
+            <host>localhost</host>
+            <port>10080</port>
+            <user>evergreen</user>
+            <pw>evergreen</pw>
             <!--
                 The overall composition of callfiles is determined by the relevant template,
                 but this section can be invoked for callfile configs common to all outbound calls.
