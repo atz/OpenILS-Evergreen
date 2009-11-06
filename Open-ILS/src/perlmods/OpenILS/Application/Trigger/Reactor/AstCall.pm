@@ -15,13 +15,13 @@ my $log = 'OpenSRF::Utils::Logger';
 
 # $last_channel_used is:
 # ~ index (not literal value) of last channel used in a callfile
-# ~ index is of position in @channels
+# ~ index is of position in @channels (zero-based)
 # ~ cached at package level
 # ~ typically for Zap (PSTN), not VOIP
 
 our @channels;
 our $last_channel_used = 0;
-our $pkg_conf;
+our $telephony;
 
 sub ABOUT {
     return <<ABOUT;
@@ -35,32 +35,51 @@ ABOUT
 }
 
 sub get_conf {
-    $pkg_conf or $pkg_conf = OpenSRF::Utils::SettingsClient->new;   # config object cached by package
-    return $pkg_conf;
+    $telephony and return $telephony;
+    my $config = OpenSRF::Utils::SettingsClient->new;   
+    $telephony = $config->config_value('notifications', 'telephony');  # config object cached by package
+    return $telephony;
 }
 
 sub get_channels {
     @channels and return @channels;
-    # @channels = @{ $conf->config_value('notifications', 'telephony', 'channels') };
-    # TODO: real assignment from configs
+    my $config = get_conf();    # populated $telephony object
+    @channels = @{ $config->{channels} };
     return @channels;
 }
 
-sub tech_resource_string {
-    my $config = get_conf();
-    my $tech = $config->config_value('notifications', 'telephony', 'driver') || 'SIP';
-    if ($tech !~ /^SIP/) {
-        my @chans = get_channels();
-        unless(@chans) {
-            $logger->error(__PACKAGE__ . ": Cannot build call using $tech, no notifications.telephony.channels found in config!");
-            return;
-        }
-        if (++$last_channel_used > $#chans) {
-            $last_channel_used = 0;
-        }
-        return $chans[$last_channel_used];     # say, 'Zap/1' or 'Zap/12'
+sub next_channel {
+    # Increments $last_channel_used, or resets it to zero, as necessary.
+    # Returns appropriate value from channels array.
+    my @chans = get_channels();
+    unless(@chans) {
+        $logger->error(__PACKAGE__ . ": Cannot build call using " . (shift ||'driver') . ", no notifications.telephony.channels found in config!");
+        return;
     }
-    return $tech ;  #  say, 'SIP' or 'SIP/ubab33'
+    if (++$last_channel_used > $#chans) {
+        $last_channel_used = 0;
+    }
+    return $chans[$last_channel_used];     # say, 'Zap/1' or 'Zap/12'
+}   
+
+sub channel {
+    my $tech = get_conf()->{driver} || 'SIP';
+    if ($tech !~ /^SIP/) {
+        return next_channel($tech);
+    }
+    return $tech;                          #  say, 'SIP' or 'SIP/ubab33'
+}
+
+sub get_extra_lines {
+    my $lines = get_conf()->{callfile_lines} or return '';
+    my @fixed;
+    foreach (split "\n", $lines) {
+        s/^\s*//g;      # strip leading spaces
+        /\S/ or next;   # skip empty lines
+        push @fixed, $_;
+    }
+    (scalar @fixed) or return '';
+    return join("\n", @fixed) . "\n";
 }
 
 sub debug_print {
@@ -77,19 +96,30 @@ sub handler {
     
     $logger->info(__PACKAGE__ . ": entered handler");
 
-    unless ($env->{channel_prefix} = tech_resource_string()) {      # assignment, not comparison
+    unless ($env->{channel_prefix} = channel()) {      # assignment, not comparison
         $logger->error(__PACKAGE__ . ": Cannot find tech/resource in config");
         return 0;
     }
 
+    $env->{extra_lines} = get_extra_lines() || '';
     my $tmpl_output = $self->run_TT($env);
     if (not $tmpl_output) {
         $logger->error(__PACKAGE__ . ": no template input");
         return 0;
     }
 
+    my $conf = get_conf();
+
     debug_print(join ("\n", "---------------------", $tmpl_output, "---------------------"));
-    my $client = new RPC::XML::Client('http://192.168.71.50:10080/');
+
+    my $host = $conf->{host};
+    unless ($host) {
+        $logger->error(__PACKAGE__ . ": No telephony/host in config.");
+        return 0;
+    }
+    $conf->{port} and $host .= ":" . $conf->{port};
+    my $client = new RPC::XML::Client($host);
+# TODO: add scheduling intelligence and use it here.
     my $resp = $client->send_request('inject', $tmpl_output, 0); # FIXME: 0 could be timestamp if deferred call needed
 
     debug_print((ref $resp ? ("Response: " . Dumper($resp->value)) : "Error: $resp"));
