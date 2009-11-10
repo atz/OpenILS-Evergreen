@@ -108,6 +108,7 @@ sub handler {
         return 0;
     }
 
+    $logger->info(__PACKAGE__ . ": get_conf()");
     my $conf = get_conf();
 
     debug_print(join ("\n", "---------------------", $tmpl_output, "---------------------"));
