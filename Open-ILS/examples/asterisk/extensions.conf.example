@@ -1,6 +1,12 @@
+; Sample Asterisk configuration
+; To use, include this dialplan in your extensions.conf file and dialplan reload.
+; Note the explicitly numbered line sequences.  This makes it hard to edit or 
+; and new lines.  Remember to preserve sequentiality and Goto integrity.
+;
+;
+;
 ; First the ${ ... } variables and functions are evaluated and substituted.
 ; Then the  $[ ... ] expressions are evaluated and substituted.
-
 
 [overdue-test]
 exten => s,1,Verbose(titlestring: ${titlestring})
