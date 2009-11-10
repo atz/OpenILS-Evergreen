@@ -28,7 +28,7 @@ sub load_config {
         return;
     }
 
-    if ((!($new_config{group} = getpwnam($new_config{group})) > 0)) {
+    if ((!($new_config{group} = getgrnam($new_config{group})) > 0)) {
         warn $new_config{group} . ": invalid group";
         return;
     }
@@ -38,14 +38,17 @@ sub load_config {
 
 sub inject {
     my ($data, $timestamp) = @_;
-    my $filename_fragment = sprintf("/%d-%d.call", time, $last_n++);
-    my $filename = $config{staging_path} . $filename_fragment;
-    my $finalized_filename = $config{spool_path} . $filename_fragment;
+    my $filename_fragment = sprintf("%d-%d.call", time, $last_n++);
+    my $filename = $config{staging_path} . "/" . $filename_fragment;
+    my $finalized_filename = $config{spool_path} . "/" . $filename_fragment;
 
     my $failure = sub { new RPC::XML::fault(
         faultCode => 500,
         faultString => $_[0]
     )};
+
+    $data .= "; added by inject() in the mediator\n";
+    $data .= "Set callfilename=$filename_fragment\n";
 
     open FH, ">$filename" or return &$failure("$filename: $!");
     print FH $data or return &$failure("error writing data to $filename: $!");
