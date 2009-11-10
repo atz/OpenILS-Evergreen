@@ -48,7 +48,7 @@ sub inject {
     )};
 
     $data .= "; added by inject() in the mediator\n";
-    $data .= "Set callfilename=$filename_fragment\n";
+    $data .= "Set: callfilename=$filename_fragment\n";
 
     open FH, ">$filename" or return &$failure("$filename: $!");
     print FH $data or return &$failure("error writing data to $filename: $!");
