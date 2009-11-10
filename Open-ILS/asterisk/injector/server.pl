@@ -44,50 +44,53 @@
 use RPC::XML::Server;
 use Config::General qw/ParseConfig/;
 use Getopt::Std;
+use File::Basename qw/basename/;
+use Sys::Syslog qw/:standard :macros/;
 
-our (%config, %new_config);
+our %config;
 our %opts = (c => "/etc/eg-injector.conf");
 our $last_n = 0;
 
 sub load_config {
-    %new_config = ParseConfig($opts{c});
+    %config = ParseConfig($opts{c});
 
     # validate
     foreach my $opt (qw/staging_path spool_path/) {
-        if (not -d $new_config{$opt}) {
-            warn $new_config{$opt} . " ($opt): no such directory";
+        if (not -d $config{$opt}) {
+            warn $config{$opt} . " ($opt): no such directory";
             return;
         }
     }
 
-    if ($new_config{port} < 1 || $new_config{port} > 65535) {
-        warn $new_config{port} . ": not a valid port number";
+    if ($config{port} < 1 || $config{port} > 65535) {
+        warn $config{port} . ": not a valid port number";
         return;
     }
 
-    if (!($new_config{owner} = getpwnam($new_config{owner})) > 0) {
-        warn $new_config{owner} . ": invalid owner";
+    if ((!($config{owner} = getpwnam($config{owner})) > 0)) {
+        warn $config{owner} . ": invalid owner";
         return;
     }
 
-    if (!($new_config{group} = getgrnam($new_config{group})) > 0) {
-        warn $new_config{group} . ": invalid group";
+    if ((!($config{group} = getgrnam($config{group})) > 0)) {
+        warn $config{group} . ": invalid group";
         return;
     }
-
-    %config = %new_config;
 }
 
 sub inject {
     my ($data, $timestamp) = @_;
     my $filename_fragment = sprintf("%d-%d.call", time, $last_n++);
-    my $filename           = $config{staging_path} . "/" . $filename_fragment;
-    my $finalized_filename = $config{spool_path}   . "/" . $filename_fragment;
+    my $filename = $config{staging_path} . "/" . $filename_fragment;
+    my $spooled_filename = $config{spool_path} . "/" . $filename_fragment;
 
-    my $failure = sub { new RPC::XML::fault(
-        faultCode => 500,
-        faultString => $_[0]
-    )};
+    my $failure = sub {
+        syslog LOG_ERR, $_[0];
+
+        return new RPC::XML::fault(
+            faultCode => 500,
+            faultString => $_[0])
+    };
 
     $data .= "; added by inject() in the mediator\n";
     $data .= "Set: callfilename=$filename_fragment\n";
@@ -106,12 +109,12 @@ sub inject {
             return &$failure("error utime'ing $filename to $timestamp: $!");
     }
 
-    rename $filename, $finalized_filename or
-        return &$failure("rename $filename, $finalized_filename: $!");
+    rename $filename, $spooled_filename or
+        return &$failure("rename $filename, $spooled_filename: $!");
 
+    syslog LOG_NOTICE, "Spooled $spooled_filename sucessfully";
     return {
-        filename => $filename,
-        finalized_filename => $finalized_filename,
+        spooled_filename => $spooled_filename,
         code => 200
     };
 }
@@ -119,16 +122,14 @@ sub inject {
 sub main {
     getopt('c:', \%opts);
     load_config;
-    $SIG{HUP} = \&load_config;
+    openlog basename($0), 'ndelay', LOG_USER;
     my $server = new RPC::XML::Server(port => $config{port});
 
     $server->add_proc({
-        name => 'inject',
-        code => \&inject,
-        signature => ['struct string int']
+        name => 'inject', code => \&inject, signature => ['struct string int']
     });
 
-    $server->add_default_methods();
+    $server->add_default_methods;
     $server->server_loop;
     0;
 }
