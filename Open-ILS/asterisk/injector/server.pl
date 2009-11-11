@@ -1,4 +1,46 @@
 #!/usr/bin/perl -w
+#
+# Copyright (C) 2009 Equinox Software, Inc.
+# Author: Lebbeous Fogle-Weekley
+# Author: Joe Atzberger
+#
+# License:
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# Overview:
+#
+#   This script is to be used on an asterisk server as an RPC::XML 
+#   daemon targeted by Evergreen.
+#
+# Configuration:
+#
+#   See the eg-injector.conf and extensions.conf.example files.
+#
+# Usage:
+#
+#   perl server.pl -c /path/to/eg-injector.conf
+#
+# TODO: 
+#
+# ~ Option to archive (/etc/asterisk/spool/outgoing_really_done) instead of delete?
+# ~ Serve retrieval of done files.
+# ~ Accept globby prefix for filtering files to be retrieved.
+# ~ init.d startup/shutdown/status script.
+# ~ More docs.
+# ~ perldoc/POD
+# - command line usage and --help
+#
+
+
 use RPC::XML::Server;
 use Config::General qw/ParseConfig/;
 use Getopt::Std;
@@ -23,12 +65,12 @@ sub load_config {
         return;
     }
 
-    if ((!($new_config{owner} = getpwnam($new_config{owner})) > 0)) {
+    if (!($new_config{owner} = getpwnam($new_config{owner})) > 0) {
         warn $new_config{owner} . ": invalid owner";
         return;
     }
 
-    if ((!($new_config{group} = getgrnam($new_config{group})) > 0)) {
+    if (!($new_config{group} = getgrnam($new_config{group})) > 0) {
         warn $new_config{group} . ": invalid group";
         return;
     }
@@ -39,8 +81,8 @@ sub load_config {
 sub inject {
     my ($data, $timestamp) = @_;
     my $filename_fragment = sprintf("%d-%d.call", time, $last_n++);
-    my $filename = $config{staging_path} . "/" . $filename_fragment;
-    my $finalized_filename = $config{spool_path} . "/" . $filename_fragment;
+    my $filename           = $config{staging_path} . "/" . $filename_fragment;
+    my $finalized_filename = $config{spool_path}   . "/" . $filename_fragment;
 
     my $failure = sub { new RPC::XML::fault(
         faultCode => 500,
@@ -91,4 +133,4 @@ sub main {
     0;
 }
 
-exit main @ARGV;
+exit main @ARGV;    # do it all!
