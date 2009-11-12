@@ -170,6 +170,9 @@ sub main {
     $server->add_proc({
         name => 'retrieve', code => \&retrieve, signature => ['struct string']
     });
+    $server->add_proc({
+        name => 'retrieve', code => \&retrieve, signature => ['struct']
+    });
 
     $server->add_default_methods;
     $server->server_loop;
