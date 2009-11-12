@@ -118,7 +118,9 @@ sub handler {
         $logger->error(__PACKAGE__ . ": No telephony/host in config.");
         return 0;
     }
-    $conf->{port} and $host .= ":" . $conf->{port};
+    $host =~ /^\S+:\/\// or $host  = 'http://' . $host;     # prepend http:// if no protocol specified
+    $conf->{port} and $host .= ":" . $conf->{port};         # append port number if specified
+
     my $client = new RPC::XML::Client($host);
 # TODO: add scheduling intelligence and use it here.
     my $resp = $client->send_request('inject', $tmpl_output, 0); # FIXME: 0 could be seconds-from-epoch UTC if deferred call needed
