@@ -31,8 +31,8 @@
 #
 # TODO: 
 #
-# ~ Option to archive (/etc/asterisk/spool/outgoing_really_done) instead of delete?
 # ~ Serve retrieval of done files.
+# ~ Option to archive (/etc/asterisk/spool/outgoing_really_done) instead of delete?
 # ~ Accept globby prefix for filtering files to be retrieved.
 # ~ init.d startup/shutdown/status script.
 # ~ More docs.
@@ -40,6 +40,8 @@
 # - command line usage and --help
 #
 
+use warnings;
+use strict;
 
 use RPC::XML::Server;
 use Config::General qw/ParseConfig/;
@@ -55,7 +57,7 @@ sub load_config {
     %config = ParseConfig($opts{c});
 
     # validate
-    foreach my $opt (qw/staging_path spool_path/) {
+    foreach my $opt (qw/staging_path spool_path done_path/) {
         if (not -d $config{$opt}) {
             warn $config{$opt} . " ($opt): no such directory";
             return;
@@ -80,10 +82,9 @@ sub load_config {
 
 sub inject {
     my ($data, $timestamp) = @_;
-    my $filename_fragment = sprintf("%d-%d.call", time, $last_n++);
-    my $filename = $config{staging_path} . "/" . $filename_fragment;
-    my $spooled_filename = $config{spool_path} . "/" . $filename_fragment;
-
+    my $filename_fragment  = sprintf("%d-%d.call", time, $last_n++);
+    my $filename           = $config{staging_path} . "/" . $filename_fragment;
+    my $finalized_filename = $config{spool_path}   . "/" . $filename_fragment;
     my $failure = sub {
         syslog LOG_ERR, $_[0];
 
@@ -104,7 +105,7 @@ sub inject {
             "error changing $filename to $config{owner}:$config{group}: $!"
         );
 
-    if ($timestamp > 0) {
+    if ($timestamp and $timestamp > 0) {
         utime $timestamp, $timestamp, $filename or
             return &$failure("error utime'ing $filename to $timestamp: $!");
     }
@@ -117,6 +118,10 @@ sub inject {
         spooled_filename => $spooled_filename,
         code => 200
     };
+}
+
+sub retrieve {
+    ;
 }
 
 sub main {

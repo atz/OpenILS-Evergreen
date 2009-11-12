@@ -121,7 +121,7 @@ sub handler {
     $conf->{port} and $host .= ":" . $conf->{port};
     my $client = new RPC::XML::Client($host);
 # TODO: add scheduling intelligence and use it here.
-    my $resp = $client->send_request('inject', $tmpl_output, 0); # FIXME: 0 could be timestamp if deferred call needed
+    my $resp = $client->send_request('inject', $tmpl_output, 0); # FIXME: 0 could be seconds-from-epoch UTC if deferred call needed
 
     debug_print((ref $resp ? ("Response: " . Dumper($resp->value)) : "Error: $resp"));
     1;
