@@ -46,12 +46,20 @@ use strict;
 use RPC::XML::Server;
 use Config::General qw/ParseConfig/;
 use Getopt::Std;
-use File::Basename qw/basename/;
+use File::Basename qw/basename fileparse/;
 use Sys::Syslog qw/:standard :macros/;
 
 our %config;
 our %opts = (c => "/etc/eg-injector.conf");
 our $last_n = 0;
+
+my $failure = sub {
+    syslog LOG_ERR, $_[0];
+
+    return new RPC::XML::fault(
+        faultCode => 500,
+        faultString => $_[0])
+};
 
 sub load_config {
     %config = ParseConfig($opts{c});
@@ -69,15 +77,16 @@ sub load_config {
         return;
     }
 
-    if ((!($config{owner} = getpwnam($config{owner})) > 0)) {
+    if (!($config{owner} = getpwnam($config{owner})) > 0) {
         warn $config{owner} . ": invalid owner";
         return;
     }
 
-    if ((!($config{group} = getgrnam($config{group})) > 0)) {
+    if (!($config{group} = getgrnam($config{group})) > 0) {
         warn $config{group} . ": invalid group";
         return;
     }
+    return 1;   # success
 }
 
 sub inject {
@@ -85,13 +94,6 @@ sub inject {
     my $filename_fragment  = sprintf("%d-%d.call", time, $last_n++);
     my $filename           = $config{staging_path} . "/" . $filename_fragment;
     my $finalized_filename = $config{spool_path}   . "/" . $filename_fragment;
-    my $failure = sub {
-        syslog LOG_ERR, $_[0];
-
-        return new RPC::XML::fault(
-            faultCode => 500,
-            faultString => $_[0])
-    };
 
     $data .= "; added by inject() in the mediator\n";
     $data .= "Set: callfilename=$filename_fragment\n";
@@ -110,28 +112,63 @@ sub inject {
             return &$failure("error utime'ing $filename to $timestamp: $!");
     }
 
-    rename $filename, $spooled_filename or
-        return &$failure("rename $filename, $spooled_filename: $!");
+    rename $filename, $finalized_filename or
+        return &$failure("rename $filename, $finalized_filename: $!");
 
-    syslog LOG_NOTICE, "Spooled $spooled_filename sucessfully";
+    syslog LOG_NOTICE, "Spooled $finalized_filename sucessfully";
     return {
-        spooled_filename => $spooled_filename,
+        spooled_filename => $finalized_filename,
         code => 200
     };
 }
 
 sub retrieve {
+    my $globstring = @_ ? shift : '*';
+    my $path = $config{done_path};
+    (-r $path and -d $path) or return &$failure("Cannot open dir '$path': $!");
+    my $pathglob = $path . '/' . $globstring;
+    my @matches = grep {-f $_ } <$path . '/' . $globstring>;    # don't use <$pathglob>
+    my $ret = {
+        code => 200,
+        glob_used   => $globstring,
+        #total_count => scalar(@files),
+        match_count => scalar(@matches),
+    };
+    my $i = 0;
+    foreach my $match (@matches) {
+        $i++;
+        my $filename = fileparse($match);
+        unless (open (FILE, "<$match")) {
+            syslog LOG_ERR, "Cannot read done file $i of " . scalar(@matches) . ": '$match'";
+            $ret->{error_count}++;
+            next;
+        }
+        my @content = <FILE>;   #slurpy
+        close FILE;
+
+        $ret->{'file_' . sprintf("06%d",$i++)} = {
+            filename => fileparse($match),
+            content  => join('', @content),
+        };
+    }
+    return $ret;
+}
+
+sub delete {
     ;
 }
 
 sub main {
     getopt('c:', \%opts);
-    load_config;
+    load_config or die "Cannot run on invalid/incomplete config";
     openlog basename($0), 'ndelay', LOG_USER;
     my $server = new RPC::XML::Server(port => $config{port});
 
     $server->add_proc({
-        name => 'inject', code => \&inject, signature => ['struct string int']
+        name => 'inject',   code => \&inject,   signature => ['struct string int']
+    });
+    $server->add_proc({
+        name => 'retrieve', code => \&retrieve, signature => ['struct string']
     });
 
     $server->add_default_methods;
