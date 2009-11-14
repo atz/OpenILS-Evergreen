@@ -18,5 +18,9 @@ my $client = new RPC::XML::Client($host);
 print "Sending 'retrieve' request\n";
 my $resp = $client->send_request('retrieve');
 
+if (ref $resp) {
+    print "Return is " . ref($resp), "\n";
+
+}
 print Dumper($resp);
 
