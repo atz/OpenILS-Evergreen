@@ -61,32 +61,39 @@ my $failure = sub {
         faultString => $_[0])
 };
 
+my $bad_request = sub {
+    syslog LOG_WARNING, $_[0];
+
+    return new RPC::XML::fault(
+        faultCode => 400,
+        faultString => $_[0])
+};
+
 sub load_config {
     %config = ParseConfig($opts{c});
 
     # validate
     foreach my $opt (qw/staging_path spool_path done_path/) {
         if (not -d $config{$opt}) {
-            warn $config{$opt} . " ($opt): no such directory";
-            return;
+            die $config{$opt} . " ($opt): no such directory";
         }
     }
 
     if ($config{port} < 1 || $config{port} > 65535) {
-        warn $config{port} . ": not a valid port number";
-        return;
+        die $config{port} . ": not a valid port number";
     }
 
     if (!($config{owner} = getpwnam($config{owner})) > 0) {
-        warn $config{owner} . ": invalid owner";
-        return;
+        die $config{owner} . ": invalid owner";
     }
 
     if (!($config{group} = getgrnam($config{group})) > 0) {
-        warn $config{group} . ": invalid group";
-        return;
+        die $config{group} . ": invalid group";
     }
-    return 1;   # success
+
+    my $path = $config{done_path};
+    # warn "done_path '$path'";
+    (chdir $path) or die &$failure("Cannot open dir '$path': $!");
 }
 
 sub inject {
@@ -124,10 +131,9 @@ sub inject {
 
 sub retrieve {
     my $globstring = @_ ? shift : '*';
-    my $path = $config{done_path};
-    (-r $path and -d $path) or return &$failure("Cannot open dir '$path': $!");
-    my $pathglob = $path . '/' . $globstring;
-    my @matches = grep {-f $_ } <$path . '/' . $globstring>;    # don't use <$pathglob>
+    # We depend on being in the correct directory already, thanks to the config step
+    # This prevents us from having to chdir for each request.. 
+    my @matches = grep {-f $_ } <'./' . $globstring>;    # don't use <$pathglob>, that looks like ref to HANDLE
     my $ret = {
         code => 200,
         glob_used   => $globstring,
@@ -137,7 +143,7 @@ sub retrieve {
     my $i = 0;
     foreach my $match (@matches) {
         $i++;
-        my $filename = fileparse($match);
+        # warn "file $i '$match'";
         unless (open (FILE, "<$match")) {
             syslog LOG_ERR, "Cannot read done file $i of " . scalar(@matches) . ": '$match'";
             $ret->{error_count}++;
@@ -146,7 +152,7 @@ sub retrieve {
         my @content = <FILE>;   #slurpy
         close FILE;
 
-        $ret->{'file_' . sprintf("06%d",$i++)} = {
+        $ret->{'file_' . sprintf("%06d",$i++)} = {
             filename => fileparse($match),
             content  => join('', @content),
         };
@@ -154,24 +160,90 @@ sub retrieve {
     return $ret;
 }
 
-sub delete {
-    ;
+
+# cleanup: deletes files
+# The list of files to delete must be explicit.  It cannot use globs or any other
+# pattern matching because there might be additional files that match.  Asterisk
+# might be making calls for other people and prodcesses, or might have made more
+# calls for us since the last time we checked.
+
+sub cleanup {
+    my $targetstring = shift or return &$bad_request(
+        "Must supply at least one filename to cleanup()"     # not empty string!
+    );
+    my @targets = split ',', $targetstring;
+    my $path = $config{done_path};
+    (-r $path and -d $path) or return &$failure("Cannot open dir '$path': $!");
+
+    my $ret = {
+        code => 200,    # optimism
+        request_count => scalar(@targets),
+        match_count   => 0,
+        delete_count  => 0,
+    };
+
+    my %problems;
+    my $i = 0;
+    foreach my $target (@targets) {
+        $i++;
+        $target =~ s#^(\.\./)##g;    # no fair trying to get us to delete upstream in the filesystem!
+        my $file = $path . '/' . $target;
+        unless (-f $file) {
+            $problems{$target} = {
+                code => 404,        # NOT FOUND: may or may not be a true error, since our purpose was to delete it anyway.
+                target => $target,
+            };
+            syslog LOG_NOTICE, "Delete request $i of " . $ret->{request_count} . " for file '$file': File not found";
+            next;
+        }
+
+        $ret->{match_count}++;
+        if (unlink $file) {
+            $ret->{delete_count}++;
+            syslog LOG_NOTICE, "Delete request $i of " . $ret->{request_count} . " for file '$file' successful";
+        } else {
+            syslog LOG_ERR,    "Delete request $i of " . $ret->{request_count} . " for file '$file' FAILED: $!";
+            $problems{$target} = {
+                code => 403,        # FORBIDDEN: permissions problem
+                target => $target,
+            };
+            next;
+        }
+    }
+
+    my $prob_count = scalar keys %problems;
+    if ($prob_count) {
+        $ret->{error_count} = $prob_count;
+        if ($prob_count == 1 and $ret->{request_count} == 1) {
+             # We had exactly 1 error and no successes
+            my $one = (values %problems)[0];
+            $ret->{code} = $one->{code};     # So our code is the error's code
+        } else {
+            $ret->{code} = 207;              # otherwise, MULTI-STATUS
+            $ret->{multistatus} = \%problems;
+        }
+    }
+    return $ret;
 }
 
 sub main {
     getopt('c:', \%opts);
-    load_config or die "Cannot run on invalid/incomplete config";
+    load_config;    # dies on invalid/incomplete config
     openlog basename($0), 'ndelay', LOG_USER;
     my $server = new RPC::XML::Server(port => $config{port});
+
+    # Regarding signatures:
+    #  ~ the first datatype  is  for RETURN value,
+    #  ~ any other datatypes are for INCOMING args
 
     $server->add_proc({
         name => 'inject',   code => \&inject,   signature => ['struct string int']
     });
     $server->add_proc({
-        name => 'retrieve', code => \&retrieve, signature => ['struct string']
+        name => 'retrieve', code => \&retrieve, signature => ['struct string', 'struct']
     });
     $server->add_proc({
-        name => 'retrieve', code => \&retrieve, signature => ['struct']
+        name => 'cleanup',  code => \&cleanup,  signature => ['struct string']
     });
 
     $server->add_default_methods;
