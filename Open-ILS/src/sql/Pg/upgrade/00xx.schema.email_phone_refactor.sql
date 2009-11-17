@@ -25,7 +25,7 @@ CREATE TABLE actor.usr_phone (
     sms_ok           BOOL   NOT NULL DEFAULT FALSE,
     sms_invalid_date TIMESTAMP WITH TIME ZONE,
     sms_invalid_note TEXT,
-    CONSTRAINT digits_once_per_usr UNIQUE (usr, digits)
+    CONSTRAINT digits_once_per_usr_and_type UNIQUE (usr, digits, phone_type)
 );
 
 CREATE INDEX actor_usr_phone_usr_idx    ON actor.usr_phone (usr);
