@@ -46,29 +46,29 @@ ALTER TABLE actor.usr
 
 INSERT INTO actor.usr_phone (usr, digits)
     SELECT id AS usr,     day_phone AS digits FROM actor.usr
-        WHERE day_phone     IS NOT NULL
-    UNION ALL
+        WHERE day_phone     IS NOT NULL;
+
+UPDATE actor.usr SET     day_phone_id = actor.usr_phone.id FROM actor.usr_phone
+    WHERE actor.usr_phone.usr    = actor.usr.id
+     AND  actor.usr_phone.digits = actor.usr.day_phone;
+
+INSERT INTO actor.usr_phone (usr, digits)
     SELECT id AS usr, evening_phone AS digits FROM actor.usr
-        WHERE evening_phone IS NOT NULL AND evening_phone != day_phone -- if they're the same, then we already got it
-    UNION ALL
+        WHERE evening_phone IS NOT NULL AND evening_phone != day_phone; -- if they're the same, then we already got it
+
+UPDATE actor.usr SET evening_phone_id = actor.usr_phone.id FROM actor.usr_phone
+    WHERE actor.usr_phone.usr    = actor.usr.id
+     AND  actor.usr_phone.digits = actor.usr.evening_phone;
+
+INSERT INTO actor.usr_phone (usr, digits)
     SELECT id AS usr,   other_phone AS digits FROM actor.usr
-        WHERE other_phone   IS NOT NULL AND   other_phone != day_phone  AND other_phone != evening_phone -- if they're the same, then we already got it
-    RETURNING actor.usr_phone (id, digits);
+        WHERE other_phone   IS NOT NULL AND   other_phone != day_phone  AND other_phone != evening_phone; -- if they're the same, then we already got it
 
--- INSERT INTO actor.usr_phone (usr, digits)
---    SELECT id AS usr,     day_phone AS digits FROM actor.usr
---        WHERE day_phone     IS NOT NULL;
---
--- INSERT INTO actor.usr_phone (usr, digits)
---    SELECT id AS usr, evening_phone AS digits FROM actor.usr
---        WHERE evening_phone IS NOT NULL AND evening_phone != day_phone; -- if they're the same, then we already got it
---
--- INSERT INTO actor.usr_phone (usr, digits)
---    SELECT id AS usr,   other_phone AS digits FROM actor.usr
---        WHERE other_phone   IS NOT NULL AND   other_phone != day_phone  AND other_phone != evening_phone; -- if they're the same, then we already got it
+UPDATE actor.usr SET   other_phone_id = actor.usr_phone.id FROM actor.usr_phone
+    WHERE actor.usr_phone.usr    = actor.usr.id
+     AND  actor.usr_phone.digits = actor.usr.other_phone;
 
-
--- TODO: populate *_phone_id before the DROPs
+-- TODO: design decision regarding phone "type" (day/evening/other).  
 --       also, retaylor CONSTRAINTS
 
 ALTER TABLE actor.usr
