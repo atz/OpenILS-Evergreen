@@ -2,12 +2,29 @@ BEGIN;
 
 -- INSERT INTO config.upgrade_log (version) VALUES ('00xx'); -- atz
 
+CREATE TABLE actor.usr_phone_type (
+    id   SERIAL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE
+    -- anything else?
+);
+
+INSERT INTO actor.usr_phone_type (id, name) VALUES
+    (0, 'DAY'),
+    (1, 'EVENING'),
+    (2, 'OTHER');
+
 CREATE TABLE actor.usr_phone (
-    id           SERIAL PRIMARY KEY,
-    usr          INT    NOT NULL REFERENCES actor.usr (id) DEFERRABLE INITIALLY DEFERRED,
-    digits       TEXT,
-    invalid_date TIMESTAMP WITH TIME ZONE,
-    invalid_note TEXT,
+    id               SERIAL PRIMARY KEY,
+    usr              INT    NOT NULL REFERENCES actor.usr (id)            DEFERRABLE INITIALLY DEFERRED,
+    phone_type       INT    NOT NULL REFERENCES actor.usr_phone_type (id) DEFERRABLE INITIALLY DEFERRED,
+    digits           TEXT,
+    usr_label        TEXT,
+    voice_ok         BOOL   NOT NULL DEFAULT FALSE,
+    invalid_date     TIMESTAMP WITH TIME ZONE,
+    invalid_note     TEXT,
+    sms_ok           BOOL   NOT NULL DEFAULT FALSE,
+    sms_invalid_date TIMESTAMP WITH TIME ZONE,
+    sms_invalid_note TEXT,
     CONSTRAINT digits_once_per_usr UNIQUE (usr, digits)
 );
 
@@ -22,6 +39,9 @@ COMMENT ON TABLE actor.usr_phone IS $$
  * usr_phone
  *
  * FK for actor.usr phone fields and many-to-one list of phone numbers.
+ *
+ * usr_setting capabilities for user assignment of a give phone number
+ * to a specific type of notice is deferred, possibly to be added later.  
  * 
  * ****
  *
@@ -42,34 +62,39 @@ ALTER TABLE actor.usr
     ADD COLUMN evening_phone_id INT REFERENCES actor.usr_phone (id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
     ADD COLUMN   other_phone_id INT REFERENCES actor.usr_phone (id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
--- now the data moving
+-- now the data moving: same kind of operations, 3 times.
+-- We add the number a new entry for each type where it is populated
+-- even if the number is the same digits.
 
-INSERT INTO actor.usr_phone (usr, digits)
-    SELECT id AS usr,     day_phone AS digits FROM actor.usr
+INSERT INTO actor.usr_phone (usr, digits, phone_type)
+    SELECT id AS usr,     day_phone AS digits, '0' AS phone_type FROM actor.usr
         WHERE day_phone     IS NOT NULL;
 
 UPDATE actor.usr SET     day_phone_id = actor.usr_phone.id FROM actor.usr_phone
     WHERE actor.usr_phone.usr    = actor.usr.id
      AND  actor.usr_phone.digits = actor.usr.day_phone;
 
-INSERT INTO actor.usr_phone (usr, digits)
-    SELECT id AS usr, evening_phone AS digits FROM actor.usr
-        WHERE evening_phone IS NOT NULL AND evening_phone != day_phone; -- if they're the same, then we already got it
+
+INSERT INTO actor.usr_phone (usr, digits, phone_type)
+    SELECT id AS usr, evening_phone AS digits, '1' AS phone_type FROM actor.usr
+        WHERE evening_phone IS NOT NULL;
+        -- AND evening_phone != day_phone;
 
 UPDATE actor.usr SET evening_phone_id = actor.usr_phone.id FROM actor.usr_phone
     WHERE actor.usr_phone.usr    = actor.usr.id
      AND  actor.usr_phone.digits = actor.usr.evening_phone;
 
-INSERT INTO actor.usr_phone (usr, digits)
-    SELECT id AS usr,   other_phone AS digits FROM actor.usr
-        WHERE other_phone   IS NOT NULL AND   other_phone != day_phone  AND other_phone != evening_phone; -- if they're the same, then we already got it
+
+INSERT INTO actor.usr_phone (usr, digits, phone_type)
+    SELECT id AS usr,   other_phone AS digits, '2' AS phone_type FROM actor.usr
+        WHERE other_phone   IS NOT NULL;
+        -- AND   other_phone != day_phone  AND other_phone != evening_phone;
 
 UPDATE actor.usr SET   other_phone_id = actor.usr_phone.id FROM actor.usr_phone
     WHERE actor.usr_phone.usr    = actor.usr.id
      AND  actor.usr_phone.digits = actor.usr.other_phone;
 
--- TODO: design decision regarding phone "type" (day/evening/other).  
---       also, retaylor CONSTRAINTS
+-- TODO: retaylor CONSTRAINTS
 
 ALTER TABLE actor.usr
     DROP COLUMN day_phone,
