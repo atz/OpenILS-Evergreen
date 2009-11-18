@@ -2,21 +2,10 @@ BEGIN;
 
 -- INSERT INTO config.upgrade_log (version) VALUES ('00xx'); -- atz
 
-CREATE TABLE actor.usr_phone_type (
-    id   SERIAL PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE
-    -- anything else?
-);
-
-INSERT INTO actor.usr_phone_type (id, name) VALUES
-    (0, 'DAY'),
-    (1, 'EVENING'),
-    (2, 'OTHER');
-
 CREATE TABLE actor.usr_phone (
     id               SERIAL PRIMARY KEY,
     usr              INT    NOT NULL REFERENCES actor.usr (id)            DEFERRABLE INITIALLY DEFERRED,
-    phone_type       INT    NOT NULL REFERENCES actor.usr_phone_type (id) DEFERRABLE INITIALLY DEFERRED,
+--  phone_type       INT    NOT NULL REFERENCES actor.usr_phone_type (id) DEFERRABLE INITIALLY DEFERRED,
     digits           TEXT,
     usr_label        TEXT,
     voice_ok         BOOL   NOT NULL DEFAULT FALSE,
@@ -63,11 +52,11 @@ ALTER TABLE actor.usr
     ADD COLUMN   other_phone_id INT REFERENCES actor.usr_phone (id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 -- now the data moving: same kind of operations, 3 times.
--- We add the number a new entry for each type where it is populated
--- even if the number is the same digits.
+-- We do NOT add the number a new entry for each type where it is populated
+-- if the number is the same digits.
 
-INSERT INTO actor.usr_phone (usr, digits, phone_type)
-    SELECT id AS usr,     day_phone AS digits, '0' AS phone_type FROM actor.usr
+INSERT INTO actor.usr_phone (usr, digits)
+    SELECT id AS usr,     day_phone AS digits FROM actor.usr
         WHERE day_phone     IS NOT NULL;
 
 UPDATE actor.usr SET     day_phone_id = actor.usr_phone.id FROM actor.usr_phone
@@ -75,20 +64,20 @@ UPDATE actor.usr SET     day_phone_id = actor.usr_phone.id FROM actor.usr_phone
      AND  actor.usr_phone.digits = actor.usr.day_phone;
 
 
-INSERT INTO actor.usr_phone (usr, digits, phone_type)
-    SELECT id AS usr, evening_phone AS digits, '1' AS phone_type FROM actor.usr
-        WHERE evening_phone IS NOT NULL;
-        -- AND evening_phone != day_phone;
+INSERT INTO actor.usr_phone (usr, digits)
+    SELECT id AS usr, evening_phone AS digits FROM actor.usr
+        WHERE evening_phone IS NOT NULL
+        AND evening_phone != day_phone;
 
 UPDATE actor.usr SET evening_phone_id = actor.usr_phone.id FROM actor.usr_phone
     WHERE actor.usr_phone.usr    = actor.usr.id
      AND  actor.usr_phone.digits = actor.usr.evening_phone;
 
 
-INSERT INTO actor.usr_phone (usr, digits, phone_type)
-    SELECT id AS usr,   other_phone AS digits, '2' AS phone_type FROM actor.usr
-        WHERE other_phone   IS NOT NULL;
-        -- AND   other_phone != day_phone  AND other_phone != evening_phone;
+INSERT INTO actor.usr_phone (usr, digits)
+    SELECT id AS usr,   other_phone AS digits FROM actor.usr
+        WHERE other_phone   IS NOT NULL
+        AND   other_phone != day_phone  AND other_phone != evening_phone;
 
 UPDATE actor.usr SET   other_phone_id = actor.usr_phone.id FROM actor.usr_phone
     WHERE actor.usr_phone.usr    = actor.usr.id
