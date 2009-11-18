@@ -8,7 +8,7 @@ CREATE TABLE actor.usr_phone (
 --  phone_type       INT    NOT NULL REFERENCES actor.usr_phone_type (id) DEFERRABLE INITIALLY DEFERRED,
     digits           TEXT,
     usr_label        TEXT,
-    voice_ok         BOOL   NOT NULL DEFAULT FALSE,
+    voice_ok         BOOL   NOT NULL DEFAULT FALSE,     -- voice here meaning non-SMS telephony
     invalid_date     TIMESTAMP WITH TIME ZONE,
     invalid_note     TEXT,
     sms_ok           BOOL   NOT NULL DEFAULT FALSE,
