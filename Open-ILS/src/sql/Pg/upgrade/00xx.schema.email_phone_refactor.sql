@@ -51,6 +51,11 @@ ALTER TABLE actor.usr
     ADD COLUMN evening_phone_id INT REFERENCES actor.usr_phone (id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
     ADD COLUMN   other_phone_id INT REFERENCES actor.usr_phone (id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
+ALTER TABLE auditor.actor_usr_history
+    ADD COLUMN     day_phone_id INT,    -- No FK enforced here, old values aren't in usr_phone
+    ADD COLUMN evening_phone_id INT,
+    ADD COLUMN   other_phone_id INT;
+
 -- now the data moving: same kind of operations, 3 times.
 -- We do NOT add the number a new entry for each type where it is populated
 -- if the number is the same digits.
@@ -88,9 +93,15 @@ UPDATE actor.usr SET   other_phone_id = actor.usr_phone.id FROM actor.usr_phone
 
 -- Commented out during testing
 -- ALTER TABLE actor.usr
---     DROP COLUMN day_phone,
+--     DROP COLUMN     day_phone,
 --     DROP COLUMN evening_phone,
---     DROP COLUMN other_phone;
+--     DROP COLUMN   other_phone;
+--
+-- ALTER TABLE auditor.actor_usr_history
+--     RENAME COLUMN     day_phone TO     day_phone_val,
+--     RENAME COLUMN evening_phone TO evening_phone_val,
+--     RENAME COLUMN   other_phone TO   other_phone_val;
+
 
 COMMIT;
 
