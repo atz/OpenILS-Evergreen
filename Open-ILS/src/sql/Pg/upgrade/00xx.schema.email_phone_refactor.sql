@@ -56,8 +56,8 @@ ALTER TABLE actor.usr
 -- if the number is the same digits.
 
 INSERT INTO actor.usr_phone (usr, digits)
-    SELECT id AS usr,     day_phone AS digits FROM actor.usr
-        WHERE day_phone     IS NOT NULL;
+    SELECT id,     day_phone FROM actor.usr
+    WHERE     day_phone IS NOT NULL;
 
 UPDATE actor.usr SET     day_phone_id = actor.usr_phone.id FROM actor.usr_phone
     WHERE actor.usr_phone.usr    = actor.usr.id
@@ -65,9 +65,9 @@ UPDATE actor.usr SET     day_phone_id = actor.usr_phone.id FROM actor.usr_phone
 
 
 INSERT INTO actor.usr_phone (usr, digits)
-    SELECT id AS usr, evening_phone AS digits FROM actor.usr
-        WHERE evening_phone IS NOT NULL
-        AND evening_phone != day_phone;
+    SELECT id, evening_phone FROM actor.usr
+    WHERE evening_phone IS NOT NULL
+      AND evening_phone != day_phone;
 
 UPDATE actor.usr SET evening_phone_id = actor.usr_phone.id FROM actor.usr_phone
     WHERE actor.usr_phone.usr    = actor.usr.id
@@ -75,9 +75,10 @@ UPDATE actor.usr SET evening_phone_id = actor.usr_phone.id FROM actor.usr_phone
 
 
 INSERT INTO actor.usr_phone (usr, digits)
-    SELECT id AS usr,   other_phone AS digits FROM actor.usr
-        WHERE other_phone   IS NOT NULL
-        AND   other_phone != day_phone  AND other_phone != evening_phone;
+    SELECT id,   other_phone FROM actor.usr
+    WHERE   other_phone IS NOT NULL
+      AND   other_phone != day_phone
+      AND   other_phone != evening_phone;
 
 UPDATE actor.usr SET   other_phone_id = actor.usr_phone.id FROM actor.usr_phone
     WHERE actor.usr_phone.usr    = actor.usr.id
@@ -85,10 +86,11 @@ UPDATE actor.usr SET   other_phone_id = actor.usr_phone.id FROM actor.usr_phone
 
 -- TODO: retaylor CONSTRAINTS
 
-ALTER TABLE actor.usr
-    DROP COLUMN day_phone,
-    DROP COLUMN evening_phone,
-    DROP COLUMN other_phone;
+-- Commented out during testing
+-- ALTER TABLE actor.usr
+--     DROP COLUMN day_phone,
+--     DROP COLUMN evening_phone,
+--     DROP COLUMN other_phone;
 
 COMMIT;
 
