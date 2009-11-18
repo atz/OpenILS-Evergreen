@@ -91,17 +91,15 @@ UPDATE actor.usr SET   other_phone_id = actor.usr_phone.id FROM actor.usr_phone
 
 -- TODO: retaylor CONSTRAINTS
 
--- Commented out during testing
--- ALTER TABLE actor.usr
---     DROP COLUMN     day_phone,
---     DROP COLUMN evening_phone,
---     DROP COLUMN   other_phone;
---
--- ALTER TABLE auditor.actor_usr_history
---     RENAME COLUMN     day_phone TO     day_phone_val,
---     RENAME COLUMN evening_phone TO evening_phone_val,
---     RENAME COLUMN   other_phone TO   other_phone_val;
+ALTER TABLE actor.usr
+    DROP COLUMN     day_phone,
+    DROP COLUMN evening_phone,
+    DROP COLUMN   other_phone;
 
+ALTER TABLE auditor.actor_usr_history
+    RENAME COLUMN     day_phone TO     day_phone_val,
+    RENAME COLUMN evening_phone TO evening_phone_val,
+    RENAME COLUMN   other_phone TO   other_phone_val;
 
 COMMIT;
 
