@@ -1668,10 +1668,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 			<field reporter:label="Claims Never Checked Out Count" name="claims_never_checked_out_count" reporter:datatype="int" />
 			<field reporter:label="Record Creation Date/Time" name="create_date" reporter:datatype="timestamp"/>
 			<field reporter:label="User Credit Balance" name="credit_forward_balance" reporter:datatype="money" />
-			<field reporter:label="Daytime Phone" name="day_phone"  reporter:datatype="text"/>
+			<field reporter:label="Daytime Phone" name="day_phone_id" oils_persist:virtual="true" reporter:datatype="link"/>
 			<field reporter:label="Date of Birth" name="dob" reporter:datatype="timestamp"/>
 			<field reporter:label="Email Address" name="email"  reporter:datatype="text"/>
-			<field reporter:label="Evening Phone" name="evening_phone"  reporter:datatype="text"/>
+			<field reporter:label="Evening Phone" name="evening_phone_id" oils_persist:virtual="true" reporter:datatype="link"/>
 			<field reporter:label="Privilege Expiration Date" name="expire_date" reporter:datatype="timestamp"/>
 			<field reporter:label="Last Name" name="family_name"  reporter:datatype="text"/>
 			<field reporter:label="First Name" name="first_given_name"  reporter:datatype="text"/>
@@ -1685,7 +1685,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 			<field reporter:label="Mailing Address" name="mailing_address" reporter:datatype="link"/>
 			<field reporter:label="Is Group Lead Account" name="master_account" reporter:datatype="bool"/>
 			<field reporter:label="Internet Access Level" name="net_access_level" reporter:datatype="link"/>
-			<field reporter:label="Other Phone" name="other_phone"  reporter:datatype="text"/>
+			<field reporter:label="Other Phone" name="other_phone_id" oils_persist:virtual="true" reporter:datatype="link"/>
 			<field reporter:label="Password" name="passwd"  reporter:datatype="text"/>
 			<field reporter:label="Photo URL" name="photo_url"  reporter:datatype="text"/>
 			<field reporter:label="Prefix" name="prefix"  reporter:datatype="text"/>
@@ -1712,6 +1712,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 		</fields>
 		<links>
 			<link field="demographic" reltype="might_have" key="id" map="" class="rud"/>
+			<link field="day_phone_id" reltype="might_have" key="id" map="" class="phone"/>
+			<link field="evening_phone_id" reltype="might_have" key="id" map="" class="phone"/>
+			<link field="other_phone_id" reltype="might_have" key="id" map="" class="phone"/>
 			<link field="net_access_level" reltype="has_a" key="id" map="" class="cnal"/>
 			<link field="profile" reltype="has_a" key="id" map="" class="pgt"/>
 			<link field="ident_type" reltype="has_a" key="id" map="" class="cit"/>
@@ -1742,7 +1745,23 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 			<link field="reservations" reltype="has_many" key="capture_staff" map="" class="bresv"/>
 		</links>
 	</class>
-
+	<class id="phone" controller="open-ils.cstore" oils_obj:fieldmapper="actor::usr_phone" oils_persist:tablename="actor.usr_phone" reporter:core="true" reporter:label="Phone Number">
+		<fields oils_persist:primary="id">
+			<field name="id" />
+			<field name="usr" oils_persist:virtual="true" reporter:datatype="link"/>
+			<field name="digits" reporter:datatype="text"/>
+			<field name="usr_label" reporter:datatype="text"/>
+			<field name="voice_ok" reporter:datatype="bool"/>
+			<field name="invalid_date" reporter:datatype="timestamp"/>
+			<field name="invalid_note" reporter:datatype="text"/>
+			<field name="sms_ok" reporter:datatype="bool"/>
+			<field name="sms_invalid_date" reporter:datatype="timestamp"/>
+			<field name="sms_invalid_note" reporter:datatype="text"/>
+		</fields>
+		<links>
+			<link field="usr" reltype="has_a" key="id" map="" class="au"/>
+		</links>
+	</class>
 	<class id="cust" controller="open-ils.cstore open-ils.pcrud" oils_obj:fieldmapper="config::usr_setting_type" oils_persist:tablename="config.usr_setting_type" reporter:label="User Setting Type">
 		<fields oils_persist:primary="name">
 			<field name="name" reporter:datatype="text"/>
