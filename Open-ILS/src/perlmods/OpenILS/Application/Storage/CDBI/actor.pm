@@ -18,7 +18,16 @@ __PACKAGE__->columns( Essential => qw/usrname email first_given_name
 				photo_url create_date expire_date credit_forward_balance
 				super_user usrgroup passwd card last_xact_id
 				standing barred profile prefix suffix alert_message
-				day_phone evening_phone other_phone mailing_address/ );
+				day_phone_id evening_phone_id other_phone_id mailing_address/ );
+
+#-------------------------------------------------------------------------------
+package actor::usr_phone;
+use base qw/actor/;
+__PACKAGE__->table( 'actor_usr_phone' );
+__PACKAGE__->columns( Primary   => qw/id/ );
+__PACKAGE__->columns( Essential => qw/usr digits usr_label
+                    voice_ok     invalid_date     invalid_note
+                      sms_ok sms_invalid_date sms_invalid_note/ );
 
 #-------------------------------------------------------------------------------
 package actor::usr_org_unit_opt_in;
