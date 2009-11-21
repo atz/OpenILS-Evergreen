@@ -23,6 +23,10 @@ ALTER TABLE actor.usr ADD CONSTRAINT actor_usr_mailing_address_fkey FOREIGN KEY 
 ALTER TABLE actor.usr ADD CONSTRAINT actor_usr_billing_address_fkey FOREIGN KEY (billing_address) REFERENCES actor.usr_address (id) DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE actor.usr ADD CONSTRAINT actor_usr_home_ou_fkey FOREIGN KEY (home_ou) REFERENCES actor.org_unit (id) DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE actor.usr ADD CONSTRAINT actor_usr_profile_fkey FOREIGN KEY (profile) REFERENCES permission.grp_tree (id) DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE actor.usr ADD CONSTRAINT actor_usr_day_phone_fkey     FOREIGN KEY (day_phone_id)     REFERENCES actor.usr_phone (id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE actor.usr ADD CONSTRAINT actor_usr_evening_phone_fkey FOREIGN KEY (evening_phone_id) REFERENCES actor.usr_phone (id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE actor.usr ADD CONSTRAINT actor_usr_other_phone_fkey   FOREIGN KEY (other_phone_id)   REFERENCES actor.usr_phone (id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
         
 ALTER TABLE actor.stat_cat ADD CONSTRAINT actor_stat_cat_owner_fkey FOREIGN KEY (owner) REFERENCES actor.org_unit (id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 

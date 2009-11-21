@@ -45,9 +45,6 @@ CREATE TABLE actor.usr (
 	family_name		TEXT				NOT NULL,
 	suffix			TEXT,
 	alias			TEXT,
-	day_phone		TEXT,
-	evening_phone		TEXT,
-	other_phone		TEXT,
 	mailing_address		INT,
 	billing_address		INT,
 	home_ou			INT				NOT NULL,
@@ -65,7 +62,11 @@ CREATE TABLE actor.usr (
 	alert_message		TEXT,
 	create_date		TIMESTAMP WITH TIME ZONE	NOT NULL DEFAULT now(),
 	expire_date		TIMESTAMP WITH TIME ZONE	NOT NULL DEFAULT (now() + '3 years'::INTERVAL),
-	claims_never_checked_out_count  INT         NOT NULL DEFAULT 0
+	claims_never_checked_out_count  INT         NOT NULL DEFAULT 0,
+                           -- CONSTRAINTS have to wait, since usr_phone comes later.
+    day_phone_id      INT, -- REFERENCES actor.usr_phone (id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+    evening_phone_id  INT, -- REFERENCES actor.usr_phone (id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+    other_phone_id    INT  -- REFERENCES actor.usr_phone (id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
 );
 COMMENT ON TABLE actor.usr IS $$
 /*
@@ -134,6 +135,51 @@ CREATE TRIGGER actor_crypt_pw_insert_trigger
 	EXECUTE PROCEDURE actor.crypt_pw_insert ();
 
 CREATE RULE protect_user_delete AS ON DELETE TO actor.usr DO INSTEAD UPDATE actor.usr SET deleted = TRUE WHERE OLD.id = actor.usr.id;
+
+
+CREATE TABLE actor.usr_phone (
+    id               SERIAL PRIMARY KEY,
+    usr              INT    NOT NULL REFERENCES actor.usr (id)            DEFERRABLE INITIALLY DEFERRED,
+--  phone_type       INT    NOT NULL REFERENCES actor.usr_phone_type (id) DEFERRABLE INITIALLY DEFERRED,
+    digits           TEXT,
+    usr_label        TEXT,
+    voice_ok         BOOL   NOT NULL DEFAULT FALSE,     -- voice here meaning non-SMS telephony
+    invalid_date     TIMESTAMP WITH TIME ZONE,
+    invalid_note     TEXT,
+    sms_ok           BOOL   NOT NULL DEFAULT FALSE,
+    sms_invalid_date TIMESTAMP WITH TIME ZONE,
+    sms_invalid_note TEXT,
+    CONSTRAINT digits_once_per_usr_and_type UNIQUE (usr, digits)
+);
+
+CREATE INDEX actor_usr_phone_usr_idx    ON actor.usr_phone (usr);
+CREATE INDEX actor_usr_phone_digits_idx ON actor.usr_phone (digits);
+
+COMMENT ON TABLE actor.usr_phone IS $$
+/*
+ * Copyright (C) 2009   Equinox Software, Inc.
+ * Joe Atzberger
+ *
+ * usr_phone
+ *
+ * FK for actor.usr phone fields and many-to-one list of phone numbers.
+ *
+ * usr_setting capabilities for user assignment of a give phone number
+ * to a specific type of notice is deferred, possibly to be added later.  
+ * 
+ * ****
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+$$;
 
 CREATE TABLE actor.usr_note (
 	id		BIGSERIAL			PRIMARY KEY,
