@@ -103,9 +103,9 @@ CREATE INDEX actor_usr_family_name_idx ON actor.usr (lower(family_name));
 
 CREATE INDEX actor_usr_email_idx ON actor.usr (lower(email));
 
-CREATE INDEX actor_usr_day_phone_idx ON actor.usr (lower(day_phone));
-CREATE INDEX actor_usr_evening_phone_idx ON actor.usr (lower(evening_phone));
-CREATE INDEX actor_usr_other_phone_idx ON actor.usr (lower(other_phone));
+-- CREATE INDEX actor_usr_day_phone_idx ON actor.usr (lower(day_phone));
+-- CREATE INDEX actor_usr_evening_phone_idx ON actor.usr (lower(evening_phone));
+-- CREATE INDEX actor_usr_other_phone_idx ON actor.usr (lower(other_phone));
 
 CREATE INDEX actor_usr_ident_value_idx ON actor.usr (lower(ident_value));
 CREATE INDEX actor_usr_ident_value2_idx ON actor.usr (lower(ident_value2));
