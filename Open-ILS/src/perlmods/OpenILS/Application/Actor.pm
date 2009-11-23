@@ -641,6 +641,71 @@ sub _check_dup_ident {
 	return undef;
 }
 
+sub _add_update_phones {
+
+    my $session    = shift;
+    my $patron     = shift;
+    my $new_patron = shift;
+
+    my $evt;
+    my $current_id;    # id of the phone before creation
+
+    my @parts = qw/day_phone_id evening_phone_id other_phone_id/;
+
+    foreach my $phone ( @{ $patron->phones() } ) {
+
+        next unless ref $phone;
+        next unless $current_id = $phone->id();  # assignemnt, not comparison
+
+        foreach (@parts) {
+            $patron->$_() or next;
+            $patron->$_() == $current_id or next;
+
+            $logger->info("setting $_ to $current_id");
+            $new_patron->$_($current_id);
+            $new_patron->ischanged(1);
+        }
+
+        if ( $phone->isnew() ) {
+
+            $phone->usr( $new_patron->id() );
+
+            ( $phone, $evt ) = _add_phone( $session, $phone );
+            return ( undef, $evt ) if $evt;
+
+            # we need to get the new id
+            foreach (@parts) {
+                $patron->$_() or next;
+                $patron->$_() == $current_id or next;
+
+                $logger->info("setting $_ to $current_id");
+                $new_patron->$_($current_id);
+                $new_patron->ischanged(1);
+            }
+        }
+        elsif ( $phone->ischanged() ) {
+            ($phone, $evt) = _update_phone( $session, $phone );
+            return (undef, $evt) if $evt;
+        }
+        elsif ( $phone->isdeleted() ) {
+            foreach (@parts) {
+                $current_id or next;
+                $current_id == $new_patron->$_() or next;
+
+                $logger->info("deleting $_ $current_id");
+                my $clear = 'clear_' . $_;           # e.g., clear_day_phone_id, conveniently provided by OpenILS::Utils::Fieldmapper
+                $new_patron->$clear($current_id);
+                ($new_patron, $evt) = _update_patron( $session, $new_patron );
+                return (undef, $evt) if $evt;
+            }
+
+            $evt = _delete_phone( $session, $phone );
+            return (undef, $evt) if $evt;
+        }
+    }
+
+    return ($new_patron, undef);
+}
 
 sub _add_update_addresses {
 
@@ -751,6 +816,33 @@ sub _update_address {
 	return ($address, undef);
 }
 
+# adds a phone to the db and returns the phone with new id
+sub _add_phone {
+    my ($session, $phone) = @_;
+    $phone->clear_id();
+
+    $logger->info("Creating new phone " . $phone->digits . " for usr " . $phone->usr);
+
+    my $id = $session->request(
+        "open-ils.storage.direct.actor.user_phone.create", $phone )->gather(1);     # FIXME
+    return (undef, $U->DB_UPDATE_FAILED($phone)) unless $id;
+
+    $phone->id( $id );
+    return $phone;
+}
+
+sub _update_phone {
+	my ($session, $phone) = @_;
+
+	$logger->info("Updating phone " . $phone->id . " to " . $phone->digits);
+
+	my $stat = $session->request(
+		"open-ils.storage.direct.actor.user_phone.update", $phone )->gather(1);   # FIXME
+
+	return (undef, $U->DB_UPDATE_FAILED($phone)) unless defined($stat);
+	return $phone;
+}
+
 
 
 sub _add_update_cards {
@@ -832,7 +924,18 @@ sub _delete_address {
 	return undef;
 }
 
+# returns event on error.  returns undef otherwise
+sub _delete_phone {
+    my( $session, $phone ) = @_;
 
+    $logger->info("Deleting phone " . $phone->id . " from DB");
+
+    my $stat = $session->request(
+        "open-ils.storage.direct.actor.user_phone.delete", $phone )->gather(1);  # FIXME
+
+    return $U->DB_UPDATE_FAILED($phone) unless defined($stat);
+    return;
+}
 
 sub _add_survey_responses {
 	my ($session, $patron, $new_patron) = @_;
