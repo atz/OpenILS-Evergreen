@@ -654,20 +654,15 @@ sub patron_search {
 
 	my $card = '';
 	if ($cv) {
-	    $card = 'JOIN (SELECT DISTINCT usr FROM actor.card WHERE barcode LIKE ?||\'%\') AS card ON (card.usr = users.id)';
+	    $card = 'JOIN actor.card AS card ON (card.barcode LIKE ?||\'%\' AND card.usr = users.id)';
 	    unshift(@usrv, $cv);
 	}
 
 	my $phone = '';
-	my @ps;
-	my @phonev;
 	if ($pv) {
-		for my $p ( qw/day_phone evening_phone other_phone/ ) {
-			push @ps, "LOWER($p) ~ ?";
-			push @phonev, "^$pv";
+	    $phone = 'JOIN actor.usr_phone AS phone ON (phone.digits LIKE ?||\'%\' AND phone.id IN (users.day_phone_id,users.evening_phone_id,users.other_phone_id))';
+	    unshift(@usrv, $pv);
 		}
-		$phone = '(' . join(' OR ', @ps) . ')';
-	}
 
 	my $ident = '';
 	my @is;
@@ -691,7 +686,7 @@ sub patron_search {
 		$name = '(' . join(' OR ', @ns) . ')';
 	}
 
-	my $usr_where = join ' AND ', grep { $_ } ($usr,$phone,$ident,$name);
+	my $usr_where = join ' AND ', grep { $_ } ($usr,$ident,$name);
 	my $addr_where = $addr;
 
 
@@ -759,7 +754,9 @@ sub patron_search {
 	$select = "JOIN ($select) AS search ON (search.id = users.id)" if ($select);
 	$select = <<"	SQL";
 		SELECT	$distinct_list
-		  FROM	$u_table AS users $card
+		  FROM	$u_table AS users
+			$phone
+			$card
 			JOIN $descendants d ON (d.id = users.home_ou)
 			$select
 			$opt_in_join
@@ -773,7 +770,7 @@ sub patron_search {
 		  LIMIT $limit
 	SQL
 
-	return actor::user->db_Main->selectcol_arrayref($select, {Columns=>[scalar(@$sort)]}, map {lc($_)} (@usrv,@phonev,@identv,@namev,@addrv));
+	return actor::user->db_Main->selectcol_arrayref($select, {Columns=>[scalar(@$sort)]}, map {lc($_)} (@usrv,@identv,@namev,@addrv));
 }
 __PACKAGE__->register_method(
 	api_name	=> 'open-ils.storage.actor.user.crazy_search',
