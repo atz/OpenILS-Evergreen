@@ -271,8 +271,9 @@ function uEditMakeRandomPw(patron) {
 
 function uEditMakePhonePw() {
     if(patron.passwd()) return;
-    if( (pw = patron.day_phone()) || 
-        (pw = patron.evening_phone()) || (pw = patron.other_phone()) ) {
+    if( (pw = patron.day_phone_id.digits()    ) ||
+        (pw = patron.evening_phone_id.digits()) ||
+        (pw = patron.other_phone_id.digits()  )   ) {
             pw = pw.substring(pw.length - 4); // this is iffy
             uEditResetPw(pw);
             appendClear($('ue_password_plain'), text(pw));
@@ -293,18 +294,18 @@ function uEditClone(clone) {
     var cloneUser = fetchFleshedUser(clone);
     patron.usrgroup(cloneUser.usrgroup());
 
-    if( cloneUser.day_phone() ) {
-        $('ue_day_phone').value = cloneUser.day_phone();
+    if( cloneUser.day_phone_id.digits() ) {
+        $('ue_day_phone').value = cloneUser.day_phone_id.digits();
         $('ue_day_phone').onchange();
     }
 
-    if( cloneUser.evening_phone() ) {
-        $('ue_night_phone').value = cloneUser.evening_phone();
+    if( cloneUser.evening_phone_id.digits() ) {
+        $('ue_night_phone').value = cloneUser.evening_phone_id.digits();
         $('ue_night_phone').onchange();
     }
 
-    if( cloneUser.other_phone() ) {
-        $('ue_other_phone').value = cloneUser.other_phone();
+    if( cloneUser.other_phone_id.digits() ) {
+        $('ue_other_phone').value = cloneUser.other_phone_id.digits();
         $('ue_other_phone').onchange();
     }
 
