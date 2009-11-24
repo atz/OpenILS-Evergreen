@@ -370,6 +370,12 @@
 	actor::user->sequence( 'actor.usr_id_seq' );
 
 	#---------------------------------------------------------------------
+	package actor::user_phone;
+
+	actor::user->table( 'actor.usr_phone' );
+	# actor::user->sequence( 'actor.usr_phone_id_seq' );
+
+	#---------------------------------------------------------------------
 	package actor::org_unit::closed_date;
 	
 	actor::org_unit::closed_date->table( 'actor.org_unit_closed' );
