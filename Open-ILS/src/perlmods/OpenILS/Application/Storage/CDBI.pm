@@ -429,8 +429,12 @@ sub modify_from_fieldmapper {
 	actor::user->has_a( ident_type => 'config::identification_type' );
 	actor::user->has_a( ident_type2 => 'config::identification_type' );
 	actor::user->has_a( net_access_level => 'config::net_access_level' );
+    actor::user->has_a(     day_phone_id => 'actor::user_phone' );
+    actor::user->has_a( evening_phone_id => 'actor::user_phone' );
+    actor::user->has_a(   other_phone_id => 'actor::user_phone' );
 
-	actor::user_address->has_a( usr => 'actor::user' );
+    actor::user_phone  ->has_a( usr => 'actor::user' );
+    actor::user_address->has_a( usr => 'actor::user' );
 	
 	actor::card->has_a( usr => 'actor::user' );
 	
