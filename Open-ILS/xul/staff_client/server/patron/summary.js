@@ -377,7 +377,7 @@ patron.summary.prototype = {
                         function(e) {
                             return function() { 
                                 util.widgets.set_text(e,
-                                    obj.patron.day_phone()
+                                    obj.patron.day_phone_id.digits()
                                 );
                             };
                         }
@@ -387,7 +387,7 @@ patron.summary.prototype = {
                         function(e) {
                             return function() { 
                                 util.widgets.set_text(e,
-                                    obj.patron.evening_phone()
+                                    obj.patron.evening_phone_id.digits()
                                 );
                             };
                         }
@@ -397,7 +397,7 @@ patron.summary.prototype = {
                         function(e) {
                             return function() { 
                                 util.widgets.set_text(e,
-                                    obj.patron.other_phone()
+                                    obj.patron.other_phone_id.digits()
                                 );
                             };
                         }
