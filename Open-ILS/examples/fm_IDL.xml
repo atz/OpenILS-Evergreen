@@ -1745,7 +1745,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 			<link field="reservations" reltype="has_many" key="capture_staff" map="" class="bresv"/>
 		</links>
 	</class>
-	<class id="phone" controller="open-ils.cstore" oils_obj:fieldmapper="actor::usr_phone" oils_persist:tablename="actor.usr_phone" reporter:core="true" reporter:label="Phone Number">
+	<class id="phone" controller="open-ils.cstore" oils_obj:fieldmapper="actor::user_phone" oils_persist:tablename="actor.usr_phone" reporter:core="true" reporter:label="Phone Number">
 		<fields oils_persist:primary="id">
 			<field name="id" />
 			<field name="usr" oils_persist:virtual="true" reporter:datatype="link"/>

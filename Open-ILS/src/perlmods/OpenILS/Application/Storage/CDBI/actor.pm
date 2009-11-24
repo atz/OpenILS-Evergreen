@@ -21,7 +21,7 @@ __PACKAGE__->columns( Essential => qw/usrname email first_given_name
 				day_phone_id evening_phone_id other_phone_id mailing_address/ );
 
 #-------------------------------------------------------------------------------
-package actor::usr_phone;
+package actor::user_phone;
 use base qw/actor/;
 __PACKAGE__->table( 'actor_usr_phone' );
 __PACKAGE__->columns( Primary   => qw/id/ );
