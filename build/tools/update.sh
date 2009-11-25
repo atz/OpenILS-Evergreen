@@ -37,7 +37,7 @@ function usage {
 usage: $0 [-e /eg_trunk] [-i /openils_dir] [-s /srf_trunk] [-[cfbvt]]
 
 PARAMETERS:
-   -e  specify Evergreen (OpenILS) source repository (default ~/ILS/trunk)
+   -e  specify Evergreen (OpenILS) source repository (default pwd)
    -i  specify Evergreen installed directory (default /openils)
    -s  specify OpenSRF source repository (default ~/OpenSRF/trunk)
 
@@ -91,7 +91,7 @@ BASE=~      # default to $HOME (~ doesn't like :- syntax for whatever reason)
 [ -z "$OPT_BASEDIR" ] || BASE="$OPT_BASEDIR";
 
 OSRF=${OPT_OSRFDIR:-$BASE/OpenSRF/trunk};
-ILS=${OPT_EGDIR:-$BASE/ILS/trunk};
+ILS=${OPT_EGDIR:-$(pwd)};
 XUL="$INSTALL/var/web/xul";
 
 # ----------------------------------
@@ -102,6 +102,8 @@ XUL="$INSTALL/var/web/xul";
 [ ! -d "$XUL"     ]   && die_msg "Evergreen XUL Client Directory '$XUL' does not exist!";
 [ ! -d "$OSRF"    ]   && die_msg "OpenSRF Source Directory '$OSRF' does not exist!";
 which sudo >/dev/null || die_msg "sudo not installed (or in PATH)";
+
+[ -d "${ILS}/.svn" ] || [ -d "${ILS}/.git" ] || die_msg "Evergreen Source Directory '$ILS' is not a SVN or git repo";
 
 if [ ! -z "$OPT_TEST" ] ; then
     feedback;
