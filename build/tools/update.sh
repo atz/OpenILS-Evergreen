@@ -149,19 +149,20 @@ BID=$(date +"%Y-%m-%dT%H:%M:%S");   # or "current"
 cd $ILS && sudo make install STAFF_CLIENT_BUILD_ID=$BID;
 sudo chown -R opensrf:opensrf $INSTALL
 
+[ -d "$XUL/$BID" ] || die_msg "New build directory $XUL/$BID was not created.  sudo make install failed?"
+
 if [ -z "$OPT_VERBOSE" ] ; then
     exec 1>&3   # Restore STDOUT
 fi
 
 cd $XUL || die_msg "Could not cd to $XUL";
 pwd;
-rm -f ./current-client-build.zip;
-cp -r "$ILS/Open-ILS/xul/staff_client/build" ./
-zip -rq current-client-build.zip build;
-rm -rf ./build;
+rm -f $XUL/current-client-build.zip;
+zip -rq current-client-build.zip ./$BID;
 rm -f current;      # removing the link to the old build
 ln -s $BID current; # linking "current" to the new build
 ln -s current/server server;
+    
 
 sudo chown -R opensrf:opensrf $OSRF $ILS
 $INSTALL/bin/osrf_ctl.sh -l -a start_all
