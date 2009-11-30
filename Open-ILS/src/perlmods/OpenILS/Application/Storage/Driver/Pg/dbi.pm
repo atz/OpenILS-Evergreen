@@ -372,7 +372,7 @@
 	#---------------------------------------------------------------------
 	package actor::user_phone;
 
-	actor::user->table( 'actor.usr_phone' );
+	actor::user_phone->table( 'actor.usr_phone' );
 	# actor::user->sequence( 'actor.usr_phone_id_seq' );
 
 	#---------------------------------------------------------------------
