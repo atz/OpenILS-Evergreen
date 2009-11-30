@@ -6,11 +6,15 @@
 # Based on initial version by Bill Erickson.
 
 function svn_or_git {
-    echo -en "###########\nUpdating source directory: ";
-    pwd;
+    echo -en "###########\nUpdating source directory:" `pwd` "\n";
     if [ -d "./.git" ]; then
-        git svn fetch;
-        git svn rebase origin;
+        if [ -d "./.git/svn/trunk" ]; then
+            git svn fetch;
+            git svn rebase origin;
+        else
+            git fetch origin;
+            git rebase origin;
+        fi
     else
         svn update;
     fi
