@@ -162,7 +162,12 @@ fi
 cd $XUL || die_msg "Could not cd to $XUL";
 pwd;
 rm -f $XUL/current-client-build.zip;
-zip -rq current-client-build.zip ./$BID;
+cp -r "$ILS/Open-ILS/xul/staff_client/build" ./
+zip -rq current-client-build.zip build;
+cat ./build/BUILD_ID
+rm -rf ./build;
+
+
 rm -f current;      # removing the link to the old build
 ln -s $BID current; # linking "current" to the new build
 ln -s current/server server;
