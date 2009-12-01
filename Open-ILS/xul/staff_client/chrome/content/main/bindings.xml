@@ -392,10 +392,10 @@
 						var n = document.getAnonymousNodes(parentNode.parentNode)[1];
 						if (n.hidden) {
 							n.hidden = false;
-							this.setAttribute('src','chrome://open_ils_staff_client/skin/media/images/opentriangle.gif');
+						    // this.setAttribute('src','chrome://open_ils_staff_client/skin/media/images/opentriangle.gif'); // security error
 						} else {
 							n.hidden = true;
-							this.setAttribute('src','chrome://open_ils_staff_client/skin/media/images/triangle.gif');
+							// this.setAttribute('src','chrome://open_ils_staff_client/skin/media/images/triangle.gif'); // security error
 						}
 					"
 				/>
@@ -408,7 +408,7 @@
 			<constructor>
 				<![CDATA[
 					var n = document.getAnonymousNodes(this)[0];
-					n.setAttribute('src','chrome://open_ils_staff_client/skin/media/images/opentriangle.gif');
+					// n.setAttribute('src','chrome://open_ils_staff_client/skin/media/images/opentriangle.gif'); // security error
 				]]>
 			</constructor>
 		</implementation>
