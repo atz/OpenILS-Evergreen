@@ -377,8 +377,9 @@ patron.summary.prototype = {
                         function(e) {
                             return function() { 
                                 util.widgets.set_text(e,
-                                    obj.patron.day_phone_id.digits()
+                                    obj.patron.day_phone_id().digits()
                                 );
+                                if (get_bool(obj.patron.day_phone_id().invalid_date())){e.setAttribute('style','color: red');}
                             };
                         }
                     ],
@@ -387,8 +388,9 @@ patron.summary.prototype = {
                         function(e) {
                             return function() { 
                                 util.widgets.set_text(e,
-                                    obj.patron.evening_phone_id.digits()
+                                    obj.patron.evening_phone_id().digits()
                                 );
+                                if (get_bool(obj.patron.evening_phone_id().invalid_date())){e.setAttribute('style','color: red');}
                             };
                         }
                     ],
@@ -397,8 +399,9 @@ patron.summary.prototype = {
                         function(e) {
                             return function() { 
                                 util.widgets.set_text(e,
-                                    obj.patron.other_phone_id.digits()
+                                    obj.patron.other_phone_id().digits()
                                 );
+                                if (get_bool(obj.patron.other_phone_id().invalid_date())){e.setAttribute('style','color: red');}
                             };
                         }
                     ],
