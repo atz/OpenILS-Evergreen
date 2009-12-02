@@ -44,7 +44,6 @@ RetryTime: 60
 WaitTime: 30
 Extension: 10
 Archive: 1
-Set: plurality=[% IF target.size == 1 %]singular[% ELSE %]plural[% END %]
 Set: items=[% target.size %]
 Set: titlestring=[% titles = [] %][% FOR circ IN target %][% titles.push(circ.target_copy.call_number.record.simple_record.title) %][% END %][% titles.join(". ") %]'
     );
