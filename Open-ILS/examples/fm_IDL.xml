@@ -1668,10 +1668,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 			<field reporter:label="Claims Never Checked Out Count" name="claims_never_checked_out_count" reporter:datatype="int" />
 			<field reporter:label="Record Creation Date/Time" name="create_date" reporter:datatype="timestamp"/>
 			<field reporter:label="User Credit Balance" name="credit_forward_balance" reporter:datatype="money" />
-			<field reporter:label="Daytime Phone" name="day_phone_id" oils_persist:virtual="true" reporter:datatype="link"/>
+			<field reporter:label="Daytime Phone" name="day_phone_id" reporter:datatype="link"/>
 			<field reporter:label="Date of Birth" name="dob" reporter:datatype="timestamp"/>
 			<field reporter:label="Email Address" name="email"  reporter:datatype="text"/>
-			<field reporter:label="Evening Phone" name="evening_phone_id" oils_persist:virtual="true" reporter:datatype="link"/>
+			<field reporter:label="Evening Phone" name="evening_phone_id" reporter:datatype="link"/>
 			<field reporter:label="Privilege Expiration Date" name="expire_date" reporter:datatype="timestamp"/>
 			<field reporter:label="Last Name" name="family_name"  reporter:datatype="text"/>
 			<field reporter:label="First Name" name="first_given_name"  reporter:datatype="text"/>
@@ -1685,7 +1685,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 			<field reporter:label="Mailing Address" name="mailing_address" reporter:datatype="link"/>
 			<field reporter:label="Is Group Lead Account" name="master_account" reporter:datatype="bool"/>
 			<field reporter:label="Internet Access Level" name="net_access_level" reporter:datatype="link"/>
-			<field reporter:label="Other Phone" name="other_phone_id" oils_persist:virtual="true" reporter:datatype="link"/>
+			<field reporter:label="Other Phone" name="other_phone_id" reporter:datatype="link"/>
 			<field reporter:label="Password" name="passwd"  reporter:datatype="text"/>
 			<field reporter:label="Photo URL" name="photo_url"  reporter:datatype="text"/>
 			<field reporter:label="Prefix" name="prefix"  reporter:datatype="text"/>
@@ -1748,7 +1748,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 	<class id="phone" controller="open-ils.cstore" oils_obj:fieldmapper="actor::user_phone" oils_persist:tablename="actor.usr_phone" reporter:core="true" reporter:label="Phone Number">
 		<fields oils_persist:primary="id">
 			<field name="id" />
-			<field name="usr" oils_persist:virtual="true" reporter:datatype="link"/>
+			<field name="usr" reporter:datatype="link"/>
 			<field name="digits" reporter:datatype="text"/>
 			<field name="usr_label" reporter:datatype="text"/>
 			<field name="voice_ok" reporter:datatype="bool"/>
