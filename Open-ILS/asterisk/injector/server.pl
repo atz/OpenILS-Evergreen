@@ -31,7 +31,7 @@
 #
 # TODO: 
 #
-# ~ Serve retrieval of done files.
+# ~ Server retrieval of done files.
 # ~ Option to archive (/etc/asterisk/spool/outgoing_really_done) instead of delete?
 # ~ Accept globby prefix for filtering files to be retrieved.
 # ~ init.d startup/shutdown/status script.
@@ -98,7 +98,9 @@ sub load_config {
 
 sub inject {
     my ($data, $timestamp) = @_;
-    my $filename_fragment  = sprintf("%d-%d.call", time, $last_n++);
+# TODO: add argument for filename_fragment: PREFIX . '_' . userid . '_' . noticetype . '_' . time-serial . '.call'
+# TODO: add argument for overwrite based on user + noticetype
+    my $filename_fragment  = sprintf("%d-%05d.call", time, $last_n++);
     my $filename           = $config{staging_path} . "/" . $filename_fragment;
     my $finalized_filename = $config{spool_path}   . "/" . $filename_fragment;
 
@@ -171,13 +173,15 @@ sub cleanup {
     my $targetstring = shift or return &$bad_request(
         "Must supply at least one filename to cleanup()"     # not empty string!
     );
+    my $done = @_ ? shift : 1;  # default is to target done files.
     my @targets = split ',', $targetstring;
-    my $path = $config{done_path};
+    my $path = $done ? $config{done_path} : $config{spool_path};
     (-r $path and -d $path) or return &$failure("Cannot open dir '$path': $!");
 
     my $ret = {
         code => 200,    # optimism
         request_count => scalar(@targets),
+        done          => $done,
         match_count   => 0,
         delete_count  => 0,
     };
@@ -243,7 +247,7 @@ sub main {
         name => 'retrieve', code => \&retrieve, signature => ['struct string', 'struct']
     });
     $server->add_proc({
-        name => 'cleanup',  code => \&cleanup,  signature => ['struct string']
+        name => 'cleanup',  code => \&cleanup,  signature => ['struct string', 'struct string int']
     });
 
     $server->add_default_methods;
