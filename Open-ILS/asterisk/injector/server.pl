@@ -52,6 +52,7 @@ use Sys::Syslog qw/:standard :macros/;
 our %config;
 our %opts = (c => "/etc/eg-injector.conf");
 our $last_n = 0;
+our $universal_prefix = 'EG';
 
 my $failure = sub {
     syslog LOG_ERR, $_[0];
@@ -92,54 +93,137 @@ sub load_config {
     }
 
     my $path = $config{done_path};
-    # warn "done_path '$path'";
     (chdir $path) or die &$failure("Cannot open dir '$path': $!");
+
+    if ($config{universal_prefix}) {
+        $universal_prefix = $config{universal_prefix};
+        $universal_prefix =~ /^\D/
+            or die "Config error: universal_prefix ($universal_prefix) must start with non-integer character";
+    }
+}
+
+sub replace_match_possible {
+# arguments: a string (requested_filename), parsed to see if it has the necessary
+#            components to use for finding possible queued callfiles to delete
+# returns: (userid, $noticetype) if either or both is found, else undef;
+    my $breakdown = shift or return;
+    $breakdown =~ s/\..*$//;    # cut everything at the 1st period
+    $breakdown =~ /([^_]*)_([^_]*)$/ or return;
+    return ($1, $2);
+}
+
+sub replace_match_files {
+# arguments: (userid, noticetype)
+# returns: array of pathnames (files to be deleted)
+# currently we will only find at most 1 file to replace,
+# but you can see how this could be extended w/ additional namespace and globbing
+    my $userid     = shift or return;
+    my $noticetype = shift or return;
+    my $pathglob   = $config{spool_path} . "/" . compose_filename($userid, $noticetype);
+    # my $pathglob = $config{spool_path} . "/$universal_prefix" . "_$userid" . "_$noticetype" . '*.call';
+    my @matches    = grep {-f $_} <${pathglob}>;    # don't use <$pathglob>, that looks like ref to HANDLE
+    warn               scalar(@matches) . " match(es) for path: $pathglob";
+    syslog LOG_NOTICE, scalar(@matches) . " match(es) for path: $pathglob";
+    return @matches;
+}
+
+sub compose_filename {
+    return sprintf "%s_%s_%s.call", $universal_prefix, (@_?shift:''), (@_?shift:'');
+}
+sub auto_filename {
+    return sprintf("%s_%d-%05d.call", $universal_prefix, time, $last_n++);
+}
+sub prefixer {
+    # guarantee universal prefix on string (but don't add it again)
+    my $string = @_ ? shift : '';
+    $string =~ /^$universal_prefix\_/ and return $string;
+    return $universal_prefix . '_' . $string;
 }
 
 sub inject {
-    my ($data, $timestamp) = @_;
-# TODO: add argument for filename_fragment: PREFIX . '_' . userid . '_' . noticetype . '_' . time-serial . '.call'
-# TODO: add argument for overwrite based on user + noticetype
-    my $filename_fragment  = sprintf("%d-%05d.call", time, $last_n++);
-    my $filename           = $config{staging_path} . "/" . $filename_fragment;
-    my $finalized_filename = $config{spool_path}   . "/" . $filename_fragment;
+    my ($data, $requested_filename, $timestamp) = @_;
+# Sender can specify filename: PREFIX . '_' . userid . '_' . noticetype [. '.' . time-serial . '.call']
+# TODO: overwrite based on user + noticetype possibly controlled w/ extra arg?
+
+    my $ret = {
+        code => 200,    # optimism
+    };
+    my $fname;
+    $requested_filename = fileparse($requested_filename || ''); # no fair trying to get us to write in other dirs
+    if ($requested_filename and $requested_filename ne 'default') {
+        # Check for possible replacement of files
+        my ($userid, $noticetype) = replace_match_possible($requested_filename);
+        $ret->{replace_match} = ($userid and $noticetype) ? 1 : 0;
+        $ret->{userid}        = $userid     if $userid;
+        $ret->{noticetype}    = $noticetype if $noticetype;
+        if ($ret->{replace_match}) {
+            my @hits = replace_match_files($userid, $noticetype);
+            $ret->{replace_match_count} = scalar @hits;
+            $ret->{replace_match_files} = join ',', map {$_=fileparse($_)} @hits;  # strip leading dirs from fullpaths
+            my @fails = ();
+            foreach (@hits) {
+                unlink and next;
+                (-f $_) and push @fails, (fileparse($_))[0] . ": $!";
+                # TODO: refactor to use cleanup() or core of cleanup?
+                # We check again for the file existing since it might *just* have been picked up and finished. 
+                # In that case, too bad, the user is going to get our injected call soon also.
+            }
+            if (@fails) {
+                $ret->{replace_match_fails} = join ',', map {$_=fileparse($_)} @fails;  # strip leading dirs from fullpaths
+                syslog LOG_ERR, $_[0];
+                # BAIL OUT?  For now, we treat failure to overwrite matches as non-fatal
+            }
+            $data .= sprintf("; %d of %d queued files replaced\n", scalar(@hits) - scalar(@fails), scalar(@hits));
+        }
+        $fname = $requested_filename;
+    } else {
+        $fname = auto_filename;
+    }
+
+    $fname = prefixer($fname);                  # guarantee universal prefix
+    $fname =~ /\.call$/  or $fname .= '.call';  # guarantee .call suffix
+
+    my $stage_name         = $config{staging_path} . "/" . $fname;
+    my $finalized_filename = $config{spool_path}   . "/" . $fname;
+
+    $ret->{spooled_filename} = $finalized_filename;
 
     $data .= "; added by inject() in the mediator\n";
-    $data .= "Set: callfilename=$filename_fragment\n";
+    $data .= "Set: callfilename=$fname\n";
 
-    open FH, ">$filename" or return &$failure("$filename: $!");
-    print FH $data or return &$failure("error writing data to $filename: $!");
-    close FH or return &$failure("$filename: $!");
+    # And now, we're finally ready to begin the actual insertion process
+    open FH, ">$stage_name" or return &$failure("$stage_name: $!");
+    print FH $data or return &$failure("error writing data to $stage_name: $!");
+    close FH or return &$failure("$stage_name: $!");
 
-    chown($config{owner}, $config{group}, $filename) or
+    chown($config{owner}, $config{group}, $stage_name) or
         return &$failure(
-            "error changing $filename to $config{owner}:$config{group}: $!"
+            "error changing $stage_name to $config{owner}:$config{group}: $!"
         );
 
     if ($timestamp and $timestamp > 0) {
-        utime $timestamp, $timestamp, $filename or
-            return &$failure("error utime'ing $filename to $timestamp: $!");
+        utime $timestamp, $timestamp, $stage_name or
+            return &$failure("error utime'ing $stage_name to $timestamp: $!");
     }
 
-    rename $filename, $finalized_filename or
-        return &$failure("rename $filename, $finalized_filename: $!");
+    rename $stage_name, $finalized_filename or
+        return &$failure("rename $stage_name, $finalized_filename: $!");
 
     syslog LOG_NOTICE, "Spooled $finalized_filename sucessfully";
-    return {
-        spooled_filename => $finalized_filename,
-        code => 200
-    };
+    return $ret;
 }
 
+
 sub retrieve {
-    my $globstring = @_ ? shift : '*';
-    # We depend on being in the correct directory already, thanks to the config step
+    my $globstring = prefixer(@_ ? shift : '*');
+    # We depend on being in the correcta (done) directory already, thanks to the config step
     # This prevents us from having to chdir for each request.. 
-    my @matches = grep {-f $_ } <'./' . $globstring>;    # don't use <$pathglob>, that looks like ref to HANDLE
+
+    my @matches = grep {-f $_ } <'./' . ${globstring}>;    # don't use <$pathglob>, that looks like ref to HANDLE
+
     my $ret = {
         code => 200,
         glob_used   => $globstring,
-        #total_count => scalar(@files),
         match_count => scalar(@matches),
     };
     my $i = 0;
@@ -164,24 +248,28 @@ sub retrieve {
 
 
 # cleanup: deletes files
-# The list of files to delete must be explicit.  It cannot use globs or any other
+# arguments: string (comma separated filenames), optional int flag
+# returns: struct reporting success/failure
+#
+# The list of files to delete must be explicit, in a comma-separated string.
+# We cannot use globs or any other
 # pattern matching because there might be additional files that match.  Asterisk
-# might be making calls for other people and prodcesses, or might have made more
-# calls for us since the last time we checked.
+# might be making calls for other people and prodcesses (i.e., non-EG calls) or
+# might have made more calls for us since the last time we checked matches.
 
 sub cleanup {
     my $targetstring = shift or return &$bad_request(
         "Must supply at least one filename to cleanup()"     # not empty string!
     );
-    my $done = @_ ? shift : 1;  # default is to target done files.
+    my $dequeue = @_ ? shift : 0;  # default is to target done files.
     my @targets = split ',', $targetstring;
-    my $path = $done ? $config{done_path} : $config{spool_path};
+    my $path = $dequeue ? $config{spool_path} : $config{done_path};
     (-r $path and -d $path) or return &$failure("Cannot open dir '$path': $!");
 
     my $ret = {
         code => 200,    # optimism
         request_count => scalar(@targets),
-        done          => $done,
+        from_queue    => $dequeue,
         match_count   => 0,
         delete_count  => 0,
     };
@@ -190,8 +278,8 @@ sub cleanup {
     my $i = 0;
     foreach my $target (@targets) {
         $i++;
-        $target =~ s#^(\.\./)##g;    # no fair trying to get us to delete upstream in the filesystem!
-        my $file = $path . '/' . $target;
+        $target = fileparse($target);    # no fair trying to get us to delete in other directories!
+        my $file = $path . '/' . prefixer($target);
         unless (-f $file) {
             $problems{$target} = {
                 code => 404,        # NOT FOUND: may or may not be a true error, since our purpose was to delete it anyway.
@@ -230,6 +318,7 @@ sub cleanup {
     return $ret;
 }
 
+
 sub main {
     getopt('c:', \%opts);
     load_config;    # dies on invalid/incomplete config
@@ -239,9 +328,11 @@ sub main {
     # Regarding signatures:
     #  ~ the first datatype  is  for RETURN value,
     #  ~ any other datatypes are for INCOMING args
+    #
+    # Everything here returns a struct.
 
     $server->add_proc({
-        name => 'inject',   code => \&inject,   signature => ['struct string int']
+        name => 'inject',   code => \&inject,   signature => ['struct string', 'struct string string', 'struct string string int']
     });
     $server->add_proc({
         name => 'retrieve', code => \&retrieve, signature => ['struct string', 'struct']
