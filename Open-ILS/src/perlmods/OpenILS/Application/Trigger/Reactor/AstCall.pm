@@ -122,8 +122,11 @@ sub handler {
     $conf->{port} and $host .= ":" . $conf->{port};         # append port number if specified
 
     my $client = new RPC::XML::Client($host);
-# TODO: add scheduling intelligence and use it here.
-    my $resp = $client->send_request('inject', $tmpl_output, 0); # FIXME: 0 could be seconds-from-epoch UTC if deferred call needed
+    my $userid     = $env->{usr}->{id} || '';
+    my $noticetype = $env->{notice}->{FIXME} || '';
+
+    # TODO: add scheduling intelligence and use it here.  Get correct noticetype.
+    my $resp = $client->send_request('inject', $tmpl_output, $userid .'_'. $noticetype, 0); # FIXME: 0 could be seconds-from-epoch UTC if deferred call needed
 
     debug_print((ref $resp ? ("Response: " . Dumper($resp->value)) : "Error: $resp"));
     1;
