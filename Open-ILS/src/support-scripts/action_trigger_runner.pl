@@ -21,26 +21,26 @@ use OpenSRF::Utils::JSON;
 use OpenSRF::EX qw(:try);
 require 'oils_header.pl';
 
-my $opt_lockfile = '/tmp/action-trigger-LOCK';
-my $opt_osrf_config = '/openils/conf/opensrf_core.xml';
+my $opt_lockfile      = '/tmp/action-trigger-LOCK';
+my $opt_osrf_config   = '/openils/conf/opensrf_core.xml';
 my $opt_custom_filter = '/openils/conf/action_trigger_filters.json';
-my $opt_run_pending = 0;
-my $opt_debug_stdout = 0;
-my $opt_help = 0;
+my $opt_run_pending   = 0;
+my $opt_debug_stdout  = 0;
+my $opt_help          = 0;
 my $opt_hooks;
 my $opt_process_hooks = 0;
-my $opt_granularity = undef;
+my $opt_granularity   = undef;
 
 GetOptions(
-    'osrf-config=s' => \$opt_osrf_config,
-    'run-pending' => \$opt_run_pending,
-    'hooks=s' => \$opt_hooks,
-    'hooks=s' => \$opt_granularity,
-    'process-hooks' => \$opt_process_hooks,
-    'debug-stdout' => \$opt_debug_stdout,
+    'osrf-config=s'    => \$opt_osrf_config,
+    'run-pending'      => \$opt_run_pending,
+    'hooks=s'          => \$opt_hooks,
+    'hooks=s'          => \$opt_granularity,
+    'process-hooks'    => \$opt_process_hooks,
+    'debug-stdout'     => \$opt_debug_stdout,
     'custom-filters=s' => \$opt_custom_filter,
-    'lock-file=s' => \$opt_lockfile,
-    'help' => \$opt_help,
+    'lock-file=s'      => \$opt_lockfile,
+    'help'             => \$opt_help,
 );
 
 
@@ -167,6 +167,5 @@ try {
 };
 
 unlink $opt_lockfile;
-
 
 
