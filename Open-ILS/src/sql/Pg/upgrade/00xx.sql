@@ -31,7 +31,9 @@ INSERT INTO action_trigger.reactor VALUES
 
 INSERT INTO action_trigger.event_definition
     (active, owner, name, hook, validator, reactor,
-     cleanup_success, cleanup_failure, delay, delay_field, group_field, template)
+     cleanup_success, cleanup_failure, delay, delay_field, group_field,
+     template,
+     max_delay, granularity, usr_field, opt_in_setting)
     VALUES
     (TRUE, 1, 'Telephone Overdue Notice', 'checkout.due', 'NOOP_True', 'AstCall',
      DEFAULT, DEFAULT, DEFAULT, 'due_date', 'usr',
@@ -45,7 +47,9 @@ WaitTime: 30
 Extension: 10
 Archive: 1
 Set: items=[% target.size %]
-Set: titlestring=[% titles = [] %][% FOR circ IN target %][% titles.push(circ.target_copy.call_number.record.simple_record.title) %][% END %][% titles.join(". ") %]'
+Set: titlestring=[% titles = [] %][% FOR circ IN target %][% titles.push(circ.target_copy.call_number.record.simple_record.title) %][% END %][% titles.join(". ") %]',
+    DEFAULT, DEFAULT, DEFAULT, DEFAULT
+    -- FIXME: these fields are new, designed in part for this feature... but what goes in them?
     );
 
 INSERT INTO action_trigger.environment
