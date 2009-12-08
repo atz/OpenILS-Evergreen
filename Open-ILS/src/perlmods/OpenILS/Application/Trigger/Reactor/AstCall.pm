@@ -1,17 +1,26 @@
 package OpenILS::Application::Trigger::Reactor::AstCall;
+use base 'OpenILS::Application::Trigger::Reactor';
+# unneeded: use OpenILS::Application::Trigger::Reactor;
+# AND the base already does:
+# use OpenSRF::Utils::Logger qw(:logger);
+# use OpenILS::Application::AppUtils;
+# use OpenILS::Utils::CStoreEditor qw/:funcs/;
+# etc.
+
 use strict; use warnings;
 use Error qw/:try/;
 use Data::Dumper;
+
 use OpenSRF::Utils::SettingsClient;
-use OpenILS::Application::Trigger::Reactor;
-use OpenSRF::Utils::Logger qw/:logger/;
 use RPC::XML::Client;
 $Data::Dumper::Indent = 0;
 
-use base 'OpenILS::Application::Trigger::Reactor';
+my $U = 'OpenILS::Application::AppUtils';
+
 use constant DEBUG_FILE => "/tmp/blusah"; #XXX
 
-my $log = 'OpenSRF::Utils::Logger';
+my $e      = new_editor(xact => 1);
+my $logger = 'OpenSRF::Utils::Logger';
 
 # $last_channel_used is:
 # ~ index (not literal value) of last channel used in a callfile
@@ -111,7 +120,16 @@ sub handler {
     $logger->info(__PACKAGE__ . ": get_conf()");
     my $conf = get_conf();
 
-    debug_print(join ("\n", "---------------------", $tmpl_output, "---------------------"));
+    my $userid   = $env->{usr}->{id} || '';
+    my @eventids = map {$_->id} @{$env->{event}};
+    @eventids or push @eventids, '';
+
+    $tmpl_output .= "; Added by __PACKAGE__ handler:\n";
+    $tmpl_output .= $env->{extra_lines} if $env->{extra_lines};
+    $tmpl_output .= "; event_ids: " . join(",",@eventids) . "\n";    # or would we prefer distinct lines instead of comma-seoarated?
+
+    debug_print(join ("\n", "------ template output -----", $tmpl_output, "---------------------"));
+    debug_print(join ("\n", "------ env dump ------------", Dumper($env), "---------------------"));
 
     my $host = $conf->{host};
     unless ($host) {
@@ -122,13 +140,34 @@ sub handler {
     $conf->{port} and $host .= ":" . $conf->{port};         # append port number if specified
 
     my $client = new RPC::XML::Client($host);
-    my $userid     = $env->{usr}->{id} || '';
-    my $noticetype = $env->{notice}->{FIXME} || '';
+    my $filename_fragment = $userid . '_' . $eventids[0] . 'uniq' . time; # not $noticetype,
 
-    # TODO: add scheduling intelligence and use it here.  Get correct noticetype.
-    my $resp = $client->send_request('inject', $tmpl_output, $userid .'_'. $noticetype, 0); # FIXME: 0 could be seconds-from-epoch UTC if deferred call needed
+    # TODO: add scheduling intelligence and use it here... or not if relying only on crontab
+    my $resp = $client->send_request('inject', $tmpl_output, $filename_fragment, 0); # FIXME: 0 could be seconds-from-epoch UTC if deferred call needed
 
-    debug_print((ref $resp ? ("Response: " . Dumper($resp->value)) : "Error: $resp"));
+    my $eo = Fieldmapper::action_trigger::event_output->new;
+    debug_print(ref $resp ? ("Response: " . Dumper($resp->value)) : "Error: $resp");
+
+    if ($resp->{code} and $resp->{code}->value == 200) {
+        $eo->is_error('f');
+        $eo->data('filename: ' . $resp->{spooled_filename}->value);
+    } else {
+        $eo->is_error('t');
+        my $msg = ($resp->{faultcode}) ? $resp->{faultcode}->value : " -- UNKNOWN response '$resp'";
+        $msg .= " for $filename_fragment";
+        $eo->data("Error " . $msg);
+        $logger->error(__PACKAGE__ . ": Mediator Error " . $msg);
+    }
+
+    # Now point all our events' async_output to the newly made row
+    $eo = $env->{EventProcessor}->editor->create_action_trigger_event_output( $eo );
+    foreach (@eventids) {
+        my $event = $e->retrieve_action_trigger_event($_);
+        $event->async_output($eo->id);
+        $e->commit;
+    }
+
+    # TODO: a sub for saving async_output might belong in Trigger.pm
     1;
 }
 
