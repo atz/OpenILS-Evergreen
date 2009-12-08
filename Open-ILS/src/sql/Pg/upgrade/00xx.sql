@@ -46,6 +46,7 @@ RetryTime: 60
 WaitTime: 30
 Extension: 10
 Archive: 1
+Set: eg_user_id=[% target.0.usr.id %]
 Set: items=[% target.size %]
 Set: titlestring=[% titles = [] %][% FOR circ IN target %][% titles.push(circ.target_copy.call_number.record.simple_record.title) %][% END %][% titles.join(". ") %]',
     DEFAULT, DEFAULT, DEFAULT, DEFAULT

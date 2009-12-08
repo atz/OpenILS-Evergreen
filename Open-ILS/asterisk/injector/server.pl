@@ -113,12 +113,12 @@ sub replace_match_possible {
 }
 
 sub replace_match_files {
-# arguments: (userid, noticetype)
+# arguments: (id_string1, id_string2)
 # returns: array of pathnames (files to be deleted)
 # currently we will only find at most 1 file to replace,
 # but you can see how this could be extended w/ additional namespace and globbing
-    my $userid     = shift or return;
-    my $noticetype = shift or return;
+    my $userid     = shift or return;   # doesn't have to be userid,     could be any ID string
+    my $noticetype = shift or return;   # doesn't have to be noticetype, could be any extra dimension of uniqueness
     my $pathglob   = $config{spool_path} . "/" . compose_filename($userid, $noticetype);
     # my $pathglob = $config{spool_path} . "/$universal_prefix" . "_$userid" . "_$noticetype" . '*.call';
     my @matches    = grep {-f $_} <${pathglob}>;    # don't use <$pathglob>, that looks like ref to HANDLE
@@ -142,8 +142,8 @@ sub prefixer {
 
 sub inject {
     my ($data, $requested_filename, $timestamp) = @_;
-# Sender can specify filename: PREFIX . '_' . userid . '_' . noticetype [. '.' . time-serial . '.call']
-# TODO: overwrite based on user + noticetype possibly controlled w/ extra arg?
+# Sender can specify filename: [PREFIX . '_' .] id_string1 . '_' . id_string2 [. '.' . time-serial . '.call']
+# TODO: overwrite based on id_strings, possibly controlled w/ extra arg?
 
     my $ret = {
         code => 200,    # optimism

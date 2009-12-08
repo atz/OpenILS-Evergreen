@@ -2,7 +2,7 @@ package OpenILS::Application::Trigger::Reactor::AstCall;
 use base 'OpenILS::Application::Trigger::Reactor';
 # unneeded: use OpenILS::Application::Trigger::Reactor;
 # AND the base already does:
-# use OpenSRF::Utils::Logger qw(:logger);
+use OpenSRF::Utils::Logger qw($logger);
 # use OpenILS::Application::AppUtils;
 # use OpenILS::Utils::CStoreEditor qw/:funcs/;
 # etc.
@@ -19,8 +19,7 @@ my $U = 'OpenILS::Application::AppUtils';
 
 use constant DEBUG_FILE => "/tmp/blusah"; #XXX
 
-my $e      = new_editor(xact => 1);
-my $logger = 'OpenSRF::Utils::Logger';
+my $e = new_editor(xact => 1);
 
 # $last_channel_used is:
 # ~ index (not literal value) of last channel used in a callfile
@@ -120,13 +119,14 @@ sub handler {
     $logger->info(__PACKAGE__ . ": get_conf()");
     my $conf = get_conf();
 
-    my $userid   = $env->{usr}->{id} || '';
     my @eventids = map {$_->id} @{$env->{event}};
     @eventids or push @eventids, '';
 
+    my $eo = Fieldmapper::action_trigger::event_output->new;
     $tmpl_output .= "; Added by __PACKAGE__ handler:\n";
     $tmpl_output .= $env->{extra_lines} if $env->{extra_lines};
-    $tmpl_output .= "; event_ids: " . join(",",@eventids) . "\n";    # or would we prefer distinct lines instead of comma-seoarated?
+    $tmpl_output .= "; event_ids = " . join(",",@eventids) . "\n";    # or would we prefer distinct lines instead of comma-seoarated?
+    $tmpl_output .= "; event_output = " . $eo->id . "\n";
 
     debug_print(join ("\n", "------ template output -----", $tmpl_output, "---------------------"));
     debug_print(join ("\n", "------ env dump ------------", Dumper($env), "---------------------"));
@@ -140,17 +140,18 @@ sub handler {
     $conf->{port} and $host .= ":" . $conf->{port};         # append port number if specified
 
     my $client = new RPC::XML::Client($host);
-    my $filename_fragment = $userid . '_' . $eventids[0] . 'uniq' . time; # not $noticetype,
+    #my $filename_fragment = $userid . '_' . $eventids[0] . 'uniq' . time; # not $noticetype,
+    my $filename_fragment = $eo->id . '_' . $eo->id;    # the event_output.id tells us all we need to know
 
     # TODO: add scheduling intelligence and use it here... or not if relying only on crontab
     my $resp = $client->send_request('inject', $tmpl_output, $filename_fragment, 0); # FIXME: 0 could be seconds-from-epoch UTC if deferred call needed
 
-    my $eo = Fieldmapper::action_trigger::event_output->new;
     debug_print(ref $resp ? ("Response: " . Dumper($resp->value)) : "Error: $resp");
 
     if ($resp->{code} and $resp->{code}->value == 200) {
         $eo->is_error('f');
         $eo->data('filename: ' . $resp->{spooled_filename}->value);
+        # could look for the file that replaced it
     } else {
         $eo->is_error('t');
         my $msg = ($resp->{faultcode}) ? $resp->{faultcode}->value : " -- UNKNOWN response '$resp'";
