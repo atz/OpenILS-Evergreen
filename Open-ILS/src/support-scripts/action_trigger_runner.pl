@@ -32,6 +32,8 @@ my $opt_hooks;
 my $opt_process_hooks = 0;
 my $opt_granularity   = undef;
 
+(-f $opt_custom_filter) or undef($opt_custom_filter);   # discard default if no file exists
+
 GetOptions(
     'osrf-config=s'    => \$opt_osrf_config,
     'run-pending'      => \$opt_run_pending,
