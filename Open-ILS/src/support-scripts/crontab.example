@@ -1,0 +1,52 @@
+# Evergreen crontab.example
+# Author: Joe Atzberger, ESI
+#
+# This is an example of a crontab file for Debian.  It may not work 
+# in other versions of crontab, like on Solaris 8 or BSD, for example.
+# 
+# While similar in structure, 
+# this is NOT an example for cron (as root).  Cron takes an extra
+# argument per line to designate the user to run as.  You could 
+# reasonably extrapolate the needed info from here though.
+#
+# WARNING: These jobs will do things like charge fines, send
+# potentially VERY MANY emails to patrons and even debar offending
+# users.  DO NOT RUN OR SCHEDULE these jobs without being sure you
+# really intend to.  Make sure the relevant message templates are
+# configured to your liking before scheduling messages to be sent.
+#
+
+# ENVIRONMENT:
+# First, establish Evergreen ENV variables.
+#
+OPENILS    = /openils
+SRF_CORE   = /openils/conf/opensrf_core.xml
+EG_BIN_DIR = /openils/bin
+
+# crontab format:
+# m h dom mon dow   command
+
+# Run the hold targeter
+* */4 * * *   . /etc/profile && $EG_BIN_DIR/hold_targeter.pl $SRF_CORE
+
+# Run the hold thawer
+5  0  * * *   . /etc/profile && $EG_BIN_DIR/thaw_expired_frozen_holds.srfsh
+
+# Generate fines
+30 0  * * *   . /etc/profile && $EG_BIN_DIR/fine_generator.pl $SRF_CORE
+
+# Run the reshelving completer
+2  0  * * *   . /etc/profile && $EG_BIN_DIR/reshelving_complete.srfsh
+
+# create the list of blocked patrons for offline use
+30 6  * * *   $EG_BIN_DIR/offline-blocked-list.pl $SRF_CORE > $OPENILS/var/web/standalone/list.txt
+
+# Restart SIP nightly to free up any orphaned processes
+# 5  2  * * *   . /etc/profile && oils_ctl.sh -d $OPENILS/var/pid -s $OPENILS/conf/oils_sip.xml -a stop_sip
+# 8  2  * * *   . /etc/profile && oils_ctl.sh -d $OPENILS/var/pid -s $OPENILS/conf/oils_sip.xml -a start_sip
+
+# TODO: add other entries
+# ingest missing records every 15 minutes
+# note you would need to have configured psql access w/o password for your user
+# 5,15,25,35,44,55 * * * * for i in `PGHOST=192.168.0.1 PGUSER=evergreen psql evergreen -c 'select id from biblio.record_entry where fingerprint IS NULL and not deleted and id > 0;' -t`; do .... something ; done
+
