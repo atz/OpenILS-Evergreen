@@ -188,7 +188,7 @@ sub inject {
 
     $ret->{spooled_filename} = $finalized_filename;
 
-    $data .= "; added by inject() in the mediator\n";
+    $data .= ";; added by inject() in the mediator\n";
     $data .= "Set: callfilename=$fname\n";
 
     # And now, we're finally ready to begin the actual insertion process
@@ -323,7 +323,7 @@ sub main {
     getopt('c:', \%opts);
     load_config;    # dies on invalid/incomplete config
     openlog basename($0), 'ndelay', LOG_USER;
-    my $server = new RPC::XML::Server(port => $config{port});
+    my $server = RPC::XML::Server->new(port => $config{port}) or die "Failed to get new RPC::XML::Server: $!";
 
     # Regarding signatures:
     #  ~ the first datatype  is  for RETURN value,
