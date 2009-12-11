@@ -66,5 +66,7 @@ if (ref $resp) {
     print "ERROR: unrecognized response:\n\n", Dumper($resp), "\n";
 }
 $verbose and print Dumper($resp);
+$verbose and print "\nKEYS (level 1):\n",
+    map {sprintf "%12s: %s\n", $_, scalar $resp->{$_}->value} sort keys %$resp;
 
 # print "spooled_filename: ", $resp->{spooled_filename}->value, "\n";
