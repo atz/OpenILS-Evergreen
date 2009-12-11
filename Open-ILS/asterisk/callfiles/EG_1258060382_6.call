@@ -1,0 +1,15 @@
+Channel: SIP/ubab33/17707095584
+Context: overdue-test
+MaxRetries: 1
+RetryTime: 60
+WaitTime: 30
+Extension: 10
+Archive: 1
+Set: items=1
+Set: titlestring=chez nos gens; Added by OpenILS::Application::Trigger::Reactor::AstCall handler:
+; event_ids = 123,145
+; event_output = 14; added by inject() in the mediator
+Set: callfilename=EG_1258060382_6.call
+
+StartRetry: 2139 1 (1258060442)
+Status: Completed

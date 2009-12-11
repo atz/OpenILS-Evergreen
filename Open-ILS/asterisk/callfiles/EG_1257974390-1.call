@@ -1,0 +1,13 @@
+Channel: SIP/ubab33/17707095584
+Context: overdue-test
+MaxRetries: 1
+RetryTime: 60
+WaitTime: 30
+Extension: 10
+Archive: 1
+Set: items=1
+Set: titlestring=chez nos gens; added by inject() in the mediator
+Set: callfilename=EG_1257974390-1.call
+
+StartRetry: 2139 1 (1257974451)
+Status: Completed

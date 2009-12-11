@@ -1,0 +1,22 @@
+; Channel: SIP/ubab33/17707095583
+Channel: SIP/ubab33/1770709558333333
+CallerID: "Yo momma" <17707095583>
+Context: overdue-test
+MaxRetries: 1
+RetryTime: 60
+WaitTime: 30
+Extension: 10
+Archive: 1
+Set: items=1
+Set: titlestring=Land Before Time
+Set: LOOP=1
+Set: callfilename=EG_joe_20091109145355.call
+
+StartRetry: 2139 1 (1257907526)
+; FAILED: 0
+
+EndRetry: 2139 1 (1257907496)
+
+StartRetry: 2139 2 (1257907617)
+; FAILED: 0
+Status: Expired
