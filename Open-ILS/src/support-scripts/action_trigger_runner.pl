@@ -22,12 +22,15 @@ use OpenSRF::Utils::JSON;
 use OpenSRF::EX qw(:try);
 use OpenILS::Utils::Fieldmapper;
 
+# DEFAULT values
+
 my $opt_lockfile      = '/tmp/action-trigger-LOCK';
 my $opt_osrf_config   = '/openils/conf/opensrf_core.xml';
 my $opt_custom_filter = '/openils/conf/action_trigger_filters.json';
 my $opt_run_pending   = 0;
 my $opt_debug_stdout  = 0;
 my $opt_help          = 0;
+my $opt_verbose;
 my $opt_hooks;
 my $opt_process_hooks = 0;
 my $opt_granularity   = undef;
@@ -43,6 +46,7 @@ GetOptions(
     'debug-stdout'     => \$opt_debug_stdout,
     'custom-filters=s' => \$opt_custom_filter,
     'lock-file=s'      => \$opt_lockfile,
+    'verbose'          => \$opt_verbose,
     'help'             => \$opt_help,
 );
 
@@ -64,7 +68,7 @@ my $hook_handlers = {
 };
 
 if ($opt_custom_filter) {
-    open FILTERS, $opt_custom_filter;
+    open FILTERS, $opt_custom_filter or die "Cannot read custom filters at $opt_custom_filter";
     $hook_handlers = OpenSRF::Utils::JSON->JSON2perl(join('',(<FILTERS>)));
     close FILTERS;
 }
@@ -120,33 +124,35 @@ HELP
 
 # create events for the specified hooks using the configured filters and context orgs
 sub process_hooks {
+    $opt_verbose and print "process_hooks: " . ($opt_process_hooks ? '(start)' : 'SKIPPING') . "\n";
     return unless $opt_process_hooks;
 
     my @hooks = ($opt_hooks) ? split(',', $opt_hooks) : keys(%$hook_handlers);
     my $ses = OpenSRF::AppSession->create('open-ils.trigger');
-
-    for my $hook (@hooks) {
     
-        my $config = $$hook_handlers{$hook} or next;
+    for my $hook (@hooks) {
+        my $config = $$hook_handlers{$hook};
+        $opt_verbose and print "process_hooks: $hook " . ($config ? ($opt_granularity || '') : ' NO HANDLER') . "\n";
+        $config or next;
         my $method = 'open-ils.trigger.passive.event.autocreate.batch';
         $method =~ s/passive/active/ if $config->{active};
         
         my $req = $ses->request($method, $hook, $config->{context_org}, $config->{filter}, $opt_granularity);
-        while(my $resp = $req->recv(timeout => 1800)) {
-            if($opt_debug_stdout) {
-                print OpenSRF::Utils::JSON->perl2JSON($resp->content) . "\n";
-            }
+        while (my $resp = $req->recv(timeout => 1800)) {
+            $opt_debug_stdout and print OpenSRF::Utils::JSON->perl2JSON($resp->content) . "\n";
         }
     }
 }
 
 sub run_pending {
+    $opt_verbose and print "run_pending: " .
+        ($opt_run_pending ? ($opt_granularity || 'ALL granularity') : 'SKIPPING') . "\n";
     return unless $opt_run_pending;
     my $ses = OpenSRF::AppSession->create('open-ils.trigger');
     my $req = $ses->request('open-ils.trigger.event.run_all_pending' => $opt_granularity);
 
     my $check_lockfile = 1;
-    while(my $resp = $req->recv(timeout => 7200)) {
+    while (my $resp = $req->recv(timeout => 7200)) {
         if ($check_lockfile && -e $opt_lockfile) {
             open LF, $opt_lockfile;
             my $contents = <LF>;
@@ -154,9 +160,7 @@ sub run_pending {
             unlink $opt_lockfile if ($contents == $$);
             $check_lockfile = 0;
         }
-        if($opt_debug_stdout) {
-            print OpenSRF::Utils::JSON->perl2JSON($resp->content) . "\n";
-        }
+        $opt_debug_stdout and print OpenSRF::Utils::JSON->perl2JSON($resp->content) . "\n";
     }
 }
 
@@ -165,7 +169,7 @@ help() and exit unless ($opt_run_pending or $opt_process_hooks);
 
 # check / set the lockfile
 die "I'm already running with lockfile $opt_lockfile\n" if -e $opt_lockfile;
-open(F, ">$opt_lockfile") or die "Unable to open lockfile $opt_lockfile for writing\n";
+open (F, ">$opt_lockfile") or die "Unable to open lockfile $opt_lockfile for writing\n";
 print F $$;
 close F;
 
