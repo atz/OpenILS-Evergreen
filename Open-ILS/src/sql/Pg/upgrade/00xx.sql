@@ -25,6 +25,8 @@ INSERT INTO config.org_unit_setting_type ( name, label, description, datatype )
 ('notice.telephony.callfile_lines',     'Telephony: Arbitrary line(s) to include in each notice callfile',
     'This overrides lines from opensrf.xml.  Line(s) must be valid for your target server and platform (e.g. Asterisk 1.4).', 'string');
 
+COMMIT;     -- This first part is optional, so the upgrade can survive failure there.
+BEGIN;
 
 INSERT INTO action_trigger.reactor VALUES
     ('AstCall', 'Possibly place a phone call with Asterisk');
