@@ -216,7 +216,7 @@ sub inject {
 
 sub retrieve {
     my $globstring = prefixer(@_ ? shift : '*');
-    # We depend on being in the correcta (done) directory already, thanks to the config step
+    # We depend on being in the correct (done) directory already, thanks to the config step
     # This prevents us from having to chdir for each request.. 
 
     my @matches = grep {-f $_ } <'./' . ${globstring}>;    # don't use <$pathglob>, that looks like ref to HANDLE
