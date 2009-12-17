@@ -27,7 +27,7 @@
 #
 # Usage:
 #
-#   perl server.pl -c /path/to/eg-injector.conf
+#   perl mediator.pl -c /path/to/eg-injector.conf
 #
 # TODO: 
 #
