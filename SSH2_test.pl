@@ -18,9 +18,10 @@ print "Auth types supported (for $user): ", join(", ", $ssh2->auth_list($user)),
 
 $ssh2->auth(
     username   => $user,
-#    rank => [qw/ publickey hostbased password /],
+    rank => [qw/ publickey hostbased password /],
     publickey  => '/home/opensrf/.ssh/id_rsa.pub',
-    privatekey => '/home/opensrf/.ssh/id_rsa'
+    privatekey => '/home/opensrf/.ssh/id_rsa',
+    interactive=> 0,
 ) or die "ssh2->auth FAILED: $!";
 
 =doc
@@ -34,12 +35,21 @@ $ssh2->auth_publickey(
 =cut
 
 my $ftp = $ssh2->sftp() or die "ssh2->sftp FAILED: $!";
-print "ssh->stfp object:", Dumper($ftp);
+print "ssh->stfp object:", Dumper($ftp), "\n/home :\n";
 my $dh = $ftp->opendir('/home');
 while(my $item = $dh->read) {
     print $item->{'name'},"\n";
 }
 
+$dh = $ftp->opendir("/home/$user");
+print "\n\n/home/$user : \n";
+while(my $item = $dh->read) {
+    print $item->{'name'},"\n";
+}
+
+my $res = $ssh2->scp_put($0,"/home/$user/ftptest.txt");
+
+print "\nres = $res\ndone\n";
 __END__
 
 # print "simple ls: ", join("\n\t", keys %$dh), "\n";
