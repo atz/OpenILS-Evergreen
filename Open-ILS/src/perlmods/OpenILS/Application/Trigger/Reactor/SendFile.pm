@@ -155,7 +155,7 @@ sub handler {
 
     my %keys     = ();
     my $specific = 0;
-    my @put_args = ($tmp);      # same for scp_put and uFTP put
+    my @put_args = ($tmp->filename);      # same for scp_put and uFTP put
     push @put_args, $params->{remote_file} if $params->{remote_file};     # user can specify remote_file name, optionally
 
     unless ($params->{type} and $params->{type} eq 'FTP') {
