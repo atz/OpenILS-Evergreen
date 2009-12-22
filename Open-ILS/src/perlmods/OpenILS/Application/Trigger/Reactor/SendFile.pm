@@ -69,14 +69,14 @@ ABOUT
 
 sub plausible_dirs {
     # returns plausible locations of a .ssh subdir where SSH keys might be stashed
-    # NOTE: these will need to be properly genericized w/ Makefule vars
-    # in order to support Debian packaging and multiple EG's on one box
+    # NOTE: these would need to be properly genericized w/ Makefule vars
+    # in order to support Debian packaging and multiple EG's on one box.
+    # Until that happens, we just rely on $HOME
 
     my @bases = (
-        '/openils/conf',     # __EG_CONFIG_DIR__
-        '/home/opensrf',    # TODO: remove this hardcoded line (and the comparison) for proper packaging; $ENV{HOME} should cover it
+       # '/openils/conf',     # __EG_CONFIG_DIR__
     );
-    ($ENV{HOME} and $ENV{HOME} ne '/home/opensrf') and unshift @bases, $ENV{HOME};  # avoid duplicate dir
+    ($ENV{HOME}) and unshift @bases, $ENV{HOME};
 
     return grep {-d $_} map {"$_/.ssh"} @bases;
 }
