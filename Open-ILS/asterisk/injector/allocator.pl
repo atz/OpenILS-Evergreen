@@ -53,7 +53,8 @@ staging directory for any pending callfiles.  If they exist, checks queue_limit
 
 =head1 CONFIGURATION
 
-See the eg-injector.conf.
+See the eg-injector.conf.  In particular, set use_allocator to 1 to indicate to
+both processes (this one and the mediator) that the allocator is scheduled to run.
 
 =head1 USAGE EXAMPLES
 
@@ -67,13 +68,7 @@ allocator.pl -t -c /some/other/config.txt
 
 =over 8
 
-=item init.d startup/shutdown/status script.
-
 =item LOAD TEST!!
-
-=item More docs/POD
-
-=item command line usage and --help
 
 =back
 
@@ -91,6 +86,7 @@ use Config::General qw/ParseConfig/;
 use Getopt::Std;
 use Pod::Usage;
 use File::Basename qw/basename fileparse/;
+use File::Spec;
 use Sys::Syslog qw/:standard :macros/;
 use Cwd qw/getcwd/;
 
@@ -124,6 +120,10 @@ sub load_config {
         $universal_prefix =~ /^\D/
             or die "Config error: universal_prefix ($universal_prefix) must start with non-integer character";
     }
+    unless ($config{use_allocator} or $opts{t}) {
+        die "use_allocator not enabled in config file (mediator thinks allocator is not in use).  " .
+            "Run in test mode (-t) or enable use_allocator config";
+    }
 }
 
 sub match_files {
@@ -132,8 +132,8 @@ sub match_files {
     my $root = @_ ? shift : getcwd();
     my $pathglob = "$root/${universal_prefix}*.call";
     my @matches  = grep {-f $_} <${pathglob}>;    # don't use <$pathglob>, that looks like ref to HANDLE
-    $opts{v} and print scalar(@matches) . " match(es) for path: $pathglob\n"; 
-    syslog LOG_NOTICE, scalar(@matches) . " match(es) for path: $pathglob";
+    $opts{v} and             print scalar(@matches) . " match(es) for path: $pathglob\n"; 
+    $opts{t} or syslog LOG_NOTICE, scalar(@matches) . " match(es) for path: $pathglob";
     return @matches;
 }
 
@@ -151,8 +151,9 @@ sub queue {
     # if ($timestamp and $timestamp > 0) {
     #     utime $timestamp, $timestamp, $stage_name or warn "error utime'ing $stage_name to $timestamp: $!";
     # }
-    my $finalized_filename = '';
-    my $msg = "$stage_name --> $finalized_filename";
+    my $goodname = prefixer((fileparse($stage_name))[0]);
+    my $finalized_filename = File::Spec->catfile($config{spool_path}, $goodname);
+    my $msg = sprintf "%40s --> %s", $stage_name, $finalized_filename;
     unless ($opts{t}) {
         unless (rename $stage_name, $finalized_filename) {
             print   STDERR  "$msg  FAILED: $!\n";   
@@ -180,7 +181,6 @@ my $now = time;
 my @incoming = sort {(stat($a))[9] <=> (stat($b))[9]} match_files($config{staging_path});
 my @outgoing = match_files($config{spool_path});
 my @future   = ();
-# my @unfiltered = match_files($config{staging_path});
 
 my $raw_count = scalar @incoming;
 for (my $i=0; $i<$raw_count; $i++) {
@@ -202,6 +202,9 @@ if ($limit) {
     if ($in_count > $available) {
         @incoming = @incoming[0..($available-1)];   # slice down to correct size
     }
+    if ($available == 0) {
+        $opts{t} or syslog LOG_NOTICE, "Queue is full ($limit)";
+    }    
 }
 
 if ($opts{v}) {
@@ -210,15 +213,11 @@ if ($opts{v}) {
      printf "incoming (active): %3d\n", $in_count;
      printf "queued already   : %3d\n", $out_count;
      printf "queue_limit      : %3d\n", $limit;
-     printf "available spots  : %3s\n", ($available || 'unlimited');
+     printf "available spots  : %3s\n", ($limit ? $available : 'unlimited');
 }
 
 foreach (@incoming) {
-    $opts{v} and print `ls -l $_`;  # '  ', (stat($_))[9], " - $now = ", (stat($_))[9] - $now, "\n";
-    if ((stat($_))[9] - $now > 0 ) {
-        push @future, $_;
-        $opts{v} and print "File modified in the future, deferring: $_\n";
-    }
+    # $opts{v} and print `ls -l $_`;  # '  ', (stat($_))[9], " - $now = ", (stat($_))[9] - $now, "\n";
     queue($_);
 }
 

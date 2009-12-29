@@ -147,6 +147,7 @@ sub inject {
 
     my $ret = {
         code => 200,    # optimism
+        use_allocator => $config{use_allocator},
     };
     my $fname;
     $requested_filename = fileparse($requested_filename || ''); # no fair trying to get us to write in other dirs
@@ -186,15 +187,13 @@ sub inject {
     my $stage_name         = $config{staging_path} . "/" . $fname;
     my $finalized_filename = $config{spool_path}   . "/" . $fname;
 
-    $ret->{spooled_filename} = $finalized_filename;
-
     $data .= ";; added by inject() in the mediator\n";
     $data .= "Set: callfilename=$fname\n";
 
     # And now, we're finally ready to begin the actual insertion process
-    open FH, ">$stage_name" or return &$failure("$stage_name: $!");
-    print FH $data or return &$failure("error writing data to $stage_name: $!");
-    close FH or return &$failure("$stage_name: $!");
+    open  FH, ">$stage_name" or return &$failure("cannot open $stage_name: $!");
+    print FH $data           or return &$failure("cannot write $stage_name: $!");
+    close FH                 or return &$failure("cannot close $stage_name: $!");
 
     chown($config{owner}, $config{group}, $stage_name) or
         return &$failure(
@@ -206,10 +205,21 @@ sub inject {
             return &$failure("error utime'ing $stage_name to $timestamp: $!");
     }
 
-    rename $stage_name, $finalized_filename or
-        return &$failure("rename $stage_name, $finalized_filename: $!");
+    # note: EG doesn't have to care whether the spool is the "real" one or the allocator "pre" spool,
+    #       so the filename is returned under the same key.  EG can check use_allocator though if it
+    #       wants to know for sure.
 
-    syslog LOG_NOTICE, "Spooled $finalized_filename sucessfully";
+    if ($config{use_allocator}) {
+        $ret->{spooled_filename} = $stage_name;
+        syslog LOG_NOTICE, "Left $stage_name for allocator";
+    } elsif (rename $stage_name, $finalized_filename) {     # else the rename happens here
+        $ret->{spooled_filename} = $finalized_filename;
+        syslog LOG_NOTICE, "Spooled $finalized_filename sucessfully";
+    } else {
+        syslog LOG_ERR,  "rename $stage_name ==> $finalized_filename: $!";
+        return &$failure("rename $stage_name ==> $finalized_filename: $!");
+    }
+
     return $ret;
 }
 
