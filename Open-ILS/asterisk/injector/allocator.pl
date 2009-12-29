@@ -1,7 +1,6 @@
 #!/usr/bin/perl -w
 #
 # Copyright (C) 2009 Equinox Software, Inc.
-# Author: Joe Atzberger
 #
 # License:
 #
@@ -15,44 +14,82 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
-# Overview:
-#
-#   This script is designed to run from crontab on a very frequent basis, perhaps
-# every minute.  It has two purposes:
-#   (1) Prevent the asterisk server from being overwhelmed by a large number of
-#       Evergreen callfiles in the queue at once.
-#   (2) Allow call window custom scheduling via crontab.  The guarantee is that
-#       no more than queue_limit calls will be scheduled at the last
-#
-#
-# Configuration:
-#
-#   See the eg-injector.conf.
-#
-# Operation:
-#
-#   By default no output is produced on successful operation.  Error conditions are
-# output, which should result in email to the system user via crontab.
-#   Reads the same config file as the mediator, looks at the
-# staging directory for any pending callfiles.  If they exist, checks queue_limit
-#
-# Usage:
-#
-#   allocator.pl -c /path/to/eg-injector.conf
-#
-# TODO: 
-#
-# ~ init.d startup/shutdown/status script.
-# ~ More docs.
-# ~ perldoc/POD
-# - command line usage and --help
-#
+
+=head1 NAME
+
+allocator.pl
+
+=head1 SYNOPSIS
+
+allocator.pl [-h] [-t] [-v] [-c <file>]
+
+ Options:
+   -h         display help message
+   -t         test mode, no files are moved (impies -v)
+   -v         give verbose feedback
+   -c <file>  specify config file to be used
+
+=head1 DESCRIPTION
+
+This script is designed to run from crontab on a very frequent basis, perhaps
+every minute.  It has two purposes:
+
+=over 8
+
+=item B<1>
+Prevent the asterisk server from being overwhelmed by a large number of
+Evergreen callfiles in the queue at once.
+
+=item B<2>
+Allow call window custom scheduling via crontab.  The guarantee is that
+no more than queue_limit calls will be scheduled at the last scheduled run.
+
+=back
+
+By default no output is produced on successful operation.  Error conditions are
+output, which should result in email to the system user via crontab.
+Reads the same config file as the mediator, looks at the
+staging directory for any pending callfiles.  If they exist, checks queue_limit
+
+=head1 CONFIGURATION
+
+See the eg-injector.conf.
+
+=head1 USAGE EXAMPLES
+
+allocator.pl
+
+allocator.pl -c /path/to/eg-injector.conf
+
+allocator.pl -t -c /some/other/config.txt
+
+=head1 TODO
+
+=over 8
+
+=item init.d startup/shutdown/status script.
+
+=item LOAD TEST!!
+
+=item More docs/POD
+
+=item command line usage and --help
+
+=back
+
+=head1 AUTHOR
+
+Joe Atzberger,
+Equinox Software, Inc.
+
+=cut 
 
 use warnings;
 use strict;
 
 use Config::General qw/ParseConfig/;
 use Getopt::Std;
+use Pod::Usage;
 use File::Basename qw/basename fileparse/;
 use Sys::Syslog qw/:standard :macros/;
 use Cwd qw/getcwd/;
@@ -60,13 +97,13 @@ use Cwd qw/getcwd/;
 our %config;
 our %opts = (
     c => "/etc/eg-injector.conf",
-    v => 0
+    v => 0,
+    t => 0,
 );
 our $universal_prefix = 'EG';
 
 sub load_config {
     %config = ParseConfig($opts{c});
-
     # validate
     foreach my $opt (qw/staging_path spool_path/) {
         if (not -d $config{$opt}) {
@@ -109,41 +146,79 @@ sub prefixer {
 
 sub queue {
     my $stage_name = shift or return;
-    # chown($config{owner}, $config{group}, $stage_name) or warn "error changing $stage_name to $config{owner}:$config{group}: $!";
+    $opts{t} or chown($config{owner}, $config{group}, $stage_name) or warn "error changing $stage_name to $config{owner}:$config{group}: $!";
 
     # if ($timestamp and $timestamp > 0) {
     #     utime $timestamp, $timestamp, $stage_name or warn "error utime'ing $stage_name to $timestamp: $!";
     # }
-    my $finalized_filename ='';
+    my $finalized_filename = '';
     my $msg = "$stage_name --> $finalized_filename";
-    unless (rename $stage_name, $finalized_filename) {
-        print   STDERR  "$msg  FAILED: $!\n";   
-        syslog LOG_ERR, "$msg  FAILED: $!";   
-        return;
+    unless ($opts{t}) {
+        unless (rename $stage_name, $finalized_filename) {
+            print   STDERR  "$msg  FAILED: $!\n";   
+            syslog LOG_ERR, "$msg  FAILED: $!";   
+            return;
+        }
+        syslog LOG_NOTICE, $msg;
     }
-
     $opts{v} and print $msg . "\n";
-    syslog LOG_NOTICE, $msg;
 }
 
 ###  MAIN  ###
 
-getopts('vc:', \%opts);
+getopts('htvc:', \%opts) or pod2usage(2);
+pod2usage( -verbose => 2 ) if $opts{h};
+
+$opts{t} and $opts{v} = 1;
+$opts{t} and print "TEST MODE\n";
 $opts{v} and print "verbose output ON\n";
 load_config;    # dies on invalid/incomplete config
 openlog basename($0), 'ndelay', LOG_USER;
 
+my $now = time;
 # incoming files sorted by mtime (stat element 9): OLDEST first
 my @incoming = sort {(stat($a))[9] <=> (stat($b))[9]} match_files($config{staging_path});
 my @outgoing = match_files($config{spool_path});
+my @future   = ();
+# my @unfiltered = match_files($config{staging_path});
 
-my $in_count = scalar @incoming;
-my $limit = $config{queue_limit} || 0;
-if ($limit and $in_count > $limit) {
-    @incoming = @incoming[0..($limit-1)];   # slice down to correct size
+my $raw_count = scalar @incoming;
+for (my $i=0; $i<$raw_count; $i++) {
+    if ((stat($incoming[$i]))[9] - $now > 0 ) { # if this file is from the future, then so are the subsequent ones
+        @future = splice(@incoming,$i);         # i.e., take advantage of having sorted them already
+        last;
+    }
 }
-$opts{v} and print "queue_limit: " . ($limit || 'unlimited') . "\n";
+
+# note: elements of @future not currently used beyond counting them
+
+my  $in_count = scalar @incoming;
+my $out_count = scalar @outgoing;
+my $limit     = $config{queue_limit} || 0;
+my $available = 0;
+
+if ($limit) {
+    $available = $limit - $out_count;
+    if ($in_count > $available) {
+        @incoming = @incoming[0..($available-1)];   # slice down to correct size
+    }
+}
+
+if ($opts{v}) {
+     printf "incoming (total ): %3d\n", $raw_count;
+     printf "incoming (future): %3d\n", scalar @future;
+     printf "incoming (active): %3d\n", $in_count;
+     printf "queued already   : %3d\n", $out_count;
+     printf "queue_limit      : %3d\n", $limit;
+     printf "available spots  : %3s\n", ($available || 'unlimited');
+}
+
 foreach (@incoming) {
-    #queue($_);
-    print `ls -l $_`, "\n";
+    $opts{v} and print `ls -l $_`;  # '  ', (stat($_))[9], " - $now = ", (stat($_))[9] - $now, "\n";
+    if ((stat($_))[9] - $now > 0 ) {
+        push @future, $_;
+        $opts{v} and print "File modified in the future, deferring: $_\n";
+    }
+    queue($_);
 }
+
