@@ -185,62 +185,65 @@ sub _files {
     return map {$response->{$_}} sort grep {/^file_\d*/} keys %$response;
 }
 
+=head1 EXAMPLE CALFILES
+
+Note: all lines start flush left (no leading whitespace)
+
 =head2 Example callfile (successful)
 
-Channel: SIP/ubab33/17707775555
-Context: overdue-test
-MaxRetries: 1
-RetryTime: 60
-WaitTime: 30
-Extension: 10
-Archive: 1
-Set: items=1
-Set: titlestring=chez nos gens; Added by OpenILS::Application::Trigger::Reactor::AstCall handler:
-; event_ids = 123,145
-; event_output = 14; added by inject() in the mediator
-Set: callfilename=EG_1258060382_6.call
+    Channel: SIP/ubab33/17707775555
+    Context: overdue-test
+    MaxRetries: 1
+    RetryTime: 60
+    WaitTime: 30
+    Extension: 10
+    Archive: 1
+    Set: items=1
+    Set: titlestring=chez nos gens;; added by OpenILS::Application::Trigger::Reactor::AstCall handler:
+    ; event_ids = 123,145
+    ; event_output = 14;; added by inject() in the mediator
+    Set: callfilename=EG_1258060382_6.call
 
-StartRetry: 2139 1 (1258060442)
-Status: Completed
-Channel: SIP/ubab33/17707775555
-
-=cut
+    StartRetry: 2139 1 (1258060442)
+    Status: Completed
+    Channel: SIP/ubab33/17707775555
 
 =head2 Example callfile (FAILED)
 
-CallerID: "Jack Jackson" <17707775555>
-Context: overdue-test
-MaxRetries: 1
-RetryTime: 60
-WaitTime: 30
-Extension: 10
-Archive: 1
-Set: items=1
-Set: titlestring=Land Before Time
-Set: LOOP=1
-Set: callfilename=EG_joe_20091109145355.call
+    CallerID: "Jack Jackson" <17707775555>
+    Context: overdue-test
+    MaxRetries: 1
+    RetryTime: 60
+    WaitTime: 30
+    Extension: 10
+    Archive: 1
+    Set: items=1
+    Set: titlestring=Land Before Time;; added by OpenILS::Application::Trigger::Reactor::AstCall handler:
+    Set: LOOP=1
+    Set: callfilename=EG_joe_20091109145355.call
 
-StartRetry: 2139 1 (1257907526)
-; FAILED: 0
+    StartRetry: 2139 1 (1257907526)
+    ; FAILED: 0
 
-EndRetry: 2139 1 (1257907496)
+    EndRetry: 2139 1 (1257907496)
 
-StartRetry: 2139 2 (1257907617)
-; FAILED: 0
-Status: Expired
+    StartRetry: 2139 2 (1257907617)
+    ; FAILED: 0
+    Status: Expired
 
 =head2 Possible data structure:
 
-# $feedback = {
-#     status => val,
-#     attempts => [ $attempt1, $attempt2 ... $attemptN ],
-#     anything_else => scalar,
-# }
-# $attempt = {
-#     time => secs from epoch (UTC) for the BEGINNING of the call,
-#     duration => secs,
-#     failed => code,
-# }
+ $feedback = {
+     status => val,
+     attempts => [ $attempt1, $attempt2 ... $attemptN ],
+     anything_else => scalar,
+ }
+ ...
+ $attempt = {
+     time => secs from epoch (UTC) for the BEGINNING of the call,
+     duration => secs,
+     failed => code,
+ }
 
 =cut
 
@@ -307,9 +310,19 @@ sub retrieve {
             $output->data($content);
         }
         $e->commit;     # defer until after loop? probably not
-        # TODO: deletion by filename, either 1 by 1 or in chunks
-        # $client->send_request('cleanup', $filename)
+        my $clean = $client->send_request('cleanup', $filename);
+        # TODO: deletion by (comma-separated) filenames in chunks instead of individually?
         # push @rm_list, $_; $client->send_request('cleanup', join(',',@rm_list));
+        unless ($clean and ref $clean) {
+            $logger->error(__PACKAGE__ . ": Mediator Error: " . ($clean ? 'Bad' : 'No') . " response to cleanup $filename request");
+            next;
+        }
+        unless ($clean->{code}->value == 200 and $clean->{delete_count}) {
+            $logger->error(__PACKAGE__ . ": cleanup $filename returned " . (
+                $resp->{faultcode} ? $resp->{faultcode}->value :
+                $resp->{     code} ? $resp->{     code}->value : " -- UNKNOWN response '$resp'"
+            ) . " with delete_count " . (defined $clean->{delete_count} ? $clean->{delete_count} : 'UNDEF'));
+        } 
     }
     return @files;
 }
