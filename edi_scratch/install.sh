@@ -10,15 +10,15 @@
 
 # apt-get install libgemplugin-ruby  # recommended by some pages as a workaround, but already satisfied by ruby-full
 sudo apt-get install ruby-full ruby-dev rubygems    # maybe ruby-full is overkill?
-sudo gem install rubygems-update                    # maybe unnecessary if we do ruby setub.rb below
+sudo gem install rubygems-update                    # unnecessary if we do ruby setub.rb below
 
 # runaround for debian's crippled rubygems package:
 mkdir rubygems
 pushd rubygems
 svn checkout svn://rubyforge.org/var/svn/rubygems/trunk
 cd trunk
+sudo ruby setup.rb
 sudo update_rubygems
-# ruby setup.rb
 popd
 
 sudo gem install rspec edi4r json rcov # mkmf
