@@ -19,8 +19,17 @@ GetOptions(
 
 # CLEANUP
 $host =~ /^\S+:\/\// or $host  = 'http://' . $host;
-$host =~ /:\d+$/     or $host .= ':9090';
-$host .= '/RPC2';
+$host =~ /:\d+$/     or $host .= ':9191';
+$host .= '/EDI';
+
+sub get_in {
+    print "Getting JSON from input\n";
+    my $json = join("", <STDIN>);
+    $json or return;
+    print $json, "\n";
+    chomp $json;
+    return $json;
+}
 
 # MAIN
 print "Trying host: $host\n";
@@ -28,6 +37,17 @@ print "Trying host: $host\n";
 my $client = new RPC::XML::Client($host);
 
 my @commands = @ARGV ? @ARGV : 'system.listMethods';
+if ($commands[0] eq 'json2edi') {
+    shift;
+    print "Ignoring commands after json2edi\n";
+    my $json;
+    while ($json = get_in()) {  # assignment
+        my $resp = $client->send_request('json2edi', $json);
+        print Dumper($resp);
+    }
+    exit;
+} 
+
 print "Sending request: \n    ", join("\n    ", @commands), "\n\n";
 my $resp = $client->send_request(@commands);
 

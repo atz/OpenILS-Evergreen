@@ -6,6 +6,9 @@ require 'parseconfig'
 require 'webrick'
 require 'xmlrpc/server'
 
+# require 'edi/edi2json'
+# require 'edi/mapper'
+require 'openils/mapper'
 
 base = File.basename($0, '.rb')
 
@@ -60,8 +63,8 @@ OptionParser.new do |opts|
 end.parse!
 
 if options['verbose']
-    puts "OPTIONS: " ; p options
-    puts "Reading config file #{options['config'] || defaults['config']}"
+  puts "OPTIONS: " ; p options
+  puts "Reading config file #{options['config'] || defaults['config']}"
   # puts "\n ARGV: " ; p ARGV
 end
 
@@ -72,12 +75,12 @@ c = ParseConfig.new(options['config'] || defaults['config'])
 keylist = ["host", "port", "config", "namespace", "verbose"] | c.get_params() | defaults.keys | options.keys
 
 for key in keylist
-    src =  options.has_key?(key) ? 'command-line' : \
-                c.get_value(key) ? 'config file'  : \
-          defaults.has_key?(key) ? 'default'      : 'NOWHERE!'
-        
-    options[key] ||= c.get_value(key) || defaults[key]
-    printf "%10s = %-22s (%12s)\n", key, options[key], src if options['dumpconfig']
+  src =  options.has_key?(key) ? 'command-line' : \
+              c.get_value(key) ? 'config file'  : \
+        defaults.has_key?(key) ? 'default'      : 'NOWHERE!'
+
+  options[key] ||= c.get_value(key) || defaults[key]
+  printf "%10s = %-22s (%12s)\n", key, options[key], src if options['dumpconfig']
 end
 
 # after this, all values we care about are in the options hash
@@ -86,9 +89,19 @@ end
 servlet = XMLRPC::WEBrickServlet.new
 servlet.add_handler("upper_case") { |a_string| a_string.upcase }
 servlet.add_handler("lower_case") { |a_string| a_string.downcase }
+servlet.add_handler("edi2json"  ) { |a_string|
+  @map = OpenILS::Mapper.new('ORDERS')
+  '\\ TODO: give back better JSON here'
+  @map.add(a_string)
+  @map.message
+}
+servlet.add_handler("json2edi"  ) { |a_string|
+  @map = OpenILS::Mapper.from_json('ORDERS', a_string)
+  @map.message
+}
 servlet.add_introspection
 
-# create a WEBrick instance to host this servlet:
+# create a WEBrick instance to host the servlets
 server = WEBrick::HTTPServer.new(:Port => options['port'])
 trap("INT"){ server.shutdown }
 server.mount(options['namespace'], servlet)
