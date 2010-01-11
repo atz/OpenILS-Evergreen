@@ -30,16 +30,15 @@ sub _tempdir {
 
 our $debug =  0;
 
+sub default_filename {
+   my $tempdir = _tempdir;
+   my $filename = fileparse($0, '.pl');
+   return "$tempdir/$filename-LOCK";
+}
+
 sub new {
-    my $class = shift;
-    my ($lockfile);
-    if (@_) {
-       $lockfile = shift;
-    } else {
-       my $tempdir = _tempdir;
-       my $filename = fileparse($0, '.pl');   
-       $lockfile = "$tempdir/$filename-LOCK"
-    }
+    my $class    = shift;
+    my $lockfile = @_ ? shift : default_filename;
  
     croak "Script already running with lockfile $lockfile" if -e $lockfile;
     $debug and print "Writing lockfile $lockfile (PID: $$)\n";
@@ -53,6 +52,15 @@ sub new {
         contents => $$,
     };
     return bless ($self, $class);
+}
+
+sub filename {
+    my $self = shift;
+    return $self->{filename};
+}
+sub contents {
+    my $self = shift;
+    return $self->{contents};
 }
 
 DESTROY {
