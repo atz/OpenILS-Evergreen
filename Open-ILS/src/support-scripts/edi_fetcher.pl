@@ -22,8 +22,10 @@ use Data::Dumper;
 my $x = OpenILS::Cronscript->new({foo=>'bar', verbose=>-1, 'my_int=i'=>-1, 'lock-file'=>'/tmp/whatever'});
 print "in $0 pt 1: ", Dumper($x);
 
-$x->MyGetOptions({another_opt=>"another_val"});     # not yet implemented
+$x->MyGetOptions({another_opt=>"another_val"});     # adding options at this step not yet implemented
 print "in $0 pt 2: ", Dumper($x);
 
 $x->bootstrap;
+my $ses = $x->session('open-ils.trigger');
+print "SESSION: ", Dumper($ses);
 print "done\n";

@@ -36,7 +36,7 @@ use File::Basename qw/fileparse/;
 
 use Data::Dumper;
 
-our @extra_opts = (
+our @extra_opts = (     # additional keys are stored here
     # 'addlopt'
 );
 
@@ -82,19 +82,23 @@ sub fuzzykey {                      # when you know the hash you want from, but 
     }
 }
 
-sub MyGetOptions {          # TODO: allow more options to be passed here, maybe mimic Getopt::Long::GetOptions style
+# MyGetOptions
+# A wrapper around GetOptions
+# {opts} does two things for GetOptions (see Getopt::Long)
+#  (1) maps command-line options to the *other* variables where values are stored (in opts_clean)
+#  (2) provides hashspace for the rest of the arbitrary options from the command-line
+#
+# TODO: allow more options to be passed here, maybe mimic Getopt::Long::GetOptions style
+
+sub MyGetOptions {
     my $self = shift;
     my @keys = sort {is_clean($b) <=> is_clean($a)} keys %{$self->{default_opts}};
     $debug and print "KEYS: ", join(", ", @keys), "\n";
-        # {opts} does two things for GetOptions (see Getopt::Long)
-        # (1) maps these command-line options to the *other* variables where values are stored (in opts_clean)
-        # (2) provides hashspace for the rest of the arbitrary options from the command-line
     foreach (@keys) {
         my $clean = clean($_);
         $self->{opts_clean}->{$clean} = $self->{default_opts_clean}->{$clean};  # prepopulate default
         $self->{opts}->{$_} = \$self->{opts_clean}->{$clean};                   # pointer for GetOptions
     }
-    $self->{line_opts} = {};
     GetOptions($self->{opts}, @keys);
     foreach (@keys) {
         delete $self->{opts}->{$_};     # now remove the mappings from (1) so we just have (2)
