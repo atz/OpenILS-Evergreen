@@ -19,13 +19,18 @@ use warnings;
 
 use OpenILS::Cronscript;
 use Data::Dumper;
+
+use vars qw/$debug/;
+
+INIT { $debug = 1; }
+
 my $x = OpenILS::Cronscript->new({foo=>'bar', verbose=>-1, 'my_int=i'=>-1, 'lock-file'=>'/tmp/whatever'});
-print "in $0 pt 1: ", Dumper($x);
+$debug and print "in $0 pt 1: ", Dumper($x);
 
 $x->MyGetOptions({another_opt=>"another_val"});     # adding options at this step not yet implemented
-print "in $0 pt 2: ", Dumper($x);
+$debug and print "in $0 pt 2: ", Dumper($x);
 
 $x->bootstrap;
-my $ses = $x->session('open-ils.trigger');
-print "SESSION: ", Dumper($ses);
-print "done\n";
+my $ses = $x->session('open-ils.acq');
+$debug and print "SESSION: ", Dumper($ses);
+$debug and print "done\n";
