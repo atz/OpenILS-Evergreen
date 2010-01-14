@@ -113,3 +113,30 @@ SELECT auditor.create_auditor_lifecycle ('actor', 'usr');   -- This rebuilds the
 
 COMMIT;
 
+-- Since your might want to get in and out of this branch and this DB state, here's the code for
+-- backing out:
+/*
+
+ALTER TABLE actor.usr ADD COLUMN day_phone TEXT; 
+ALTER TABLE actor.usr ADD COLUMN evening_phone TEXT;
+ALTER TABLE actor.usr ADD COLUMN other_phone TEXT;
+
+ALTER TABLE auditor.actor_usr_history ADD COLUMN day_phone TEXT;
+ALTER TABLE auditor.actor_usr_history ADD COLUMN evening_phone TEXT;
+ALTER TABLE auditor.actor_usr_history ADD COLUMN other_phone TEXT;
+
+DROP VIEW IF EXISTS auditor.actor_usr_lifecycle;
+
+UPDATE actor.usr SET     day_phone = actor.usr_phone.digits FROM actor.usr_phone WHERE     day_phone_id = actor.usr_phone.id ;
+UPDATE actor.usr SET evening_phone = actor.usr_phone.digits FROM actor.usr_phone WHERE evening_phone_id = actor.usr_phone.id ;
+UPDATE actor.usr SET   other_phone = actor.usr_phone.digits FROM actor.usr_phone WHERE   other_phone_id = actor.usr_phone.id ;
+
+ALTER TABLE auditor.actor_usr_history DROP COLUMN day_phone_id;
+ALTER TABLE auditor.actor_usr_history DROP COLUMN evening_phone_id;
+ALTER TABLE auditor.actor_usr_history DROP COLUMN other_phone_id;
+
+SELECT auditor.create_auditor_lifecycle ('actor', 'usr');   -- This rebuilds the view we dropped.
+
+DROP TABLE usr_phone CASCADE;
+*/
+
