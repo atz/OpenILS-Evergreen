@@ -33,4 +33,15 @@ $debug and print "in $0 pt 2: ", Dumper($x);
 $x->bootstrap;
 my $ses = $x->session('open-ils.acq');
 $debug and print "SESSION: ", Dumper($ses);
+
+my $req = $ses->request('open-ils.acq.edi_account.retrieve');
+while (my $resp = $req->recv(timeout => 1800)) {
+    $resp;
+    # parse
+    # extract event ID
+    # add to async_data
+    # update status
+}
+
+
 $debug and print "done\n";
