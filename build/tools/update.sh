@@ -10,13 +10,13 @@ function svn_or_git {
     if [ -d "./.git" ]; then
         if [ -d "./.git/svn/trunk" ]; then
             git svn fetch;
-            git svn rebase origin;
+            # git svn rebase origin || die_msg "git svn rebase origin failed";
         else
-            git fetch origin;
-            git rebase origin;
+            git fetch;
+            # git rebase origin || die_msg "git rebase origin failed";
         fi
     else
-        svn update;
+        # svn update || die_msg "svn update failed";
     fi
 }
 
