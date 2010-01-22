@@ -306,7 +306,7 @@ sub ls {
 }
 
 # Internal Mechanics
-
+    
 sub _ssh2 {
     my $self = shift;
     $self->{ssh2} and return $self->{ssh2};     # caching
@@ -314,7 +314,7 @@ sub _ssh2 {
 
     my $ssh2 = Net::SSH2->new();
     unless($ssh2->connect($self->remote_host)) {
-        $logger->warn($self->error("SSH2 connect FAILED: $!" . join(" ", $ssh2->error)));
+        $logger->warn($self->error("SSH2 connect FAILED: $! " . join(" ", $ssh2->error)));
         return;     # we cannot connect
     }
 
@@ -339,6 +339,7 @@ sub auth_ssh2 {
     my $ssh2 = shift;
     my %auth_args = @_;
     $ssh2 or return;
+
 
     my $host = $auth_args{hostname}   || 'UNKNOWN';
     my $key  = $auth_args{privatekey} || 'UNKNOWN';

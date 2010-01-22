@@ -51,16 +51,23 @@ while (my $line = <TEMP>) {
 }
 close TEMP;
 
-print "\nThis one should fail\n";
-my $y = OpenILS::Utils::RemoteAccount->new(
+print "\n\nls :\n", join "\n", $x->ls;
+print "\n\nls ('out'):\n", join "\n", $x->ls('out');
+
+print "\nThis one should fail (at put)\n";
+my $y;
+
+$y = OpenILS::Utils::RemoteAccount->new(
     remote_host     => $config{remote_host},
     remote_user     => $config{remote_user},
     remote_password => 'some_junk',
     content => content(),
     type => 'FTP',
 );
+print STDERR "ERROR: $@ $! : \n", $y->error, "\n";
 
 print "\n\n", Dumper($y);
+
 $delay and print "Sleeping $delay seconds\n" and sleep $delay;
 $y->put({
     remote_file => $config{remote_file} . "2.$$",
@@ -72,5 +79,5 @@ $y->put({
     remote_file => $config{remote_file} . "3.$$",
     content     => content(),
     remote_password => $config{remote_password},
-}) or die "ERROR: $y->error";
+}) or warn "ERROR: $y->error";
 
