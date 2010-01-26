@@ -340,7 +340,6 @@ sub auth_ssh2 {
     my %auth_args = @_;
     $ssh2 or return;
 
-
     my $host = $auth_args{hostname}   || 'UNKNOWN';
     my $key  = $auth_args{privatekey} || 'UNKNOWN';
     my $msg  = "ssh2->auth by keypair for $host using $key"; 
@@ -541,6 +540,11 @@ sub _pkg {      # Not OO
 sub _error {
     my $self = shift;
     return _pkg($self->error(join(' ',@_)));
+}
+
+sub _error {
+    my $self = shift;
+    return __PACKAGE__ . ' : ' . $self->error(@_);
 }
 
 sub init {

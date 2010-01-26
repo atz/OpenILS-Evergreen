@@ -43,7 +43,7 @@ $x->put({
 
 print "\n\n", Dumper($x);
 
-my $file = $x->localfile;
+my $file = $x->local_file;
 open TEMP, "< $file" or die "Cannot read tempfile $file: $!";
 print "\n\ncontent from tempfile $file:\n";
 while (my $line = <TEMP>) {
