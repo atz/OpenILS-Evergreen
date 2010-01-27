@@ -3,7 +3,7 @@ BEGIN;
 -- INSERT INTO config.upgrade_log (version) VALUES ('0058');
 -- Commented out until this becomes official
 
-INSERT INTO event_definition (active, owner, name, hook, validator, reactor, cleanup_success, cleanup_failure, delay, delay_field, group_field, template) VALUES (true, 1, 'PO JEDI', 'format.po.jedi', 'NOOP_True', 'ProcessTemplate', NULL, NULL, '00:05:00', NULL, NULL, '[%- USE date -%]
+INSERT INTO acq.event_definition (active, owner, name, hook, validator, reactor, cleanup_success, cleanup_failure, delay, delay_field, group_field, template) VALUES (true, 1, 'PO JEDI', 'format.po.jedi', 'NOOP_True', 'ProcessTemplate', NULL, NULL, '00:05:00', NULL, NULL, '[%- USE date -%]
 [%- 
     # find a lineitem attribute by name and optional type
     BLOCK get_li_attr;
