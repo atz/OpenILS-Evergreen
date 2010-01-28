@@ -9,9 +9,9 @@ CREATE TABLE acq.edi_message (
                                      REFERENCES acq.edi_account(id)
                                      DEFERRABLE INITIALLY DEFERRED,
     remote_file      TEXT            NOT NULL,
-    created_time     TIMESTAMPTZ     NOT NULL DEFAULT now(),
-    translated_time  TIMESTAMPTZ,
-    processed_time   TIMESTAMPTZ,
+    create_time      TIMESTAMPTZ     NOT NULL DEFAULT now(),
+    translate_time   TIMESTAMPTZ,
+    process_time     TIMESTAMPTZ,
     error_time       TIMESTAMPTZ,
     status           TEXT            NOT NULL DEFAULT 'new'
                                      CONSTRAINT status_value CHECK
@@ -22,7 +22,7 @@ CREATE TABLE acq.edi_message (
                                         'processed',    -- needs to have remote_file deleted
                                         'proc_error',   -- error in processing step
                                         'delete_error', -- error in deletion
-                                        'done'          -- done
+                                        'complete'      -- done
                                      )),
     edi              TEXT,
     jedi             TEXT,
