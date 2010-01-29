@@ -29,4 +29,6 @@ CREATE TABLE acq.edi_message (
     error            TEXT
 );
 
+ALTER TABLE actor.org_address ADD COLUMN san TEXT;
+
 COMMIT;
