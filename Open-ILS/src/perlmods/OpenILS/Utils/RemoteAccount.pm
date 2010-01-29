@@ -306,7 +306,7 @@ sub ls {
 }
 
 # Internal Mechanics
-    
+
 sub _ssh2 {
     my $self = shift;
     $self->{ssh2} and return $self->{ssh2};     # caching
@@ -382,7 +382,7 @@ sub put_ssh2 {
     my $res;
     if ($res = $ssh2->scp_put( @_ )) {
         $logger->info(_pkg("successfully sent", $self->remote_host, join(' --> ', @_ )));
-        return $res;
+        return $res;   # success!
     }
     $logger->error($self->_error(sprintf "put with keys to %s failed with error: $!", $self->remote_host));
     return;
@@ -544,7 +544,7 @@ sub _error {
 
 sub _error {
     my $self = shift;
-    return __PACKAGE__ . ' : ' . $self->error(@_);
+    return _pkg($self->error(join(' ',@_)));
 }
 
 sub init {
