@@ -5,6 +5,8 @@ use strict; use warnings;
 use Data::Dumper;
 
 use OpenILS::Utils::RemoteAccount;
+use IO::Scalar;
+use IO::File;
 
 my $delay = 1;
 
@@ -55,10 +57,10 @@ close TEMP;
 my $dir = '/home/jatzberger/out';
 $delay and print "Sleeping $delay seconds\n" and sleep $delay;
 
-my @res1 = $x->ls({remote_file => $dir});
-my @res2 = $x->ls($dir);
-my @res3 = $x->ls();
-my @res4 = $x->ls('.');
+my @res1 = grep {! /\/\.?\.$/} $x->ls({remote_file => $dir});
+my @res2 = grep {! /\/\.?\.$/} $x->ls($dir);
+my @res3 = grep {! /\/\.?\.$/} $x->ls();
+my @res4 = grep {! /\/\.?\.$/} $x->ls('.');
 
 my $mismatch = 0;
 my $found    = 0;
@@ -88,6 +90,18 @@ foreach (@res4) {
 print "\n";
 print "\nNumber of mismatches: $mismatch\n";
 $mismatch and warn "Different style calls to ls got different results.  Please check again.";
+
+$x->debug(1);
+my $target = $res1[0] || $res3[0];
+my $slurp;
+
+my $io = IO::Scalar->new(\$slurp);
+print "Trying to read $target into an IO::Scalar\n";
+$x->get({remote_file => $target, local_file => $io});
+
+my $iofile = IO::File->new(">/tmp/io_file_sftp_test.tmp");
+print "Trying to read $target into an IO::File\n";
+$x->get({remote_file => $target, local_file => $iofile});
 
 print "\n\ndone\n";
 exit;
