@@ -72,12 +72,12 @@ $delay and print "Sleeping $delay seconds\n" and sleep $delay;
 $y->put({
     remote_file => $config{remote_file} . "2.$$",
     content     => content(),
-}) or warn "ERROR: $y->error";
+}) or warn "ERROR with put: " . $y->error;
 
 print "\nThis one might succeed\n";
 $y->put({
     remote_file => $config{remote_file} . "3.$$",
     content     => content(),
     remote_password => $config{remote_password},
-}) or warn "ERROR: $y->error";
+}) or warn "ERROR with put: " . $y->error;
 
