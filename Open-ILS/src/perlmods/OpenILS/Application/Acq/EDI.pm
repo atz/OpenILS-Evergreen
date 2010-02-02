@@ -52,7 +52,6 @@ sub add_a_msg {
     $e->create_acq_edi_message($incoming);;
     $e->commit;
 }
-
 # __PACKAGE__->register_method( method => 'add_a_msg', api_name => 'open-ils.acq.edi.add_a_msg');  # debugging
 
 __PACKAGE__->register_method(
