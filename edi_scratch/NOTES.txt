@@ -1,0 +1,13 @@
+
+There is no such thing (yet?) as "push" from vendor of their EDI responses.  Basically
+they just put them in an FTP directory somewhere that you are expected to check.  It
+would be cool if there were a better way to do that like consuming some RSS feed or 
+remote API callbacks.  
+
+Evergreen will only support one delivery address per PO.  That limitation is based
+on the mapping to the delivery address via the ordering_agency org_unit.  If items
+need to be shipped someplace else, then they need a different PO, for now at least.
+
+If we want to support multiple vendor profiles, then we drop the unique constraint
+on SAN, add a new one on SAN + profile_code.  Profile code then goes in the template.
+The template logic could get rather complex to support all the optional data elements.
