@@ -25,13 +25,15 @@ INSERT INTO acq.event_definition (active, owner, name, hook, validator, reactor,
     "date":"[% date.format(date.now, ''%Y%m%d'') %]",
 
     "buyer":[
-        {"id-qualifier":"91","id":"3472205","reference":{"API":"3472205 0001"}},
-        {"id":"3472205","reference":{"API":"3472205 0001"}}
+//      {"id-qualifier":"91","id":"[% target.ordering_agency.mailing_address.san %]",
+//       "reference":{"API":"[% target.ordering_agency.mailing_address.san %]"}},
+        {"id":"[% target.ordering_agency.mailing_address.san %]",
+         "reference":{"API":"[% target.ordering_agency.mailing_address.san %]"}}
     ],
 
     "vendor":[
         "[% target.provider.san %]",
-        {"id-qualifier":"91", "reference":{"IA":"1865"}, "id":"[% target.provider.san %]"}
+        {"id-qualifier":"91", "reference":{"IA":"[% target.provider.id %]"}, "id":"[% target.provider.san %]"}
     ],
 
     "currency":"[% target.provider.currency_type %]",
@@ -39,7 +41,7 @@ INSERT INTO acq.event_definition (active, owner, name, hook, validator, reactor,
     "items":[
         [% FOR li IN target.lineitems %]
         {
-            "identifiers":[{"id-qualifier":"SA","id":"03-0010837"}],
+            "identifiers":[{"id-qualifier":"SA","id":"[% li.id %]"}],
             "price":[% PROCESS get_li_attr attr_name = ''estimated_price'' %],
             "desc":[
                 {"BTI":"[% PROCESS get_li_attr attr_name = ''title''      %]"},
@@ -48,6 +50,7 @@ INSERT INTO acq.event_definition (active, owner, name, hook, validator, reactor,
                 {"BPH":"[% PROCESS get_li_attr attr_name = ''pagination'' %]"}
             ],
             "quantity":[% li.lineitem_details.size %]
+            // TODO: lineitem details (later)
         },
         [% END %]
     ],
@@ -56,8 +59,30 @@ INSERT INTO acq.event_definition (active, owner, name, hook, validator, reactor,
 }]
 ');
 
+/*
+// API : additional party identification -- supplier’s code for library acct or dept (EAN code) 
+// IA  : internal vendor number (vendor profile number)
+// VA  : VAT registered number.... TODO
+
+BUYER id-qualifier:
+ 9  = EAN - location number -- not the same as EAN-13 barcode
+31B = US book trade SANs (Standard Address Numbers aka EDItEUR code) - TRANSLATOR DEFAULT!
+91  = Assigned by supplier or supplier’s agent
+92  = Assigned by buyer
+
+ITEM id-qualifier (Item number type, coded):
+EN = EAN-13 article number - 13 digit barcode
+IB = ISBN (International Standard Book   Number)
+IM = ISMN (International Standard Music  Number)
+IS = ISSN (International Standard Serial Number): use only in a continuation order message coded 22C in BGM DE 1001, to identify the series to which the order applies
+MF = manufacturer’s article number
+SA = supplier’s article number
+*/
+
+
 INSERT INTO action_trigger.environment (event_def, path) VALUES 
   ((SELECT id FROM action_trigger.event_definition WHERE name='PO JEDI'), 'lineitems.attributes'), 
+  ((SELECT id FROM action_trigger.event_definition WHERE name='PO JEDI'), 'ordering_agency.mailing_address'), 
   ((SELECT id FROM action_trigger.event_definition WHERE name='PO JEDI'), 'provider');
 
 -- The environment insert has to happen here because it relies on subquerying the user-editable field "name" to
