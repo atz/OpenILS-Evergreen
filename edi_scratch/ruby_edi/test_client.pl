@@ -23,7 +23,7 @@ $host =~ /:\d+$/     or $host .= ':9191';
 $host .= '/EDI';
 
 sub get_in {
-    print "Getting JSON from input\n";
+    print "Getting " . shift . " from input\n";
     my $json = join("", <STDIN>);
     $json or return;
     print $json, "\n";
@@ -37,13 +37,21 @@ print "Trying host: $host\n";
 my $client = new RPC::XML::Client($host);
 
 my @commands = @ARGV ? @ARGV : 'system.listMethods';
-if ($commands[0] eq 'json2edi') {
+if ($commands[0] eq 'json2edi' or $commands[0] eq 'edi2json') {
     shift;
-    print "Ignoring commands after json2edi\n";
-    my $json;
-    while ($json = get_in()) {  # assignment
-        my $resp = $client->send_request('json2edi', $json);
+    print "Ignoring commands after $commands[0]\n";
+    my $string;
+    my $type = $commands[0] eq 'json2edi' ? 'JSON' : 'EDI';
+    while ($string = get_in($type)) {  # assignment
+        my $resp = $commands[0] eq 'json2edi' ?
+                   $client->send_request('json2edi', $string) :
+                   $client->send_request('edi2json', $string) ;
         print Dumper($resp);
+        $resp or next;
+        if ($resp->is_fault) {
+            print "ERROR code ", $resp->code, " received:\n", $resp->string . "\n";
+            next;
+        }
     }
     exit;
 } 
