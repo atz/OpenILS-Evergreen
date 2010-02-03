@@ -31,6 +31,14 @@ sub get_in {
     return $json;
 }
 
+sub nice_string {
+    my $string = shift or return '';
+    my $head   = @_ ? shift : 100;
+    my $tail   = @_ ? shift : 25;
+    (length($string) < $head + $tail) and return $string;
+    return substr($string,0,$head) . " ...\n... " . substr($string, -1*$tail);
+}
+
 # MAIN
 print "Trying host: $host\n";
 
@@ -46,10 +54,10 @@ if ($commands[0] eq 'json2edi' or $commands[0] eq 'edi2json') {
         my $resp = $commands[0] eq 'json2edi' ?
                    $client->send_request('json2edi', $string) :
                    $client->send_request('edi2json', $string) ;
-        print Dumper($resp);
+        # print Dumper($resp);
         $resp or next;
         if ($resp->is_fault) {
-            print "ERROR code ", $resp->code, " received:\n", $resp->string . "\n";
+            print "\n\nERROR code ", $resp->code, " received:\n", nice_string($resp->string) . "\n...\n";
             next;
         }
     }

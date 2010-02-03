@@ -11,3 +11,7 @@ need to be shipped someplace else, then they need a different PO, for now at lea
 If we want to support multiple vendor profiles, then we drop the unique constraint
 on SAN, add a new one on SAN + profile_code.  Profile code then goes in the template.
 The template logic could get rather complex to support all the optional data elements.
+
+mbklein says:
+Ruby dependency edi4r only seems to understand EDIFACT versions d96a and d01b,
+so the sample that's using d03b will fail.
