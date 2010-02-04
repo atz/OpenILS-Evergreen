@@ -3,12 +3,13 @@
 require 'rubygems'
 require 'optparse'
 require 'parseconfig'
+require 'stringio'
 require 'webrick'
 require 'xmlrpc/server'
 
-# require 'edi/edi2json'
-# require 'edi/mapper'
 require 'openils/mapper'
+require 'edi/edi2json'
+# require 'edi/mapper'
 
 base = File.basename($0, '.rb')
 
@@ -90,10 +91,8 @@ servlet = XMLRPC::WEBrickServlet.new
 servlet.add_handler("upper_case") { |a_string| a_string.upcase }
 servlet.add_handler("lower_case") { |a_string| a_string.downcase }
 servlet.add_handler("edi2json"  ) { |a_string|
-  @map = OpenILS::Mapper.new('ORDERS')
-  '\\ TODO: give back better JSON here'
-  @map.add(a_string)
-  @map.message
+  interchange = StringIO.open(a_string){ |io| EDI::E::Interchange.parse(io) }
+  interchange.to_json
 }
 servlet.add_handler("json2edi"  ) { |a_string|
   @map = OpenILS::Mapper.from_json('ORDERS', a_string)
