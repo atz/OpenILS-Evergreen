@@ -21,5 +21,5 @@ sudo ruby setup.rb
 sudo update_rubygems
 popd
 
-sudo gem install rspec edi4r json rcov # mkmf
+sudo gem install rspec edi4r edi4r-tdid json rcov # mkmf
 
