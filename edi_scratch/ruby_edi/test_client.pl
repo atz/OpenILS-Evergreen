@@ -43,6 +43,13 @@ sub nice_string {
 print "Trying host: $host\n";
 
 my $client = new RPC::XML::Client($host);
+$client->request->header('Content-Type' => 'text/xml;charset=utf-8');
+print "User-agent: ", Dumper($client->useragent);
+print "Request: ", Dumper($client->request);
+print "Headers: \n";
+foreach ($client->request->header_field_names) {
+    print "\t$_ =>", $client->request->header($_), "\n";
+}
 
 my @commands = @ARGV ? @ARGV : 'system.listMethods';
 if ($commands[0] eq 'json2edi' or $commands[0] eq 'edi2json') {
@@ -54,7 +61,7 @@ if ($commands[0] eq 'json2edi' or $commands[0] eq 'edi2json') {
         my $resp = $commands[0] eq 'json2edi' ?
                    $client->send_request('json2edi', $string) :
                    $client->send_request('edi2json', $string) ;
-        # print Dumper($resp);
+        print "Response: ", Dumper($resp);
         $resp or next;
         if ($resp->is_fault) {
             print "\n\nERROR code ", $resp->code, " received:\n", nice_string($resp->string) . "\n...\n";
