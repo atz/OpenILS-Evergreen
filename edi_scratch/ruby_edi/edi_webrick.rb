@@ -91,6 +91,7 @@ servlet = XMLRPC::WEBrickServlet.new
 servlet.add_handler("upper_case") { |a_string| a_string.upcase }
 servlet.add_handler("lower_case") { |a_string| a_string.downcase }
 servlet.add_handler("edi2json"  ) { |a_string|
+  File.open('/tmp/edi2json.tmp', 'w') {|f| f.write(a_string) }      # debugging, so we can compare what we rec'd w/ the orig. file
   interchange = StringIO.open(a_string){ |io| EDI::E::Interchange.parse(io) }
   interchange.to_json
 }
