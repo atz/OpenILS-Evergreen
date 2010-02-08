@@ -23,7 +23,7 @@ $host =~ /:\d+$/     or $host .= ':9191';
 $host .= '/EDI';
 
 sub get_in {
-    print "Getting " . shift . " from input\n";
+    print "Getting " . (shift) . " from input\n";
     my $json = join("", <STDIN>);
     $json or return;
     print $json, "\n";
@@ -54,7 +54,7 @@ foreach ($client->request->header_field_names) {
 my @commands = @ARGV ? @ARGV : 'system.listMethods';
 if ($commands[0] eq 'json2edi' or $commands[0] eq 'edi2json') {
     shift;
-    print "Ignoring commands after $commands[0]\n";
+    @commands > 1 and print "Ignoring commands after $commands[0]\n";
     my $string;
     my $type = $commands[0] eq 'json2edi' ? 'JSON' : 'EDI';
     while ($string = get_in($type)) {  # assignment
