@@ -14,11 +14,6 @@ sub NOOP_True { return 1 }
 sub NOOP_False { return 0 }
 
 
-# All these are used by the get_li_attr helper.  Might be overkill.
-use OpenSRF::System;
-use OpenSRF::Utils::SettingsClient;
-use OpenILS::Utils::Fieldmapper;
-Fieldmapper->import(IDL => OpenSRF::Utils::SettingsClient->new->config_value("IDL"));
 
 # helper functions inserted into the TT environment
 my $_TT_helpers = {
