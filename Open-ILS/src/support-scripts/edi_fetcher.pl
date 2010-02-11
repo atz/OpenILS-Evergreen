@@ -18,43 +18,34 @@ use strict;
 use warnings;
 
 use Data::Dumper;
-use vars qw/$debug $x/;
-
-use OpenILS::Utils::Cronscript;
-require OpenILS::Utils::CStoreEditor;   # needs to be after bootstrap (in Cronscript)
-
-BEGIN {
-    OpenILS::Utils::Cronscript->new({})->session('open-ils.acq') or die "No session created";
-}
-
-INIT {
-    $debug = 0;
-}
+use vars qw/$debug/;
 
 use OpenILS::Application::Acq::EDI;
+use OpenILS::Utils::CStoreEditor;   # needs init() after IDL is loaded (by Cronscript session)
+use OpenILS::Utils::Cronscript;
 
-my $res = OpenILS::Application::Acq::EDI->retrieve_core();
-print Dumper($res), "\n";
-exit;
+INIT {
+    $debug = 1;
+}
+
+OpenILS::Utils::Cronscript->new()->session('open-ils.acq') or die "No session created";
+OpenILS::Utils::CStoreEditor::init();
 
 sub editor {
-    my $ed = OpenILS::Utils::CStoreEditor->new(xact => 1) or die "Failed to get new CStoreEditor";
+    my $ed = OpenILS::Utils::CStoreEditor->new(@_) or die "Failed to get new CStoreEditor";
     return $ed;
 }
 
-my $i = 5;
-my $e = editor;
-until (UNIVERSAL::can($e, 'retrieve_all_acq_edi_account') or $i == 0) {
-    print STDERR "CStoreEditor FAIL: cannot retrieve_all_acq_edi_account\n";
-    delete $INC{'OpenILS/Utils/CStoreEditor.pm'};
-    require OpenILS::Utils::CStoreEditor;
-    $e = editor;
-    print STDERR "EXPECT DEATH: ", $i--, "\n";
-    sleep 2;
-}
 
+my $e = editor();
 my $set = $e->retrieve_all_acq_edi_account();
-print Dumper($set);
+print "EDI Accounts: ", scalar(@$set), "\n";
+
+my $res = OpenILS::Application::Acq::EDI->retrieve_core();
+print "Files retrieved: ", scalar(@$res), "\n";
+$debug and print "retrieve_core returns ids: " . join(', ', @$res), "\n";
+
+$debug and print Dumper($set);
 # my $res = OpenILS::Application::Acq::EDI->retrieve_core();
 # print Dumper($res), "\n";
 print "\ndone\n";
