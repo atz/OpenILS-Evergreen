@@ -82,6 +82,8 @@ SA = supplier’s article number
 
 INSERT INTO action_trigger.environment (event_def, path) VALUES 
   ((SELECT id FROM action_trigger.event_definition WHERE name='PO JEDI'), 'lineitems.attributes'), 
+  ((SELECT id FROM action_trigger.event_definition WHERE name='PO JEDI'), 'lineitems.lineitem_details'), 
+  ((SELECT id FROM action_trigger.event_definition WHERE name='PO JEDI'), 'lineitems.lineitem_notes'), 
   ((SELECT id FROM action_trigger.event_definition WHERE name='PO JEDI'), 'ordering_agency.mailing_address'), 
   ((SELECT id FROM action_trigger.event_definition WHERE name='PO JEDI'), 'provider');
 
