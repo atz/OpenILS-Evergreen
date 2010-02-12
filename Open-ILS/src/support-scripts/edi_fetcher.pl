@@ -39,7 +39,22 @@ sub editor {
 
 my $e = editor();
 my $set = $e->retrieve_all_acq_edi_account();
-print "EDI Accounts: ", scalar(@$set), "\n";
+my $total_accts = scalar(@$set);
+
+($total_accts) or die "No EDI accounts found in database (table: acq.edi_account)";
+
+print "EDI Accounts Total : ", scalar(@$set), "\n";
+
+my $subset = $e->search_acq_edi_account([
+    {'+acqpro' => {active => 't'}},
+    {
+        'join' => 'acqpro',
+        flesh => 1,
+        flesh_fields => {acqedi => ['provider']},
+    }
+]);
+
+print "EDI Accounts Active: ", scalar(@$subset), "\n";
 
 my $res = OpenILS::Application::Acq::EDI->retrieve_core();
 print "Files retrieved: ", scalar(@$res), "\n";
