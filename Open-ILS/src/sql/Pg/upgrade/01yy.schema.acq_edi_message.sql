@@ -5,10 +5,9 @@ BEGIN;
 
 CREATE TABLE acq.edi_message (
     id               SERIAL          PRIMARY KEY,
-    account          INTEGER         NOT NULL
-                                     REFERENCES acq.edi_account(id)
+    account          INTEGER         REFERENCES acq.edi_account(id)
                                      DEFERRABLE INITIALLY DEFERRED,
-    remote_file      TEXT            NOT NULL,
+    remote_file      TEXT,
     create_time      TIMESTAMPTZ     NOT NULL DEFAULT now(),
     translate_time   TIMESTAMPTZ,
     process_time     TIMESTAMPTZ,
