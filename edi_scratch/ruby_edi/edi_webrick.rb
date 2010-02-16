@@ -96,6 +96,7 @@ servlet.add_handler("edi2json"  ) { |a_string|
   interchange.to_json
 }
 servlet.add_handler("json2edi"  ) { |a_string|
+  File.open('/tmp/json2edi.tmp', 'w') {|f| f.write(a_string) }      # debugging, so we can compare what we rec'd w/ the orig. file
   @map = OpenILS::Mapper.from_json('ORDERS', a_string)
   @map.message
 }
