@@ -1,0 +1,16 @@
+# This diff was created by:
+#    diff -w edi_scratch/perl_json2edi.tmp edi_scratch/psql_json2edi.tmp >edi_scratch/json2edi.diff 
+0a1,2
+>                                                          data                                                         
+> ----------------------------------------------------------------------------------------------------------------------
+56c58
+<                 {"BTI":"Harry Potter and the goblet of fire / by J.K. Rowling ; illustrations by Mary GrandPrÈ."}, 
+---
+>                  {"BTI":"Harry Potter and the goblet of fire / by J.K. Rowling ; illustrations by Mary GrandPr√©."}, 
+72c74
+<                 {"BTI":"Harry Potter and the Chamber of Secrets / J.K. Rowling ; illustrations by Mary GrandPrÈ."}, 
+---
+>                  {"BTI":"Harry Potter and the Chamber of Secrets / J.K. Rowling ; illustrations by Mary GrandPr√©."}, 
+84a87,88
+> (1 row)
+> 
