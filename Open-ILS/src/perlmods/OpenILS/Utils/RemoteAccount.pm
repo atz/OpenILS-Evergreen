@@ -382,7 +382,7 @@ sub put_ssh2 {
     my $res;
     if ($res = $ssh2->scp_put( @_ )) {
         $logger->info(_pkg("successfully sent", $self->remote_host, join(' --> ', @_ )));
-        return $res;   # success!
+        return $res;
     }
     $logger->error($self->_error(sprintf "put with keys to %s failed with error: $!", $self->remote_host));
     return;
