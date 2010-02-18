@@ -76,6 +76,7 @@ foreach my $def (@$defs) {
         my $edi = $trans->json2edi($_->template_output()->data);   #  Going underneath EDI.pm
         print "\n\ntranslator output: ", Dumper($edi), "\n";
         $message->jedi($_->template_output()->data);
+        print "\ntarget->provider->edi_default->id: ", $target->provider->edi_default->id, "\n";
         print "\nNow calling attempt_translation\n\n";
         unless (OpenILS::Application::Acq::EDI->attempt_translation($message, 1)) {
             print STDERR "ERROR: attempt_translation failed, skipping message\n";
