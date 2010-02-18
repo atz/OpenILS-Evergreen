@@ -1,0 +1,21 @@
+                                         Table "acq.edi_message"
+     Column     |           Type           |                          Modifiers                           
+----------------+--------------------------+--------------------------------------------------------------
+ id             | integer                  | not null default nextval('acq.edi_message_id_seq'::regclass)
+ account        | integer                  | 
+ remote_file    | text                     | 
+ create_time    | timestamp with time zone | not null default now()
+ translate_time | timestamp with time zone | 
+ process_time   | timestamp with time zone | 
+ error_time     | timestamp with time zone | 
+ status         | text                     | not null default 'new'::text
+ edi            | text                     | 
+ jedi           | text                     | 
+ error          | text                     | 
+Indexes:
+    "edi_message_pkey" PRIMARY KEY, btree (id)
+Check constraints:
+    "status_value" CHECK (status = ANY (ARRAY['new'::text, 'translated'::text, 'trans_error'::text, 'processed'::text, 'proc_error'::text, 'delete_error'::text, 'complete'::text]))
+Foreign-key constraints:
+    "edi_message_account_fkey" FOREIGN KEY (account) REFERENCES acq.edi_account(id) DEFERRABLE INITIALLY DEFERRED
+
