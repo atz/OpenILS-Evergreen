@@ -1,0 +1,28 @@
+
+(gdb) backtrace
+#0  0x00007f596e392970 in read () from /lib/libc.so.6
+#1  0x00007f596f01107e in prefork_child_wait (child=0x221fb80) at osrf_prefork.c:755
+#2  0x00007f596f0116e1 in launch_child (forker=<value optimized out>) at osrf_prefork.c:478
+#3  0x00007f596f011dfa in osrf_prefork_run (appname=0xd506c0 "open-ils.cstore") at osrf_prefork.c:493
+#4  0x00007f596f01074a in osrfSystemBootstrap (hostname=<value optimized out>, configfile=<value optimized out>, contextNode=<value optimized out>) at osrf_system.c:273
+#5  0x0000000000400a35 in main (argc=4, argv=0x7fff77452c78) at opensrf.c:19
+(gdb) continue
+Continuing.
+
+Program received signal SIGSEGV, Segmentation fault.
+[Switching to Thread 0x7f596f4426e0 (LWP 6716)]
+dispatchCRUDMethod (ctx=0x7fff77451cb0) at oils_cstore.c:4998
+4998                    } else if( JSON_BOOL == field_object->type ) {
+(gdb) backtrace
+#0  dispatchCRUDMethod (ctx=0x7fff77451cb0) at oils_cstore.c:4998
+#1  0x00007f596f013862 in osrfAppRunMethod (appName=0x2542e00 "open-ils.cstore", methodName=0x2545d30 "open-ils.cstore.direct.acq.edi_message.update", ses=0x2540530,
+    reqId=2, params=0xd2c850) at osrf_application.c:309
+#2  0x00007f596f00f23c in osrf_stack_application_handler (session=0x2535b80, msg=0x2542710) at osrf_stack.c:308
+#3  0x00007f596f00f63f in osrf_stack_transport_handler (msg=0x2546f90, my_service=<value optimized out>) at osrf_stack.c:285
+#4  0x00007f596f00f8c9 in osrf_stack_process (client=0x2227340, timeout=<value optimized out>, msg_received=0x7fff774529dc) at osrf_stack.c:41
+#5  0x00007f596f011248 in prefork_child_wait (child=0x221fb80) at osrf_prefork.c:341
+#6  0x00007f596f0116e1 in launch_child (forker=<value optimized out>) at osrf_prefork.c:478
+#7  0x00007f596f011dfa in osrf_prefork_run (appname=0xd506c0 "open-ils.cstore") at osrf_prefork.c:493
+#8  0x00007f596f01074a in osrfSystemBootstrap (hostname=<value optimized out>, configfile=<value optimized out>, contextNode=<value optimized out>) at osrf_system.c:273
+#9  0x0000000000400a35 in main (argc=4, argv=0x7fff77452c78) at opensrf.c:19
+(gdb)
