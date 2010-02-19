@@ -3,61 +3,47 @@ BEGIN;
 -- INSERT INTO config.upgrade_log (version) VALUES ('0058');
 -- Commented out until this becomes official
 
-INSERT INTO acq.event_definition (active, owner, name, hook, validator, reactor, cleanup_success, cleanup_failure, delay, delay_field, group_field, template) VALUES (true, 1, 'PO JEDI', 'format.po.jedi', 'NOOP_True', 'ProcessTemplate', NULL, NULL, '00:05:00', NULL, NULL, '[%- USE date -%]
-[%- 
-    # find a lineitem attribute by name and optional type
-    BLOCK get_li_attr;
-        FOR attr IN li.attributes;
-            IF attr.attr_name == attr_name;
-                IF !attr_type OR attr_type == attr.attr_type;
-                    attr.attr_value;   
-                    LAST;
-                END;
-            END;
-        END;
-    END 
--%]
+INSERT INTO acq.event_definition (active, owner, name, hook, validator, reactor, cleanup_success, cleanup_failure, delay, delay_field, group_field, template) VALUES (true, 1, 'PO JEDI', 'format.po.jedi', 'NOOP_True', 'ProcessTemplate', NULL, NULL, '00:05:00', NULL, NULL,
+$$[%- USE date -%]
 [%# start JEDI document -%]
+[%- BLOCK big_block -%]
 ["order", {
-
     "po_number":[% target.id %],
-
-    "date":"[% date.format(date.now, ''%Y%m%d'') %]",
-
+    "date":"[% date.format(date.now, '%Y%m%d') %]",
     "buyer":[
-//      {"id-qualifier":"91","id":"[% target.ordering_agency.mailing_address.san %]",
-//       "reference":{"API":"[% target.ordering_agency.mailing_address.san %]"}},
         {"id":"[% target.ordering_agency.mailing_address.san %]",
          "reference":{"API":"[% target.ordering_agency.mailing_address.san %]"}}
     ],
-
-    "vendor":[
-        "[% target.provider.san %]",
+    "vendor":[ 
+        "[% target.provider.san %]", // [% target.provider.name %] ([% target.provider.id %])
         {"id-qualifier":"91", "reference":{"IA":"[% target.provider.id %]"}, "id":"[% target.provider.san %]"}
     ],
-
     "currency":"[% target.provider.currency_type %]",
-
     "items":[
         [% FOR li IN target.lineitems %]
         {
-            "identifiers":[{"id-qualifier":"SA","id":"[% li.id %]"}],
-            "price":[% PROCESS get_li_attr attr_name = ''estimated_price'' %],
+            "identifiers":[
+                {"id-qualifier":"SA","id":"[% li.id %]"},
+                {"id-qualifier":"IB","id":"[% helpers.get_li_attr('isbn', li.attributes) %]"}
+            ],
+            "price":[% helpers.get_li_attr('estimated_price', '', li.attributes) %],
             "desc":[
-                {"BTI":"[% PROCESS get_li_attr attr_name = ''title''      %]"},
-                {"BPU":"[% PROCESS get_li_attr attr_name = ''publisher''  %]"},
-                {"BPD":"[% PROCESS get_li_attr attr_name = ''pubdate''    %]"},
-                {"BPH":"[% PROCESS get_li_attr attr_name = ''pagination'' %]"}
+                {"BTI":"[% helpers.get_li_attr('title',     '', li.attributes) %]"}, 
+                {"BPU":"[% helpers.get_li_attr('publisher', '', li.attributes) %]"},
+                {"BPD":"[% helpers.get_li_attr('pubdate',   '', li.attributes) %]"},
+                {"BPH":"[% helpers.get_li_attr('pagination','', li.attributes) %]"}
             ],
             "quantity":[% li.lineitem_details.size %]
-            // TODO: lineitem details (later)
-        },
-        [% END %]
+            [%-# TODO: lineitem details (later) -%]
+        }[% UNLESS loop.last %],[% END -%]
+        [%- END %]
     ],
-
     "line_items":[% target.lineitems.size %]
 }]
-');
+[% END %]
+[% tempo = PROCESS big_block; helpers.escape_json(tempo) %]
+$$
+);
 
 /*
 // API : additional party identification -- supplier’s code for library acct or dept (EAN code) 
