@@ -1,6 +1,6 @@
 
 {
- "msgtype: "ORDERS",
+ "msg_type": "ORDERS",
  "msg": ["order", {
     "po_number":6,
     "date":"20100301",
