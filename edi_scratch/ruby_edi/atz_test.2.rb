@@ -12,7 +12,7 @@ DATA.each { |a_string|
 }
 
 @map = OpenILS::Mapper.from_json(json)
-@map.finalize.to_s
+puts @map.finalize.to_s
 __END__
 
 {
