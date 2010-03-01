@@ -99,8 +99,7 @@ servlet.add_handler("edi2json"  ) { |a_string|
 }
 servlet.add_handler("json2edi"  ) { |a_string|
   File.open('/tmp/ruby_json2edi.tmp', 'w') {|f| f.write(a_string) }      # debugging, so we can compare what we rec'd w/ the orig. file
-  # @map = OpenILS::Mapper.from_json('ORDERS', a_string, nil, {:sender => '123456', :recipient => '654321'})
-  @map = OpenILS::Mapper.from_json('ORDERS', a_string)
+  @map = OpenILS::Mapper.from_json(a_string)
   @map.finalize.to_s
 }
 servlet.add_introspection
