@@ -58,9 +58,7 @@ print "EDI Accounts Active: ", scalar(@$subset), "\n";
 
 my $res = OpenILS::Application::Acq::EDI->retrieve_core();
 print "Files retrieved: ", scalar(@$res), "\n";
-$debug and print "retrieve_core returns ids: " . join(', ', @$res), "\n";
+$debug and print "retrieve_core returns ", scalar(@$res),  " ids: " . join(', ', @$res), "\n";
 
 $debug and print Dumper($set);
-# my $res = OpenILS::Application::Acq::EDI->retrieve_core();
-# print Dumper($res), "\n";
 print "\ndone\n";
