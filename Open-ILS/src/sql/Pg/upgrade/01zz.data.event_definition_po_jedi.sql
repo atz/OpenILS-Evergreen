@@ -7,16 +7,20 @@ INSERT INTO acq.event_definition (active, owner, name, hook, validator, reactor,
 $$[%- USE date -%]
 [%# start JEDI document -%]
 [%- BLOCK big_block -%]
-["order", {
+{
+ "recipient":"[% target.provider.san %]",
+ "sender":"[% target.ordering_agency.mailing_address.san %]",
+ "msg_type": "ORDERS",
+ "msg": ["order", {
     "po_number":[% target.id %],
     "date":"[% date.format(date.now, '%Y%m%d') %]",
-    "buyer":[
-        {"id":"[% target.ordering_agency.mailing_address.san %]",
-         "reference":{"API":"[% target.ordering_agency.mailing_address.san %]"}}
-    ],
+    "buyer":[{
+        "id":"[% target.ordering_agency.mailing_address.san %]"
+    }],
     "vendor":[ 
-        "[% target.provider.san %]", // [% target.provider.name %] ([% target.provider.id %])
-        {"id-qualifier":"91", "reference":{"IA":"[% target.provider.id %]"}, "id":"[% target.provider.san %]"}
+        [%- # target.provider.name (target.provider.id) -%]
+        "[% target.provider.san %]",
+        {"id-qualifier": 92, "id":"[% target.provider.id %]"}
     ],
     "currency":"[% target.provider.currency_type %]",
     "items":[
@@ -35,11 +39,12 @@ $$[%- USE date -%]
             ],
             "quantity":[% li.lineitem_details.size %]
             [%-# TODO: lineitem details (later) -%]
-        }[% UNLESS loop.last %],[% END -%]
-        [%- END %]
+        }[% UNLESS loop.last %],[% END %]
+        [% END %]
     ],
     "line_items":[% target.lineitems.size %]
-}]
+ }]
+}
 [% END %]
 [% tempo = PROCESS big_block; helpers.escape_json(tempo) %]
 $$
