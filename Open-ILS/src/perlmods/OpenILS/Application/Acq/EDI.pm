@@ -15,6 +15,8 @@ use OpenILS::Utils::CStoreEditor q/new_editor/;
 use OpenILS::Utils::Fieldmapper;
 use OpenILS::Application::Acq::EDI::Translator;
 
+use Business::EDI;
+
 use Data::Dumper;
 our $verbose = 0;
 
@@ -317,7 +319,7 @@ sub jedi2perl {
     my ($class, $jedi) = @_;
     $jedi or return;
     my $msg = OpenSRF::Utils::JSON->JSON2perl( $jedi );
-    open (FOO, ">>/tmp/joe_jedi_dump.txt");
+    open (FOO, ">>/tmp/JSON2perl_dump.txt");
     print FOO Dumper($msg), "\n\n";
     close FOO;
     $logger->warn("Dumped JSON2perl to /tmp/JSON2perl_dump.txt");
@@ -333,17 +335,93 @@ sub process_jedi {
         $logger->warn("EDI process_jedi missing required argument (edi_message object with jedi or jedi scalar)!");
         return;
     }
+    my $e = @_ ? shift : new_editor();
     my $perl = __PACKAGE__->jedi2perl($jedi);
     if (ref($message) and not $perl) {
-        my $e = @_ ? shift : new_editor();
-        $message->error(($message->error || '') . " JSON2perl FAILED to convert jedi");
+        $message->error(($message->error || '') . " JSON2perl (jedi2perl) FAILED to convert jedi");
         $message->error_time('NOW');
         $e->xact_begin;
         $e->udpate_acq_edi_message($message) or $logger->warn("EDI update_acq_edi_message failed! $!");
         $e->xact_commit;
+        return;
     }
-    # __PACKAGE__->process_eval_msg(__PACKAGE__->jedi2perl($jedi), @_);
-    return $perl;   # TODO process perl
+    if (! $perl->{body}) {
+        $logger->warn("EDI interchange body not found!");
+        return;
+    } 
+    if (! $perl->{body}->[0]) {
+        $logger->warn("EDI interchange body not a populated arrayref!");
+        return;
+    }
+
+# Crazy data structure.  Most of the arrays will be 1 element... we think.
+# JEDI looks like:
+# {'body' => [{'ORDERS' => [['UNH',{'0062' => '4635','S009' => {'0057' => 'EAN008','0051' => 'UN','0052' => 'D','0065' => 'ORDERS', ...
+# 
+# So you might access it like:
+#   $obj->{body}->[0]->{ORDERS}->[0]->[0] eq 'UNH'
+
+    $logger->info("EDI interchange body has " . scalar(@{$perl->{body}}) . " messages(s)");
+    my @li;
+    my $i = 0;
+    foreach my $part (@{$perl->{body}}) {
+        $i++;
+        unless (ref $part and scalar keys %$part) {
+            $logger->warn("EDI interchange message $i lacks structure.  Skipping it.");
+            next;
+        }
+        foreach my $key (keys %$part) {
+            unless ($key eq 'ORDRSP') {     # We only do one type for now.  TODO: other types here
+                $logger->warn("EDI interchange message $i contains unhandled type '$key'.  Ignoring.");
+                next;
+            }
+            @li = __PACKAGE__->parse_ordrsp($part->{$key}, $e);
+            $logger->info("EDI $key parsing returned " . scalar(@li) . " line items");
+# TODO: process lineitems
+        }
+    }
+    return @li;   # TODO process perl
+}
+
+# return array of lineitems
+sub parse_ordrsp {
+    my ($class, $segments, $e, $test) = @_;
+    $e ||= new_editor();
+    my $type = 'ORDRSP';
+    $logger->info("EDI " . scalar(@$segments) . " segments in $type message");
+    my @lins;
+    foreach my $segment (@$segments) {
+        my ($tag, $segbody, @extra) = @$segment;
+        unless ($tag    ) {$logger->warn("EDI empty segment received"     ); next;}
+        unless ($segbody) {$logger->warn("EDI segment '$tag' missing body"); next;}
+        if ($tag eq 'UNH') {
+            unless ($segbody->{S009}->{'0065'} and $segbody->{S009}->{'0065'} eq $type) {
+                $logger->error("EDI $tag/S009/0065 ('" . ($segbody->{S009}->{'0065'} || '') . "') conflict w/ message type $type\.  Aborting");
+                return;
+            }
+            unless ($segbody->{S009}->{'0051'} and $segbody->{S009}->{'0051'} eq 'UN') {
+                $logger->warn("EDI segment $tag/S009/0051 does not designate 'UN' as controlling agency.  Will attempt to process anyway");
+            }
+        } elsif ($tag eq 'BGM') {
+            my $msgtype = Business::EDI::ResponseTypeCode->new($segbody->{4343});
+            unless ($msgtype) {
+                $logger->warn(sprintf "EDI $tag/4343 Response Type Code '%s' unrecognized", ($segbody->{4343} || ''));
+            }
+            $logger->info(sprintf "EDI $tag/4343 response type: %s - %s", $msgtype->code, $msgtype->label);
+            my $fcn = Business::EDI::MessageFunctionCode->new($segbody->{1225});
+            unless ($fcn) {
+                $logger->error(sprintf "EDI $tag/1225 Message Function Code '%s' unrecognized.  Aborting", ($segbody->{1225} || ''));
+                return;
+            }
+        } elsif ($tag eq 'LIN') {
+            my @chunks = @{$segbody->{SG26}};
+            $logger->warn("EDI LIN/SG26 has " . scalar(@chunks) . " chunks");
+            push @lins, @chunks;
+        } else {
+            $logger->debug("EDI: ignoring segment '$tag'");
+        }
+    }
+    return @lins;
 }
 
 sub process_eval_msg {
