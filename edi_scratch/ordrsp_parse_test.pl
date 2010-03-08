@@ -12,8 +12,67 @@ my $slurp = join '', <DATA>;
 
 my @lines = OpenILS::Application::Acq::EDI->process_jedi($slurp);
 
-print Dumper(\@lines);
+print "Number of lines: ", scalar(@lines), "\n";
 
+$Data::Dumper::Indent = 1;
+#print Dumper(@lines);
+my @innards;
+
+foreach my $top (@lines) {
+    my ($body, $ordrsp, $lin);
+    unless ($body = $top->{body}) {
+        print "Body not found.  Next.\n";
+        next;
+    }
+    print "Body chunks: ", scalar(@$body), "\n";
+    foreach my $part (@$body) {
+        unless ($ordrsp = $part->{ORDRSP}) {
+            print "ORDRSP not found in body part. ref(body part): ", ref($part), "\n";
+            next;
+        }
+        foreach my $seg (@$ordrsp) {
+            my ($type, $segbody) = ($seg->[0], $seg->[1]);
+            print " ==> $type\n";
+            $type eq 'LIN' and push @innards, $segbody;
+        }
+    }
+}
+
+# `print Dumper(\@innards);
+
+=pod
+    ["LIN", {
+        "SG26": [["IMD", {
+            "C273": {
+                "7008": ["LACY, AL THINGS NOT SEEN"]
+            },
+            "7077": "F",
+            "7081": "BST"
+        }], ["QTY", {
+            "C186": {
+                "6060": 4,
+                "6063": "21"
+            }
+        }], ... ]}]
+
+=cut
+
+my @qtys = ();
+foreach (@innards) {
+    
+    my $count = scalar(@{$_->{SG26}});
+    print STDERR "->{SG26}      count: $count\n";
+    for (my $i = 0; $i < $count; $i++) {
+        my $label = $_->{SG26}->[$i]->[0];
+        my $body  = $_->{SG26}->[$i]->[1];
+        print STDERR "->{SG26}->[$i]: $label\n";
+        $label eq 'QTY' and push @qtys, $body;
+    }
+    # foreach my $qty (@{$_->{SG26}->[0]}) {
+}
+
+printf "%4d LINs found\n", scalar(@innards);
+printf "%4d QTYs found\n", scalar(@qtys);
 print "done\n";
 
 __DATA__
