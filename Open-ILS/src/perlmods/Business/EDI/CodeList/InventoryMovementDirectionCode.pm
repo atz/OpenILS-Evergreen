@@ -16,5 +16,6 @@ my %code_hash = (
 '2' => [ 'Movement into inventory',
     'Incoming goods.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

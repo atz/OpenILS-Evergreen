@@ -30,5 +30,6 @@ my %code_hash = (
 '11' => [ 'Empty container, folded',
     'An empty container, which is folded.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

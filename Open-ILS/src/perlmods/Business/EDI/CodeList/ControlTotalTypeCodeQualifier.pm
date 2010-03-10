@@ -133,5 +133,6 @@ my %code_hash = (
 '61' => [ 'Number of affixed seals',
     'To specify the number of seals affixed.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

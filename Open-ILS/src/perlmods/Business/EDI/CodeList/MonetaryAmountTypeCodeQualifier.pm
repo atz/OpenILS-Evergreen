@@ -1093,5 +1093,6 @@ my %code_hash = (
 'ZZZ' => [ 'Mutually defined',
     'Mutually defined monetary amount.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -17,5 +17,6 @@ my %code_hash = (
 '3' => [ 'Name components in the sequence as defined in definition',
     'Name component 1: Qualification Name component 2: First part of the name Name component 3: Second part of the name.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -32,5 +32,6 @@ my %code_hash = (
 'ZZZ' => [ 'Mutually defined',
     'Despatch pattern timing according to agreement.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

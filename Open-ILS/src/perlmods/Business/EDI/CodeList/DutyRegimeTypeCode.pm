@@ -21,5 +21,6 @@ my %code_hash = (
 '9' => [ 'Imposed origin',
     'Origin of the product is imposed.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

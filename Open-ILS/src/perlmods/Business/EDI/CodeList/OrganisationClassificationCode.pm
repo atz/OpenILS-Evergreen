@@ -15,5 +15,6 @@ my %code_hash = (
 '2' => [ 'Type of medical speciality',
     'The organisation classification is according to medical speciality.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

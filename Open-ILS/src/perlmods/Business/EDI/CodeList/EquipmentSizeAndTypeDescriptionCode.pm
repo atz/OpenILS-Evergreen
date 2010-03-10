@@ -91,5 +91,6 @@ my %code_hash = (
 '45' => [ '40 ft IL container (closed top)',
     'A closed top container that is 40 feet in internal length.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

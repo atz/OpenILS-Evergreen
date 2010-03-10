@@ -19,5 +19,6 @@ my %code_hash = (
 '4' => [ 'Post service',
     'Transport under conditions specified by UPU (Universal Postal Union) and Rail organizations (parcels transport only).' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

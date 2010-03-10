@@ -13,5 +13,6 @@ my %code_hash = (
 '1' => [ 'Basis',
     'Foundation or starting point.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

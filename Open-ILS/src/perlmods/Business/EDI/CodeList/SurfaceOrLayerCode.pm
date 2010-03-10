@@ -77,5 +77,6 @@ my %code_hash = (
 'UC' => [ 'Under cab',
     'The location is under the cab.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

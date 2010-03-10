@@ -25,5 +25,6 @@ my %code_hash = (
 '7' => [ 'Cylindric',
     'Sample has a cylinder shape.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -19,5 +19,6 @@ my %code_hash = (
 'P' => [ 'Prepaid',
     'Charges are (to be) prepaid before the transport actually leaves.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

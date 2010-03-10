@@ -29,5 +29,6 @@ my %code_hash = (
 '9' => [ 'Non-smoking',
     'The facility is non-smoking.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

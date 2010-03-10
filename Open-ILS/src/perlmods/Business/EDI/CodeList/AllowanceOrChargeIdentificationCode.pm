@@ -210,5 +210,6 @@ my %code_hash = (
 '100' => [ 'Special rebate',
     'A return of part of an amount paid for goods or services, serving as a reduction or discount.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

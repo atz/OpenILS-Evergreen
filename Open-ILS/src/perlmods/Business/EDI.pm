@@ -15,9 +15,9 @@ sub new {
     return $self;
 }
 
-sub leaf {
+sub codelist {
     my $self = shift;
-    Business::EDI::CodeList->new_leaf(@_);
+    Business::EDI::CodeList->new_codelist(@_);
 }
 
 1;

@@ -21,5 +21,6 @@ my %code_hash = (
 '5' => [ 'Default',
     'The value definition is a default.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -23,5 +23,6 @@ my %code_hash = (
 '6' => [ 'Structure sequence',
     'The positional sequence in a message structure as published in a particular UN directory.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

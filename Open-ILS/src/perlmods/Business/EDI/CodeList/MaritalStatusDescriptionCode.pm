@@ -23,5 +23,6 @@ my %code_hash = (
 '6' => [ 'Unknown',
     'The marital status is unknown.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

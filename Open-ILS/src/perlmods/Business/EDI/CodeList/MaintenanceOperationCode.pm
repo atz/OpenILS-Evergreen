@@ -35,5 +35,6 @@ my %code_hash = (
 '12' => [ 'Return of empty packages',
     'Maintenance operation involves return of empty packages.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -19,5 +19,6 @@ my %code_hash = (
 '4' => [ 'Medical',
     'Intervention related to medical services.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -77,5 +77,6 @@ my %code_hash = (
 '47' => [ 'Geographic receiving',
     'A collection of shipments that involve a single origin, multiple destinations, and a single trailer, and are paid under a single freight bill.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

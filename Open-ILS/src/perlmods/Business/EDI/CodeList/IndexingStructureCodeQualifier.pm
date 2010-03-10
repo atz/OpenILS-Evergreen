@@ -15,5 +15,6 @@ my %code_hash = (
 '2' => [ 'Alternative index',
     'Identifies the associated bill level identifiers as belonging to an alternative index.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

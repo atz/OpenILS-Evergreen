@@ -71,5 +71,6 @@ my %code_hash = (
 '30' => [ 'Water distribution industry',
     'To identify the water distribution industry.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

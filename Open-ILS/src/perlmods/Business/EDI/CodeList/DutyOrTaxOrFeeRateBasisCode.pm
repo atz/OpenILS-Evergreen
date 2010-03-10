@@ -18,5 +18,6 @@ my %code_hash = (
 '3' => [ 'Quantity',
     '(6060) To specify that the applicable rate of duty, tax or fee is based on the quantity of the item (CCC).' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

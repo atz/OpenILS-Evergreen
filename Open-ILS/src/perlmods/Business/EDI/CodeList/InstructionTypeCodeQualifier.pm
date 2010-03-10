@@ -77,5 +77,6 @@ my %code_hash = (
 '33' => [ 'Meter change instruction',
     'Instruction concerning the change of a meter.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

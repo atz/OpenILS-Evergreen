@@ -47,5 +47,6 @@ my %code_hash = (
 '18' => [ 'Tax currency',
     'The currency in which tax amounts are due or have been paid.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

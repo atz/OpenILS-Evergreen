@@ -17,5 +17,6 @@ my %code_hash = (
 '3' => [ 'Means of transport damage',
     'The damage details relate to a means of transport.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

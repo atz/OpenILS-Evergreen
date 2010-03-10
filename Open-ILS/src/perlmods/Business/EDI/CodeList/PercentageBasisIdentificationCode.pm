@@ -52,5 +52,6 @@ my %code_hash = (
 '20' => [ 'Nationally based percentage basis',
     'The percentage basis is nationally based.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

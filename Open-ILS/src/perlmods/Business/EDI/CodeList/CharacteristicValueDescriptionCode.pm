@@ -17,5 +17,6 @@ my %code_hash = (
 '3' => [ 'Outside leg length',
     'The measurement of the outside leg seam. This is the distance from the waist to the bottom of the trousers.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

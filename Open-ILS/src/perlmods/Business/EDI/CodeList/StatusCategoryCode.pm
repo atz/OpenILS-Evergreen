@@ -33,5 +33,6 @@ my %code_hash = (
 '11' => [ 'Transport means security status',
     'A code describing the security status of a means of transport including security certification status of the transport means and status of maintained or required security procedures during transport operations.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

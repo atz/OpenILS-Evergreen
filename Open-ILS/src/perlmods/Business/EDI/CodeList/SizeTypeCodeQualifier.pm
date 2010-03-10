@@ -17,5 +17,6 @@ my %code_hash = (
 '3' => [ 'Subgroup size',
     'The size of the subgroup within the specific sample size.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

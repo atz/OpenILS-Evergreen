@@ -43,5 +43,6 @@ my %code_hash = (
 '16' => [ 'Equipment number range',
     'Range of equipment numbers.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

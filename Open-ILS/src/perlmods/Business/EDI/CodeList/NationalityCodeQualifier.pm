@@ -17,5 +17,6 @@ my %code_hash = (
 '3' => [ 'Previous nationality',
     'Nationality of a person before the current nationality.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

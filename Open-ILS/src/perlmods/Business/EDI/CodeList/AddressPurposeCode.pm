@@ -31,5 +31,6 @@ my %code_hash = (
 '10' => [ 'Patient discharged to',
     'Address to where a patient is discharged.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

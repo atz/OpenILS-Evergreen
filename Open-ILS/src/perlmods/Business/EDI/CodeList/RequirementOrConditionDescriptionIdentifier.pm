@@ -37,5 +37,6 @@ my %code_hash = (
 '13' => [ 'Right body part service',
     'Service was conducted on the right part of the body.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

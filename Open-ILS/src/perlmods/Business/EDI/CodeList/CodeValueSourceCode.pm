@@ -17,5 +17,6 @@ my %code_hash = (
 '3' => [ 'Non-published',
     'The code value is taken from a non-published code list.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

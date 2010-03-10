@@ -18,5 +18,6 @@ my %code_hash = (
 '3' => [ 'Outside reference limits',
     'The result value is outside lower and upper reference limit.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

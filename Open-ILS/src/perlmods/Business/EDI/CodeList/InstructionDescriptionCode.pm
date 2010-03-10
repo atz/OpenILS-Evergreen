@@ -207,5 +207,6 @@ my %code_hash = (
 'TA' => [ 'Take four times a day',
     'To be taken four times daily.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

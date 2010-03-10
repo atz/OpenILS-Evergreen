@@ -41,5 +41,6 @@ my %code_hash = (
 '15' => [ 'Irrevocable reimbursement of cash withdrawal',
     'The transaction is an irrevocable direct debit, from bank A to bank B, which reimburses bank A that has by agreement provided cash to a customer of bank B.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

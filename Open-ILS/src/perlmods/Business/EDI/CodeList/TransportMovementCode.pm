@@ -21,5 +21,6 @@ my %code_hash = (
 '5' => [ 'Transshipment',
     'The cargo is being moved by more than one transport means in succession.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

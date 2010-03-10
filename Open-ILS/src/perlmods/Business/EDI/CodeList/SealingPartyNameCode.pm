@@ -25,5 +25,6 @@ my %code_hash = (
 'TO' => [ 'Terminal operator',
     'Party which handles the loading and unloading of marine vessels.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -13,5 +13,6 @@ my %code_hash = (
 '1' => [ 'Business information',
     'Identifies information related to the business.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

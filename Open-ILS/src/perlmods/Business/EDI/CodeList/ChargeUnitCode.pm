@@ -103,5 +103,6 @@ my %code_hash = (
 '46' => [ 'Person aged between 26 and 99 years',
     'The associated charge is per person between 26 and 99 years.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

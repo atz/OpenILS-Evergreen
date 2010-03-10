@@ -19,5 +19,6 @@ my %code_hash = (
 '4' => [ 'Analogue',
     'Code to identify an analogue format.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -37,5 +37,6 @@ my %code_hash = (
 '14' => [ 'Geographical target market division/subdivision code',
     'The target market is a geographical region based upon geographical boundaries sanctioned by the United Nations.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

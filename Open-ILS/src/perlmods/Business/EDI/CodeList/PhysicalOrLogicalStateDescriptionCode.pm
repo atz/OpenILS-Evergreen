@@ -43,5 +43,6 @@ my %code_hash = (
 '16' => [ 'Fresh',
     'Retaining the original properties, not impaired by spoilage or preservation.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -139,5 +139,6 @@ my %code_hash = (
 '64' => [ 'Request for outbound passing services through port area',
     'Request for passing services through port area for an outbound voyage (from hinterland to sea) without requesting berth in the port area.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

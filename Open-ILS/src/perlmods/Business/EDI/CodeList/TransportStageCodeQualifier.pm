@@ -69,5 +69,6 @@ my %code_hash = (
 '33' => [ 'Main carriage - twelfth carrier',
     'The twelfth carrier of the ordered transport.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

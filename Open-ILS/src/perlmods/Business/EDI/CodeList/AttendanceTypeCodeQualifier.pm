@@ -27,5 +27,6 @@ my %code_hash = (
 '8' => [ 'Designated palliative unit attendance',
     'Attendance at a designated palliative unit.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -24,5 +24,6 @@ my %code_hash = (
 '6' => [ 'Delivery condition',
     'Specifies the conditions under which the goods must be delivered to the consignee.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -33,5 +33,6 @@ my %code_hash = (
 '11' => [ 'Single hierarchical structure item',
     'The list contains a set of items at a single hierarchical level in a structure.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

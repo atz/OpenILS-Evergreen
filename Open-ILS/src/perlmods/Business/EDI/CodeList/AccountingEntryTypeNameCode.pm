@@ -21,5 +21,6 @@ my %code_hash = (
 '5' => [ 'Miscellaneous',
     'The type is a miscellaneous accounting entry.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -403,12 +403,12 @@ sub parse_ordrsp {
                 $logger->warn("EDI segment $tag/S009/0051 does not designate 'UN' as controlling agency.  Will attempt to process anyway");
             }
         } elsif ($tag eq 'BGM') {
-            my $msgtype = Business::EDI->leaf('ResponseTypeCode', $segbody->{4343});
+            my $msgtype = Business::EDI->codelist('ResponseTypeCode', $segbody->{4343});
             unless ($msgtype) {
                 $logger->warn(sprintf "EDI $tag/4343 Response Type Code '%s' unrecognized", ($segbody->{4343} || ''));
             }
             $logger->info(sprintf "EDI $tag/4343 response type: %s - %s", $msgtype->code, $msgtype->label);
-            my $fcn = Business::EDI->leaf('MessageFunctionCode', $segbody->{1225});
+            my $fcn = Business::EDI->codelist('MessageFunctionCode', $segbody->{1225});
             unless ($fcn) {
                 $logger->error(sprintf "EDI $tag/1225 Message Function Code '%s' unrecognized.  Aborting", ($segbody->{1225} || ''));
                 return;

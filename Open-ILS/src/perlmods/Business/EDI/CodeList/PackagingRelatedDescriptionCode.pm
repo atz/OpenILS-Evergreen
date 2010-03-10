@@ -135,5 +135,6 @@ my %code_hash = (
 '82' => [ 'Package marked with fixed measure barcode.',
     'The package is marked with a fixed measure barcode.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

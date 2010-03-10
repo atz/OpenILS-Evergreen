@@ -21,5 +21,6 @@ my %code_hash = (
 '5' => [ 'Reversed text',
     'Displayed text foreground and background colours are reversed.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

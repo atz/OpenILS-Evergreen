@@ -29,5 +29,6 @@ my %code_hash = (
 '9' => [ 'Building name followed by suite',
     'Identifies the address component as building followed by suite.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

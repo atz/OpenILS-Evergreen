@@ -23,5 +23,6 @@ my %code_hash = (
 '6' => [ 'Time related value',
     'The result is expressed as a value related to time.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

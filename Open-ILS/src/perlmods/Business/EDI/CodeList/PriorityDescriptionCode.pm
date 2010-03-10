@@ -23,5 +23,6 @@ my %code_hash = (
 '6' => [ 'Category B',
     'Priority is category B.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -23,5 +23,6 @@ my %code_hash = (
 '9' => [ 'Name of an entity changed to',
     'Identifies a name to which a previous name was changed.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

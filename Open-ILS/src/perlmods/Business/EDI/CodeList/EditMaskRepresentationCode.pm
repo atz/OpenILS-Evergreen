@@ -19,5 +19,6 @@ my %code_hash = (
 '4' => [ 'Unix(tm) regular expression',
     'The associated edit mask is represented as a Unix(tm) regular expression.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

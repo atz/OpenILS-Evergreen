@@ -141,5 +141,6 @@ my %code_hash = (
 '65' => [ 'Unsettled dispute',
     'To report an unsettled dispute.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

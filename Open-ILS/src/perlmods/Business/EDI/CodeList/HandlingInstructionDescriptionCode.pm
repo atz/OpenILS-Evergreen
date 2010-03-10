@@ -31,5 +31,6 @@ my %code_hash = (
 '10' => [ 'Transshipment to be arranged',
     'The consignment has to be transshipped.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

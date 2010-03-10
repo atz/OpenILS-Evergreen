@@ -35,5 +35,6 @@ my %code_hash = (
 'SP' => [ 'Ship partial - balance cancel',
     'Partial shipping is allowed. The rest of the order should be cancelled.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

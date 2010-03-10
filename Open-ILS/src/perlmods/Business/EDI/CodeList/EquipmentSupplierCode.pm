@@ -26,5 +26,6 @@ my %code_hash = (
 '7' => [ "Forwarder supplied from the railways' pool",
     'The equipment is supplied by the forwarder and is taken from a pool established by railway companies.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -47,5 +47,6 @@ my %code_hash = (
 '18' => [ 'Connecting to',
     'The specified object connects to the related object.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

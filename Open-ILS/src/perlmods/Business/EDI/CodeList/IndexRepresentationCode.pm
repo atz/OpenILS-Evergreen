@@ -13,5 +13,6 @@ my %code_hash = (
 '1' => [ 'Percentage',
     'The index value is represented in a proportion.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

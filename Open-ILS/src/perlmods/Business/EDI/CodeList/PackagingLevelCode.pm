@@ -21,5 +21,6 @@ my %code_hash = (
 '5' => [ 'Shipment level',
     'The packaging level being described is the shipment level.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -21,5 +21,6 @@ my %code_hash = (
 '5' => [ 'Home care visit',
     "Provision of care to the patient in the patient's home." ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

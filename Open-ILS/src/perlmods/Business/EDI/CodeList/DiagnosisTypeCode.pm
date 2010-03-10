@@ -17,5 +17,6 @@ my %code_hash = (
 '3' => [ 'Secondary diagnosis',
     'The secondary illness or condition.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

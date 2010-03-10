@@ -33,5 +33,6 @@ my %code_hash = (
 '11' => [ 'Preferred',
     'The value is preferred.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

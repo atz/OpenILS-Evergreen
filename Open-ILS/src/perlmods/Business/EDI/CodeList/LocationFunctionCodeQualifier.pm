@@ -605,5 +605,6 @@ my %code_hash = (
 'ZZZ' => [ 'Mutually defined',
     'Place or location as agreed between the relevant parties.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

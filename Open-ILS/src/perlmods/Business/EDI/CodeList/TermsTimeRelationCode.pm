@@ -46,5 +46,6 @@ my %code_hash = (
 '17' => [ 'After end of month containing the reference date',
     'Payment terms related to a time after the end of the month containing the reference date.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

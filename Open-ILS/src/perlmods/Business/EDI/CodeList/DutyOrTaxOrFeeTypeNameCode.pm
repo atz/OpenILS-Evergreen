@@ -117,5 +117,6 @@ my %code_hash = (
 'VAT' => [ 'Value added tax',
     'A tax on domestic or imported goods applied to the value added at each stage in the production/distribution cycle.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -25,5 +25,6 @@ my %code_hash = (
 '7' => [ 'Temperature, recorded',
     'The recorded temperature.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

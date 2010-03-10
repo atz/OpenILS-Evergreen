@@ -339,5 +339,6 @@ my %code_hash = (
 'ZZZ' => [ 'Mutually defined',
     'Item type identification mutually agreed between interchanging parties.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

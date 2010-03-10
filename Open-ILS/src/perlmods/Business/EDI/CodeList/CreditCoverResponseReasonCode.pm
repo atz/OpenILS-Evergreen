@@ -42,5 +42,6 @@ my %code_hash = (
 '15' => [ 'Other',
     'Reasons not otherwise specified here.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -17,5 +17,6 @@ my %code_hash = (
 '3' => [ 'Physical address',
     'The address represents an actual physical location.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

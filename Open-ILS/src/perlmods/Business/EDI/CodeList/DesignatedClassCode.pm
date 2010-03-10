@@ -19,5 +19,6 @@ my %code_hash = (
 '4' => [ 'EDIFACT user data element code list',
     'The code list is classified as UN/ECE WP.4 user data element.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

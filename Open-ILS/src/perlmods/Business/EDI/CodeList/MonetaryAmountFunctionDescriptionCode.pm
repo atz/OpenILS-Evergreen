@@ -67,5 +67,6 @@ my %code_hash = (
 '30' => [ 'Business credit amount',
     'Monetary amount(s) associated with business credit information.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

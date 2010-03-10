@@ -13,5 +13,6 @@ my %code_hash = (
 '1' => [ 'Amortization',
     'Amortization of tooling costs.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

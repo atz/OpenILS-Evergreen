@@ -13,5 +13,6 @@ my %code_hash = (
 '1' => [ 'Not marked with an EAN.UCC system code',
     'Indication that the package is not marked with an EAN.UCC (International Article Numbering.Uniform Code Council) system code.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -34,5 +34,6 @@ my %code_hash = (
 '11' => [ "Close buyer's account",
     "The buyer's account is to be closed." ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

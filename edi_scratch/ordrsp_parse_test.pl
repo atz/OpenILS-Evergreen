@@ -6,7 +6,9 @@ use strict; use warnings;
 use Data::Dumper;
 
 use OpenILS::Application::Acq::EDI;
+use vars qw/%code_hash/;
 
+require DataElements;
 
 my $slurp = join '', <DATA>;
 
@@ -61,19 +63,25 @@ my @qtys = ();
 foreach (@innards) {
     
     my $count = scalar(@{$_->{SG26}});
-    print STDERR "->{SG26}      count: $count\n";
+    print STDERR "->{SG26} has $count pieces: ";
     for (my $i = 0; $i < $count; $i++) {
         my $label = $_->{SG26}->[$i]->[0];
         my $body  = $_->{SG26}->[$i]->[1];
-        print STDERR "->{SG26}->[$i]: $label\n";
+        print STDERR "$label ";
         $label eq 'QTY' and push @qtys, $body;
     }
+    print STDERR "\n";
     # foreach my $qty (@{$_->{SG26}->[0]}) {
 }
 
 printf "%4d LINs found\n", scalar(@innards);
 printf "%4d QTYs found\n", scalar(@qtys);
-print "done\n";
+my $example = $qtys[-1];
+print "\nexample QTY: ", Dumper($example);
+foreach (keys %{$example->{C186}}) {
+    print $code_hash{$_}, " ($_) : ", $example->{C186}->{$_}, "\n";
+}
+print "\ndone\n";
 
 __DATA__
 {

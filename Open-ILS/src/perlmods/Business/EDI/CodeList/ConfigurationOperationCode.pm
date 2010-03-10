@@ -17,5 +17,6 @@ my %code_hash = (
 'I' => [ 'Included in the configuration',
     'The item is a part of the configuration.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

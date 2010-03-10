@@ -37,5 +37,6 @@ my %code_hash = (
 '13' => [ 'Non-promotional item',
     'Used to indicate which trade item the promotional trade item replaces or coexists alongside. To enable the identification of the two trade items to be linked providing access to their information.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

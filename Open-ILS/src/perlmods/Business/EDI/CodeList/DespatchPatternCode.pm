@@ -107,5 +107,6 @@ my %code_hash = (
 'ZZZ' => [ 'Mutually defined',
     'Despatch pattern according to bilateral agreement.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

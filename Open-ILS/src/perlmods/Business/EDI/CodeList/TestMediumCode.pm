@@ -26,5 +26,6 @@ my %code_hash = (
 'ZZZ' => [ 'Mutually defined',
     'A code assigned within a code list whose meaning is agreed among partners to be used on an interim basis until a precise code can be assigned to the code list.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

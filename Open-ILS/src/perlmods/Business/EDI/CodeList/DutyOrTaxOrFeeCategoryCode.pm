@@ -39,5 +39,6 @@ my %code_hash = (
 'Z' => [ 'Zero rated goods',
     'Code specifying that the goods are at a zero rate.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -33,5 +33,6 @@ my %code_hash = (
 '11' => [ 'Deletion, announcement only',
     'The announcement of a deletion.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

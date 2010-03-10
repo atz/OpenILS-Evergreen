@@ -51,7 +51,9 @@ sub comment_until {
 
 sub close_file {
     my $file = shift;
-    print ");\n\n1;\n";
+    print ");\n";
+    print 'sub get_codes { return \%code_hash; }'; 
+    print "\n\n1;\n";
     printf STDERR "file: %-53s => %3d %s\n", "$file.pm", ($count{$file} || 0), ($count{$file} ? '' : 'EMPTY!!');
     close STDOUT;
 }
@@ -82,7 +84,7 @@ while ($_ = next_line) {
         $file = safename(join '', map {ucfirst} split ' ', ($2 || 'unknown code'));
         open STDOUT, ">$file.pm" or die "Cannot write $file.pm";
         print <<END_OF_PERL;
-package Business::EDI::$file;
+package Business::EDI::CodeList::$file;
 
 use base 'Business::EDI::CodeList';
 my \$VERSION     = 0.01;

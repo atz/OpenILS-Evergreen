@@ -57,5 +57,6 @@ my %code_hash = (
 '24' => [ 'Supply of customs formalities, import',
     'Charges payable for the supply of import customs formalities.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

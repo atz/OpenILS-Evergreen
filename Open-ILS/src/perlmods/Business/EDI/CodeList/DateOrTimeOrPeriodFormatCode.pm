@@ -164,5 +164,6 @@ my %code_hash = (
 '814' => [ 'Working days',
     'Number of working days.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

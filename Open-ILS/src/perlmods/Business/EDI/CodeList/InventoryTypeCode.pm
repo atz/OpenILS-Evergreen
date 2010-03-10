@@ -21,5 +21,6 @@ my %code_hash = (
 '5' => [ 'Awaiting inspection inventory',
     'Inventory of products awaiting quality inspection.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

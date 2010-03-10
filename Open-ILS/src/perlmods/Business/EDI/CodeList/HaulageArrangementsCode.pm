@@ -16,5 +16,6 @@ my %code_hash = (
 '2' => [ 'Merchant',
     'Haulage arranged by merchant (shipper, consignee, or their agent).' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

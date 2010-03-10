@@ -13,5 +13,6 @@ my %code_hash = (
 '1' => [ 'Formal professional qualification',
     'Formal professional qualification of person.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

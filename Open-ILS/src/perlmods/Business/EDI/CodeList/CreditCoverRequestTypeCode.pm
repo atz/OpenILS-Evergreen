@@ -27,5 +27,6 @@ my %code_hash = (
 '8' => [ 'Prolongation of credit cover',
     'Request to prolong an existing credit cover.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

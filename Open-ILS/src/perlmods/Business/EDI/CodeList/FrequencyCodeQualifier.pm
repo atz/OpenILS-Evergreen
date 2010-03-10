@@ -13,5 +13,6 @@ my %code_hash = (
 '1' => [ 'Sample frequency',
     'The rate at which goods are sampled over a particular period.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

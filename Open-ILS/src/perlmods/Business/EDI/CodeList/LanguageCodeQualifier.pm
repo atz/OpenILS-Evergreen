@@ -25,5 +25,6 @@ my %code_hash = (
 '7' => [ 'Native language',
     'Language first spoken by the person.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

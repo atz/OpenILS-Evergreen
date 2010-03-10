@@ -17,5 +17,6 @@ my %code_hash = (
 '3' => [ 'Hotel segments booked',
     'Payment is for all hotel segments booked.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -55,5 +55,6 @@ my %code_hash = (
 'ZZZ' => [ 'Mutually defined',
     'Period as per agreement.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

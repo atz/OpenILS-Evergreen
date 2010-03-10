@@ -18,5 +18,6 @@ my %code_hash = (
 'S' => [ 'Subtracted from the baseline item unit price',
     'Price is to be subtracted from the base line unit price.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

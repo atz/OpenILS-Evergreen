@@ -19,5 +19,6 @@ my %code_hash = (
 '4' => [ 'Passing location',
     'Location where a travel service passes without stopping.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

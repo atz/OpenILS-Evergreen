@@ -301,5 +301,6 @@ my %code_hash = (
 '145' => [ 'Security related matter to report',
     'A status indicating that there is a security related matter to report for the specified leg in the itinerary.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

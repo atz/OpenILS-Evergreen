@@ -29,5 +29,6 @@ my %code_hash = (
 '9' => [ 'Ninth step of calculation',
     'Code specifying the ninth step of a calculation.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -33,5 +33,6 @@ my %code_hash = (
 '11' => [ 'Consumption',
     'The inventory movement corresponds to goods taken out of consigned inventory for consumption.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

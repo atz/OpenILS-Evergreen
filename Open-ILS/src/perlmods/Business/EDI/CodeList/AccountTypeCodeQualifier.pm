@@ -45,5 +45,6 @@ my %code_hash = (
 '17' => [ 'Non recorded differences account',
     'Code identifying the account of non recorded differences.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -17,5 +17,6 @@ my %code_hash = (
 '3' => [ 'Use',
     'To specify use of a definition.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

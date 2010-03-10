@@ -15,5 +15,6 @@ my %code_hash = (
 '2' => [ 'Physical form',
     'Physical form of medicinal products.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

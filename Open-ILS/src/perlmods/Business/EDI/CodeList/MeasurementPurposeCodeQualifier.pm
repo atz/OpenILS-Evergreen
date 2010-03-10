@@ -215,5 +215,6 @@ my %code_hash = (
 'WX' => [ 'Weight used in price extension',
     'Weight will be used in conjunction with price extension.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

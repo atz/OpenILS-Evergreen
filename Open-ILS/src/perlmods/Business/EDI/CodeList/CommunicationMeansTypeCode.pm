@@ -103,5 +103,6 @@ my %code_hash = (
 'XJ' => [ 'National telephone switchboard',
     'The national telephone switchboard number.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -1335,5 +1335,6 @@ my %code_hash = (
 '998' => [ 'Previous Customs document/message',
     'Indication of the previous Customs document/message concerning the same transaction.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

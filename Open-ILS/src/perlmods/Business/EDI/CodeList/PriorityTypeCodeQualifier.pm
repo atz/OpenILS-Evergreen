@@ -31,5 +31,6 @@ my %code_hash = (
 '10' => [ 'Disconnectability',
     'Priority for when an installation can be disconnected.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

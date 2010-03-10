@@ -15,5 +15,6 @@ my %code_hash = (
 '2' => [ 'Contents',
     'To record the contents of the index.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

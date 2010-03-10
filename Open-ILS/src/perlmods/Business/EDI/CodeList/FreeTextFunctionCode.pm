@@ -25,5 +25,6 @@ my %code_hash = (
 '7' => [ 'Paragraph',
     'Indicates that the text is a paragraph.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -23,5 +23,6 @@ my %code_hash = (
 '6' => [ 'Weekly',
     'Rate is per week.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

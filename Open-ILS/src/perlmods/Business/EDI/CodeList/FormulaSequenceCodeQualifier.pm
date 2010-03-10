@@ -19,5 +19,6 @@ my %code_hash = (
 '4' => [ 'Disjoint value',
     'A value which is disjoint.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

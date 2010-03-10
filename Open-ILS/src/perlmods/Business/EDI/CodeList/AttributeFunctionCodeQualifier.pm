@@ -63,5 +63,6 @@ my %code_hash = (
 'ZZZ' => [ 'Mutually defined',
     'Mutually defined attribute function qualifier.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

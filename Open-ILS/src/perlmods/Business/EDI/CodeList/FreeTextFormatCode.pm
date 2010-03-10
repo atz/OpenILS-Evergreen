@@ -33,5 +33,6 @@ my %code_hash = (
 '11' => [ 'New line',
     'The text is to begin a new line.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

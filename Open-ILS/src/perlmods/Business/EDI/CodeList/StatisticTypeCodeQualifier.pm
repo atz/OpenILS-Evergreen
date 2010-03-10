@@ -29,5 +29,6 @@ my %code_hash = (
 '10' => [ 'In limits',
     'The type of statistic being reported is within limits.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

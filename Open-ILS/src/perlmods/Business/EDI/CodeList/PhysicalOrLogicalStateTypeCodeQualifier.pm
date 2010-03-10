@@ -19,5 +19,6 @@ my %code_hash = (
 '4' => [ 'Life cycle state',
     'The state of an object in its life cycle.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

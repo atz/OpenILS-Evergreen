@@ -15,5 +15,6 @@ my %code_hash = (
 '2' => [ 'Required stopover or connection must occur at the off point',
     'Required stopover or connection from another station to a means of transport can only be made at the off point.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

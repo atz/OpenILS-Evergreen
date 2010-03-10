@@ -1565,5 +1565,6 @@ my %code_hash = (
 'ZZZ' => [ 'Mutually defined reference number',
     'Number based on party agreement.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

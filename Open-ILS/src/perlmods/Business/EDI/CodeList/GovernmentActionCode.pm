@@ -32,5 +32,6 @@ my %code_hash = (
 '10' => [ 'Export certificate not required',
     'Indication by exporter that they do not need certificate of export from Customs.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

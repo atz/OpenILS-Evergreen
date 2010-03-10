@@ -59,5 +59,6 @@ my %code_hash = (
 'ZUR' => [ 'Zurich exchange',
     'The currency exchange rate is set by the Zurich exchange.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

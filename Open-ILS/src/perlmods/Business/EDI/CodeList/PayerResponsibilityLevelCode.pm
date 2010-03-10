@@ -24,5 +24,6 @@ my %code_hash = (
 '6' => [ 'Unknown',
     'Unknown payment responsibility.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -51,5 +51,6 @@ my %code_hash = (
 '20' => [ 'Body',
     'Sample is taken from the body of the specimen.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

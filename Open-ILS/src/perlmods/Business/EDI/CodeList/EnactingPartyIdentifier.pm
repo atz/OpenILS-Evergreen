@@ -29,5 +29,6 @@ my %code_hash = (
 '9' => [ 'Ordered bank',
     'The financial institution with which the ordering party maintains an account.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

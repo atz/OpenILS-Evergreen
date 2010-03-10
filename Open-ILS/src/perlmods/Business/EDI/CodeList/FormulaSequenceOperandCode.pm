@@ -22,5 +22,6 @@ my %code_hash = (
 '5' => [ 'Exponent',
     'The formula sequence operand is an exponent.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

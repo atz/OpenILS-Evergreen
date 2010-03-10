@@ -47,5 +47,6 @@ my %code_hash = (
 '18' => [ 'Process',
     'A class of characteristics describing a process.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

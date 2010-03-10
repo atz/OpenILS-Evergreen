@@ -21,5 +21,6 @@ my %code_hash = (
 '5' => [ 'Miscellaneous',
     'Information concerning miscellaneous categories.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

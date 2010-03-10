@@ -13,5 +13,6 @@ my %code_hash = (
 '1' => [ 'Accident',
     'The related cause was an accident.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

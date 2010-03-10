@@ -27,5 +27,6 @@ my %code_hash = (
 '9' => [ 'Tax related information',
     'Code specifying information related to tax.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

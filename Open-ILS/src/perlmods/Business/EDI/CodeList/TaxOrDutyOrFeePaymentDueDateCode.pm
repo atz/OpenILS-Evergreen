@@ -16,5 +16,6 @@ my %code_hash = (
 '2' => [ 'Duty, tax or fee payment due on invoice issue date',
     'Duty, tax or fee payment is due on the date when the invoice is issued.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

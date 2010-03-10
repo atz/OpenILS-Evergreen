@@ -17,5 +17,6 @@ my %code_hash = (
 '3' => [ 'Net wages',
     'Net wages.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

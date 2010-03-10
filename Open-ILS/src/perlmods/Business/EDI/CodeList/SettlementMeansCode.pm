@@ -91,5 +91,6 @@ my %code_hash = (
 'ZZZ' => [ 'Mutually defined',
     'A code reserved for special trading partner requirements when pre-defined codes do not exist.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

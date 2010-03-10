@@ -26,5 +26,6 @@ my %code_hash = (
 '7' => [ 'Construction sector',
     'Construction sector.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

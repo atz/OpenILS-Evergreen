@@ -17,5 +17,6 @@ my %code_hash = (
 '3' => [ 'Connection not guaranteed',
     'The connetion is not guaranteed, although the connection time available is longer than the location connection time.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -137,5 +137,6 @@ my %code_hash = (
 'ZZZ' => [ 'Mutually defined',
     'A temporary code which may be used between trading partners to describe a fund transfer whilst approval for a formal code value is being sought.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

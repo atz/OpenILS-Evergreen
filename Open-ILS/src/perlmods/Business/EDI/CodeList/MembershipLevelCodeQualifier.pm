@@ -15,5 +15,6 @@ my %code_hash = (
 '2' => [ 'Superannuation',
     'Membership level is related to retirement benefits.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

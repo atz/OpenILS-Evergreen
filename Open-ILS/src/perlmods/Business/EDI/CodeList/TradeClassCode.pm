@@ -53,5 +53,6 @@ my %code_hash = (
 'WV' => [ 'Electricity exchange',
     'Identifies the exchange where the intermediaries sell and buy electricity.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -425,5 +425,6 @@ my %code_hash = (
 'ZZZ' => [ 'Mutually defined',
     'Special condition mutually agreed between interchanging parties.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

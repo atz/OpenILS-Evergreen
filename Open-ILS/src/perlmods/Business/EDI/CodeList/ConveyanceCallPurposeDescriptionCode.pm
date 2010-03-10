@@ -57,5 +57,6 @@ my %code_hash = (
 '23' => [ 'Waste disposal',
     'Means of transport will dispose of her waste.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

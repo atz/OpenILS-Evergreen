@@ -333,5 +333,6 @@ my %code_hash = (
 'ZZZ' => [ 'Mutually defined',
     'As agreed by the trading partners.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

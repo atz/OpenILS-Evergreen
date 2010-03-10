@@ -15,5 +15,6 @@ my %code_hash = (
 '2' => [ 'Sequential specimen',
     'Selection method is in consecutive order.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

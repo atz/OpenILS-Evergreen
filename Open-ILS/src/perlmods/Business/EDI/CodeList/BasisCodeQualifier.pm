@@ -17,5 +17,6 @@ my %code_hash = (
 '3' => [ 'Premium',
     'Basis for a premium.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

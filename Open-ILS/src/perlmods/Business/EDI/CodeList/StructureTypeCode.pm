@@ -19,5 +19,6 @@ my %code_hash = (
 '4' => [ 'Table',
     'Component is represented as a table.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

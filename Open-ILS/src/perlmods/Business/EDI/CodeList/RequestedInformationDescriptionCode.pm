@@ -71,5 +71,6 @@ my %code_hash = (
 '30' => [ 'General status of the specified order(s) or order line(s)',
     'General status of each order(s) or order line(s) specified.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -35,5 +35,6 @@ my %code_hash = (
 '12' => [ 'Power supply contract',
     'Contract for supply of power.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

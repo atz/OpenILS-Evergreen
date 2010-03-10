@@ -58,5 +58,6 @@ my %code_hash = (
 'UV' => [ 'Alternate service',
     'The solution proposed in the response applies to another service than the one requested.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

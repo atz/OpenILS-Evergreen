@@ -17,5 +17,6 @@ my %code_hash = (
 '3' => [ 'Alternative',
     'Indicates that the index is an alternative.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

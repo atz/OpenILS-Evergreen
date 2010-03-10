@@ -13,5 +13,6 @@ my %code_hash = (
 '1' => [ 'Intra-company payment',
     'Moving funds between accounts, where the account owner is one company or belonging to a group of companies.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

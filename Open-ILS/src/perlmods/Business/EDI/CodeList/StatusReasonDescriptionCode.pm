@@ -223,5 +223,6 @@ my %code_hash = (
 '108' => [ 'Goods not barcoded',
     'Goods are not barcoded.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

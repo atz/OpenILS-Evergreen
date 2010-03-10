@@ -23,5 +23,6 @@ my %code_hash = (
 '6' => [ 'Per minute',
     'The associated charge applies to each minute the service is provided.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

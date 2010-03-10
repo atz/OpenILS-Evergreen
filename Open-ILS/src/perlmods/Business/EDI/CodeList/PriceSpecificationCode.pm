@@ -217,5 +217,6 @@ my %code_hash = (
 'WH' => [ 'Wholesale price',
     'Code specifying a wholesale price.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

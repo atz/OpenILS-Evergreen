@@ -37,5 +37,6 @@ my %code_hash = (
 '13' => [ 'Senior citizen',
     'The unit is a senior citizen.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -39,5 +39,6 @@ my %code_hash = (
 '14' => [ 'Port state control',
     'Government body responsible for the policing of the port.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -242,5 +242,6 @@ my %code_hash = (
 '115' => [ 'Prior addition',
     'This existing line item becomes available at an earlier date.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

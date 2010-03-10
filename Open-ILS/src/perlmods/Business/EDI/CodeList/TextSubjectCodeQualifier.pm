@@ -741,5 +741,6 @@ my %code_hash = (
 'ZZZ' => [ 'Mutually defined',
     'Note contains information mutually defined by trading partners.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

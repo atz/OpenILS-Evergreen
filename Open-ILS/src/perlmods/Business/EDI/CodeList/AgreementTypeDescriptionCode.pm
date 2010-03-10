@@ -21,5 +21,6 @@ my %code_hash = (
 '5' => [ 'National agreement',
     'The agreement is defined at the national level.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

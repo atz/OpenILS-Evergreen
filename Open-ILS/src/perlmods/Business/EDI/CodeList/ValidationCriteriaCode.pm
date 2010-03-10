@@ -15,5 +15,6 @@ my %code_hash = (
 '2' => [ 'Use any code in the standard',
     'Any value from the standard is allowed.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

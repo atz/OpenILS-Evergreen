@@ -15,5 +15,6 @@ my %code_hash = (
 '3' => [ 'Abbreviated name',
     'The name is an abbreviation of the official name.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

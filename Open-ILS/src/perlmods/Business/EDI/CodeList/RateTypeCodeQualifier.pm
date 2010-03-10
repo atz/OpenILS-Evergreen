@@ -35,5 +35,6 @@ my %code_hash = (
 'ZZZ' => [ 'Mutually defined',
     'The rate type is mutually agreed by the interchanging parties.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

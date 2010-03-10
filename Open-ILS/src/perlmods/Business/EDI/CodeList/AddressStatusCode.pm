@@ -21,5 +21,6 @@ my %code_hash = (
 '6' => [ 'Temporary address',
     'An address temporarily used.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -29,5 +29,6 @@ my %code_hash = (
 '11' => [ 'Customs sub-item detail section of CUSDEC',
     'Group 34 and 35 of CUSDEC message.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

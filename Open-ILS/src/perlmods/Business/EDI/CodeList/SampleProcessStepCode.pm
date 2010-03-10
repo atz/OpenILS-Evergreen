@@ -15,5 +15,6 @@ my %code_hash = (
 '2' => [ 'Finished product specimen',
     'The product had completed development.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -67,5 +67,6 @@ my %code_hash = (
 'WI' => [ 'Gross volume',
     'The price is calculated based on gross volume.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

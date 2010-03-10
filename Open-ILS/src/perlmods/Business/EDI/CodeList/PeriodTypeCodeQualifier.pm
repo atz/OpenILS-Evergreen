@@ -23,5 +23,6 @@ my %code_hash = (
 '6' => [ 'Test period',
     'Period during which testing occurs.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -48,5 +48,6 @@ my %code_hash = (
 '18' => [ 'Numeric, implied decimal point of 9 places',
     'Simple data element character type is numeric with an implied decimal point of 9 places as determined from right to left.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -35,5 +35,6 @@ my %code_hash = (
 '12' => [ 'String',
     'Data representation is a string.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

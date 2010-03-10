@@ -33,5 +33,6 @@ my %code_hash = (
 '12' => [ 'Name prefix',
     'To identify a name prefix.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

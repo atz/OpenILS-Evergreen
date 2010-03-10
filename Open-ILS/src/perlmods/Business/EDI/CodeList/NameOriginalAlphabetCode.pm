@@ -14,5 +14,6 @@ my %code_hash = (
 '1' => [ 'Greek characters',
     'Greek characters.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

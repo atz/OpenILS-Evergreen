@@ -19,5 +19,6 @@ my %code_hash = (
 '4' => [ 'Ship-to-ship activity location',
     'Location of ship-to-ship activity.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

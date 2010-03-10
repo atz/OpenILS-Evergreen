@@ -47,5 +47,6 @@ my %code_hash = (
 'ZZZ' => [ 'Mutually defined',
     'Additional and/or other information for the transportation of dangerous goods which are mutually defined.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

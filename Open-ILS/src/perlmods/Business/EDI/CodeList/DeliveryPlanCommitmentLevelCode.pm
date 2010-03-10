@@ -62,5 +62,6 @@ my %code_hash = (
 '26' => [ 'Proposed',
     'Indicates that the scheduling information is a proposal.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -13,5 +13,6 @@ my %code_hash = (
 '1' => [ 'Insurance policy',
     'Clause relating to an insurance policy.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -24,5 +24,6 @@ my %code_hash = (
 '6' => [ 'Diagonal',
     'Sample taken in the diagonal direction.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

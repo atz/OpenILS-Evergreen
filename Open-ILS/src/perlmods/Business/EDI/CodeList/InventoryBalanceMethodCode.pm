@@ -18,5 +18,6 @@ my %code_hash = (
 '3' => [ 'Interim inventory balance',
     'An inventory balance resulting from an interim counting.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

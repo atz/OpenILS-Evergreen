@@ -13,5 +13,6 @@ my %code_hash = (
 '1' => [ 'Radiology film',
     'X-ray image.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

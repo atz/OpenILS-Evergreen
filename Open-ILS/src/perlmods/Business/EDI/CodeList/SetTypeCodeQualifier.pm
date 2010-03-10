@@ -47,5 +47,6 @@ my %code_hash = (
 '18' => [ 'Data structure position number',
     "Position number(s) of a data structure's relevant components." ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

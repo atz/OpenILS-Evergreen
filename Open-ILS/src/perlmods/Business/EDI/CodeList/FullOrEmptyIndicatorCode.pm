@@ -37,5 +37,6 @@ my %code_hash = (
 '13' => [ 'Full load, multiple bills',
     'A container representing a consignment of goods for one consignee with multiple bill of lading numbers.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

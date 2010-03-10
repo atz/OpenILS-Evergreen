@@ -17,5 +17,6 @@ my %code_hash = (
 '3' => [ 'Private transport',
     'A code indicating privately owned transport.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

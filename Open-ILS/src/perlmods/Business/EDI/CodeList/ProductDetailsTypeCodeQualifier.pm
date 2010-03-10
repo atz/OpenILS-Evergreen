@@ -19,5 +19,6 @@ my %code_hash = (
 '4' => [ 'Availability range',
     'The product detail is the availability range.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

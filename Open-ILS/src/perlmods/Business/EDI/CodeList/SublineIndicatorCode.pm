@@ -15,5 +15,6 @@ my %code_hash = (
 '2' => [ 'Subordinate sub-line information',
     'Indicates that this line item has subordinate sub-lines.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

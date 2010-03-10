@@ -15,5 +15,6 @@ my %code_hash = (
 '2' => [ 'Delivery arranged by logistic service provider',
     'Code indicating that the logistic service provider has arranged the delivery of goods.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

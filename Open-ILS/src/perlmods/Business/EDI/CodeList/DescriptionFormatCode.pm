@@ -27,5 +27,6 @@ my %code_hash = (
 'X' => [ 'Semi-structured (code + text)',
     'Description of an item in a coded and free text format.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

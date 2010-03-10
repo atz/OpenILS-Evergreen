@@ -20,5 +20,6 @@ my %code_hash = (
 '4' => [ 'Not assigned',
     'No packaging danger level has been assigned.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

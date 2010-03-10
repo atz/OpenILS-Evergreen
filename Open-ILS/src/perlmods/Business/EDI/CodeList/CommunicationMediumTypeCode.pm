@@ -61,5 +61,6 @@ my %code_hash = (
 'XF' => [ 'X.400',
     'CCITT Message handling system.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

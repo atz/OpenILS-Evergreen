@@ -15,5 +15,6 @@ my %code_hash = (
 '2' => [ 'Variable',
     'Length of simple data element is variable.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

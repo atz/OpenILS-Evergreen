@@ -16,5 +16,6 @@ my %code_hash = (
 '2' => [ 'No associated code set',
     'Data element does not have an associated code set.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -69,5 +69,6 @@ my %code_hash = (
 '29' => [ 'Sent for heavy repair',
     'Notification that a transport equipment has been sent for heavy repair.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

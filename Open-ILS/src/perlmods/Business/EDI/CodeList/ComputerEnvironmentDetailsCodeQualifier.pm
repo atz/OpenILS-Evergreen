@@ -27,5 +27,6 @@ my %code_hash = (
 '8' => [ 'File compression method',
     'Method used for the compression of a file.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

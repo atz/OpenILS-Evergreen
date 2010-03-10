@@ -17,5 +17,6 @@ my %code_hash = (
 '3' => [ 'Requirement for subsequent business transactions',
     'This product characteristic has to be provided within the subsequent business transactions.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

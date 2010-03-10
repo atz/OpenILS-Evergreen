@@ -19,5 +19,6 @@ my %code_hash = (
 '4' => [ 'General medicine',
     'Medical speciality covering all general areas of medicine.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

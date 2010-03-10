@@ -39,5 +39,6 @@ my %code_hash = (
 '14' => [ 'Primary name',
     'Identifies the name of first importance.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

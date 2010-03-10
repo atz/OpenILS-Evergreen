@@ -37,5 +37,6 @@ my %code_hash = (
 '13' => [ 'Association',
     'The relation applies to an association.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

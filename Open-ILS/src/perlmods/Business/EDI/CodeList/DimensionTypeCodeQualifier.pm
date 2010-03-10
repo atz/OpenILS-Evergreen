@@ -43,5 +43,6 @@ my %code_hash = (
 '16' => [ 'Off-standard dimension length',
     'The dimension of the length that the cargo exceeds the standard length of a piece of equipment.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

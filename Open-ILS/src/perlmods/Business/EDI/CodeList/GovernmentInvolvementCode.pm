@@ -28,5 +28,6 @@ my %code_hash = (
 '8' => [ 'Export certificate required',
     'Indication by exporter that they need certificate of export from Customs.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

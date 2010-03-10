@@ -25,5 +25,6 @@ my %code_hash = (
 '7' => [ 'Currency of the account',
     'Currency in which the account is held.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

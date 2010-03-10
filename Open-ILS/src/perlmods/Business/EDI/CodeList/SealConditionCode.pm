@@ -21,5 +21,6 @@ my %code_hash = (
 '5' => [ 'Faulty electronic seal',
     'The electronic seal is faulty.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -17,5 +17,6 @@ my %code_hash = (
 '3' => [ 'Implementation',
     'To specify an implementation function.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

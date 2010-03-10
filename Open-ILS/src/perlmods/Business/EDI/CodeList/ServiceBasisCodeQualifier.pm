@@ -22,5 +22,6 @@ my %code_hash = (
 '5' => [ 'Value code',
     'The service was performed based on a value code.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

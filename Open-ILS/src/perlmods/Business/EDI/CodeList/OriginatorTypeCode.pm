@@ -17,5 +17,6 @@ my %code_hash = (
 '3' => [ 'Seller',
     'The originator is the seller.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

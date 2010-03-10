@@ -26,5 +26,6 @@ my %code_hash = (
 '7' => [ 'Code',
     'Code level.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -59,5 +59,6 @@ my %code_hash = (
 'Y' => [ 'Exact',
     'Indicates that this is the exact amount.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

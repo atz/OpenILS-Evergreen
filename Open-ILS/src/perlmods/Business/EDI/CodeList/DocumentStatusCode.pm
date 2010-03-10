@@ -85,5 +85,6 @@ my %code_hash = (
 '37' => [ 'Document complete',
     'The document is complete.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

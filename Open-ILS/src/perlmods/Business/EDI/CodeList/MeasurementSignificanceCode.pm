@@ -35,5 +35,6 @@ my %code_hash = (
 '15' => [ 'Out of range',
     'The measurement reported is out of range.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

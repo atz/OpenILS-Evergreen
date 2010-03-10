@@ -63,5 +63,6 @@ my %code_hash = (
 '26' => [ 'Invoice collection',
     'The resulting assessment based on the collection of invoices.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

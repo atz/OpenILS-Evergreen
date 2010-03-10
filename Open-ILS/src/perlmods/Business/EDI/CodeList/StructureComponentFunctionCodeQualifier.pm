@@ -35,5 +35,6 @@ my %code_hash = (
 '12' => [ 'Attribute',
     'To specify a component function as an attribute.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

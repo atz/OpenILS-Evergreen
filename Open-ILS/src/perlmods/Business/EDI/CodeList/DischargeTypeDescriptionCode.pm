@@ -19,5 +19,6 @@ my %code_hash = (
 '4' => [ 'Statistical discharge',
     'Discharge for statistical purposes.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -43,5 +43,6 @@ my %code_hash = (
 '16' => [ "Payer or payer's agent",
     "Party or party's agent from whom funds will be made available." ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

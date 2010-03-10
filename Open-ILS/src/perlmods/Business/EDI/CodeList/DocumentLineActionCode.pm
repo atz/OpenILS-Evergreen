@@ -16,5 +16,6 @@ my %code_hash = (
 '2' => [ 'Excluded from document/transaction',
     'The document line is excluded from the document/transaction.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

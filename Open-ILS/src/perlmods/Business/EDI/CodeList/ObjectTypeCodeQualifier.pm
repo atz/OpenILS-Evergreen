@@ -59,5 +59,6 @@ my %code_hash = (
 '24' => [ 'Transaction',
     'The object is a transaction.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

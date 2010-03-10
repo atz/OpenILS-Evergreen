@@ -90,5 +90,6 @@ my %code_hash = (
 '40' => [ 'Transport arrangement by the patient',
     'The patient has the responsibility of making transport arrangement.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

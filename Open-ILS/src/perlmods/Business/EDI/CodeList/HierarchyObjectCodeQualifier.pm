@@ -77,5 +77,6 @@ my %code_hash = (
 '33' => [ 'Associated accessory',
     'The hierarchy applies to associated accessories.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

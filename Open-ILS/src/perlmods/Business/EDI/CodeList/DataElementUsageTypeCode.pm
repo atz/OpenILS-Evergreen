@@ -17,5 +17,6 @@ my %code_hash = (
 '3' => [ 'Composite data element',
     'The associated data element is a composite data element.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

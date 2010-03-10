@@ -25,5 +25,6 @@ my %code_hash = (
 'SEL' => [ 'Selling multiplier',
     'Code specifying the selling multiplier.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -71,5 +71,6 @@ my %code_hash = (
 '30' => [ 'Package not marked returnable',
     'The package is not marked returnable.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

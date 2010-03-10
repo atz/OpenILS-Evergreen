@@ -22,5 +22,6 @@ my %code_hash = (
 '5' => [ 'Train with TCV or Market Price',
     'Train running with service that can be sold at TCV (Tarif Commun Voyageurs - ordinary tariff for travellers) or Market Price.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

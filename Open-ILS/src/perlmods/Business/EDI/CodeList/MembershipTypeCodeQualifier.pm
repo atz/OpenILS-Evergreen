@@ -17,5 +17,6 @@ my %code_hash = (
 'ZZZ' => [ 'Mutually defined',
     'Mutually defined member qualifier.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

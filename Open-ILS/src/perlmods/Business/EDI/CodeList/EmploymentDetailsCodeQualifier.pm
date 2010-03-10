@@ -19,5 +19,6 @@ my %code_hash = (
 '4' => [ 'Profession',
     'To specify a profession.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -35,5 +35,6 @@ my %code_hash = (
 'S' => [ 'Class rate (Surcharge on normal rate)',
     'Code specifying the surcharge on normal rate.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -57,5 +57,6 @@ my %code_hash = (
 '23' => [ 'Ballast only',
     'No cargo, means of transport is carrying only ballast.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

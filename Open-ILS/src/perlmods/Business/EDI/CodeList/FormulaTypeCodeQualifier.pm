@@ -33,5 +33,6 @@ my %code_hash = (
 '11' => [ 'Non-revisable instalment payment',
     'The formula for the calculation of an instalment payment that cannot be revised.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

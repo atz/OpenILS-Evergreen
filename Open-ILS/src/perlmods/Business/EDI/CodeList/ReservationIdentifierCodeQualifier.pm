@@ -27,5 +27,6 @@ my %code_hash = (
 '8' => [ 'Composite booking',
     'The reservation identifier refers to a booking including several reservations.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

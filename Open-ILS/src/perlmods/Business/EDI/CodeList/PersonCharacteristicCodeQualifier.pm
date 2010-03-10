@@ -13,5 +13,6 @@ my %code_hash = (
 '1' => [ 'Skin colour',
     'The skin colour of an individual.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

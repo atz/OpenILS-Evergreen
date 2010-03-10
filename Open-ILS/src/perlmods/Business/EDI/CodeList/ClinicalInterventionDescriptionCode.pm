@@ -15,5 +15,6 @@ my %code_hash = (
 '2' => [ 'Partial disability certificate issue',
     'A clinical intervention to certify that a person is partially unable to work for medical reasons.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

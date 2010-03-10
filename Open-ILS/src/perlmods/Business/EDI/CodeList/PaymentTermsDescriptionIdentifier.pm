@@ -26,5 +26,6 @@ my %code_hash = (
 '7' => [ 'Payment means specified in commercial account summary',
     'An indication that the payment means are specified in a commercial account summary.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

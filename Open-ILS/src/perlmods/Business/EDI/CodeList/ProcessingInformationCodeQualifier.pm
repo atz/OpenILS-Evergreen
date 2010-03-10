@@ -23,5 +23,6 @@ my %code_hash = (
 '6' => [ 'Statistical array processing',
     'Defines information required to process the contents of a statistical array.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

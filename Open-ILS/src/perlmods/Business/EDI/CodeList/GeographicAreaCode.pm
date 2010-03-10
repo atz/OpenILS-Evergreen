@@ -39,5 +39,6 @@ my %code_hash = (
 'SPD' => [ 'SEPA (Single Euro Payments Area) ID D',
     'SEPA message following scheme 4 as defined by EBA (EURO Banking 	Association).' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;

@@ -137,5 +137,6 @@ my %code_hash = (
 'UL' => [ 'ULD (Unit load device)',
     'An aircraft container or pallet.' ],
 );
+sub get_codes { return \%code_hash; }
 
 1;
