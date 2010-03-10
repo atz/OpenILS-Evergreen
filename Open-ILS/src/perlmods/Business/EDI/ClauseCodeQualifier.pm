@@ -1,0 +1,17 @@
+package Business::EDI::ClauseCodeQualifier;
+
+use base 'Business::EDI::CodeList';
+my $VERSION     = 0.01;
+my $list_number = 4059;
+my $usage       = 'B';
+
+# 4059  Clause code qualifier                                   [B]
+# Desc: Code qualifying the nature of the clause.
+# Repr: an..3
+
+my %code_hash = (
+'1' => [ 'Insurance policy',
+    'Clause relating to an insurance policy.' ],
+);
+
+1;
