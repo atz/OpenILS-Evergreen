@@ -380,7 +380,7 @@ sub process_jedi {
 # TODO: process lineitems
         }
     }
-    return @li;   # TODO process perl
+    return $perl;   # TODO process perl
 }
 
 # return array of lineitems
