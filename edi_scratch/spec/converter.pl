@@ -2,6 +2,10 @@
 
 # This is to turn the UN spec document into perl modules. 
 # Crazy, I know.  But would you want to rekey it all?
+#
+# Spec obtained from:
+#   http://www.unece.org/trade/untdid/down_index.htm
+#
 
 use strict;
 use warnings;
@@ -26,7 +30,7 @@ sub next_chunk {
     while ($piece = next_line) { # need to get back a blank line (no '1' for next_line())
         defined($piece) or last;
         $piece =~ /\S/ or last;  # blank means we're done
-        $piece =~ s/^\s*//;      # kill leading spaces
+        $piece =~ s/^\s*//;      # kill leading  spaces
         $piece =~ s/\s*$//;      # kill trailing spaces
         $chunk .= ' ' if $chunk; # add a space, if necessary, to keep words from runningtogether.
         $chunk .= $piece;
