@@ -1,11 +1,11 @@
-package Business::EDI::LeafNode;
+package Business::EDI::CodeList;
 
 use strict;
 use warnings;
 use Carp;
 use UNIVERSAL::require;
 
-=head1 Business::EDI::LeafNode
+=head1 Business::EDI::CodeList
 
 Abstract object class for UN/EDIFACT objects that do not have further descendant objects.
 
@@ -15,7 +15,7 @@ our $verbose = 0;
 
 sub new_leaf {          # constructor: NOT to be overridden
     my $class = shift;  # note: we don't return objects of this class
-    my $type  = shift or carp "No LeafNode object type specified";
+    my $type  = shift or carp "No CodeList object type specified";
     $type or return;
     my $realtype = ($type =~ /^Business::EDI::./) ? $type : "Business::EDI::$type";
     unless ($realtype->require()) {
@@ -27,7 +27,7 @@ sub new_leaf {          # constructor: NOT to be overridden
 
 sub new {       # constructor: override me if you want
     my $class = shift;
-    my $code  = shift or carp "No code argument for LeafNode type '$class' specified";
+    my $code  = shift or carp "No code argument for CodeList type '$class' specified";
     $code or return;
     my $self = bless({}, $class);
     unless ($self->init($code)) {

@@ -5,7 +5,7 @@ use warnings;
 # use Carp;
 # use Data::Dumper;
 
-use Business::EDI::LeafNode;
+use Business::EDI::CodeList;
 # our $verbose = 0;
 
 sub new {
@@ -17,7 +17,7 @@ sub new {
 
 sub leaf {
     my $self = shift;
-    Business::EDI::LeafNode->new_leaf(@_);
+    Business::EDI::CodeList->new_leaf(@_);
 }
 
 1;
