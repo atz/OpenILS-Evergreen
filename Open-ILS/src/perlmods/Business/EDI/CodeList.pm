@@ -17,7 +17,7 @@ sub new_leaf {          # constructor: NOT to be overridden
     my $class = shift;  # note: we don't return objects of this class
     my $type  = shift or carp "No CodeList object type specified";
     $type or return;
-    my $realtype = ($type =~ /^Business::EDI::./) ? $type : "Business::EDI::$type";
+    my $realtype = ($type =~ /^Business::EDI::CodeList::./) ? $type : "Business::EDI::CodeList::$type";
     unless ($realtype->require()) {
         carp "require failed! Unrecognized class $realtype: $@";
         return;
