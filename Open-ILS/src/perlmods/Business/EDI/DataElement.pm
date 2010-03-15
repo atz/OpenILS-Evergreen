@@ -1,3 +1,4 @@
+package Business::EDI::DataElement;
 
 %code_hash = (
 1000 => 'Document name',                                                  # B
