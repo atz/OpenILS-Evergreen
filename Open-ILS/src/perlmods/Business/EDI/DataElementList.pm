@@ -1,54 +1,12 @@
-package Business::EDI::DataElement;
-use Carp;
+package Business::EDI::DataElementList;
 use strict;
 use warnings;
+use Exporter::Easy (
+   OK => [qw( %code_hash list )]
+);
 
-use UNIVERSAL::require;
-use vars qw/ %code_hash /;
-
-sub populate_hash {
-    my $self = shift;
-    unless(%code_hash) {
-        Business::EDI::DataElement->require()              or croak "Failed UNIVERSAL require attempt";
-        Business::EDI::DataElement->import(qw/%code_hash/) or croak "Failed UNIVERSAL import attempt";
-    }
-}
-
-sub new {       # constructor:
-    my $class = shift;
-    my $code  = shift or carp "No code argument for DataElement type '$class' specified";
-    $code or return;
-    my $self = bless({}, $class);
-    unless ($self->init($code, @_)) {
-        carp "init() failed for code '$code'";
-        return;
-    }
-    return $self;
-}
-
-sub init {
-    my $self = shift;
-    my $code = shift or return;
-    $self->populate_hash;
-    $code_hash{$code} or return;
-    $self->{code } = $code;
-    $self->{label} = $code_hash{$code};
-    $self->{value} = shift if @_;
-    return $self;
-}
-
-sub code  { my $self = shift; @_ and $self->{code } = shift; return $self->{code }; }
-sub label { my $self = shift; @_ and $self->{label} = shift; return $self->{label}; }
-sub value { my $self = shift; @_ and $self->{value} = shift; return $self->{value}; }
-sub desc  {
-    my $self = shift;
-    local $_ = $self->label();
-    my @humps;
-    foreach(/([A-Z][a-z]+)/g) {
-        push @humps, lc($_);
-    }
-    return ucfirst join ' ', @humps;
-}
+my %code_hash;
+sub list { return \%code_hash; }
 
 
 %code_hash = (
@@ -701,3 +659,5 @@ sub desc  {
 9647 => 'CavityZoneCode',                                                 # I
 9649 => 'ProcessingInformationCodeQualifier',                             # B
 );
+
+1;

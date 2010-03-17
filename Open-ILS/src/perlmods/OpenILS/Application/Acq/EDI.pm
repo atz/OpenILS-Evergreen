@@ -415,7 +415,7 @@ sub parse_ordrsp {
             }
         } elsif ($tag eq 'LIN') {
             my @chunks = @{$segbody->{SG26}};
-            $logger->warn("EDI LIN/SG26 has " . scalar(@chunks) . " chunks");
+            $logger->debug("EDI LIN/SG26 has " . scalar(@chunks) . " chunks");
             push @lins, @chunks;
         } else {
             $logger->debug("EDI: ignoring segment '$tag'");

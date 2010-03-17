@@ -6,9 +6,10 @@ use strict; use warnings;
 use Data::Dumper;
 
 use OpenILS::Application::Acq::EDI;
+use Business::EDI::DataElement;
 use vars qw/%code_hash/;
 
-require DataElements;
+require Business::EDI::DataElement;
 
 my $slurp = join '', <DATA>;
 
@@ -19,6 +20,7 @@ print "Number of lines: ", scalar(@lines), "\n";
 $Data::Dumper::Indent = 1;
 #print Dumper(@lines);
 my @innards;
+my @rffs;
 
 foreach my $top (@lines) {
     my ($body, $ordrsp, $lin);
@@ -55,6 +57,12 @@ foreach my $top (@lines) {
                 "6060": 4,
                 "6063": "21"
             }
+        }], ...
+            ["RFF", {
+            "C506": {
+                "1153": "LI",
+                "1154": "4639/1"
+            }
         }], ... ]}]
 
 =cut
@@ -69,6 +77,7 @@ foreach (@innards) {
         my $body  = $_->{SG26}->[$i]->[1];
         print STDERR "$label ";
         $label eq 'QTY' and push @qtys, $body;
+        $label eq 'RFF' and push @rffs, $body;
     }
     print STDERR "\n";
     # foreach my $qty (@{$_->{SG26}->[0]}) {
@@ -76,10 +85,24 @@ foreach (@innards) {
 
 printf "%4d LINs found\n", scalar(@innards);
 printf "%4d QTYs found\n", scalar(@qtys);
+printf "%4d RFFs found (inside LINs)\n", scalar(@rffs);
 my $example = $qtys[-1];
 print "\nexample QTY: ", Dumper($example);
 foreach (keys %{$example->{C186}}) {
-    print $code_hash{$_}, " ($_) : ", $example->{C186}->{$_}, "\n";
+    # no warnings 'uninitialized';
+    my $x = Business::EDI::DataElement->new($_);
+    print $x->label, " ($_) : ", $example->{C186}->{$_}, "\n";
+}
+
+# We want: RFF > C506 > 1154 where 1153 = LI
+foreach my $rff (@rffs) {
+    foreach my $subrff (keys %$rff) {
+        $subrff  eq 'C506' or next;
+        foreach (sort keys %{$rff->{$subrff}}) {
+            my $x = Business::EDI::DataElement->new($_, $rff->{$subrff}->{$_});
+            print $x->label, " ($_) : ", $x->value, "\n";
+        }
+    }
 }
 print "\ndone\n";
 

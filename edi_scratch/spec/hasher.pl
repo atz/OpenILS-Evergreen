@@ -7,7 +7,7 @@
 #   http://www.unece.org/trade/untdid/down_index.htm
 #
 # Example use:
-#   ./spec/hasher.pl 1 <spec/EDED/EDEDI1.09B >DataElement.pm
+#   ./spec/hasher.pl <spec/EDED/EDEDI1.09B >DataElementList.pm
 
 use strict;
 use warnings;
@@ -25,45 +25,15 @@ my %types = (   # TODO: maybe preserve some of the bracket data in another hash
 );
 
 print <<'END_OF_PERL';
-package Business::EDI::DataElement;
-use Carp;
+package Business::EDI::DataElementList;
 use strict;
 use warnings;
+use Exporter::Easy (
+   OK => [qw( %code_hash list )]
+);
 
 my %code_hash;
-
-sub new {       # constructor:
-    my $class = shift;
-    my $code  = shift or carp "No code argument for DataElement type '$class' specified";
-    $code or return;
-    my $self = bless({}, $class);
-    unless ($self->init($code)) {
-        carp "init() failed for code '$code'";
-        return;
-    }
-    return $self;
-}
-
-sub init {
-    my $self = shift;
-    my $code = shift or return;
-    $code_hash{$code} or return;
-    $self->{code } = $code;
-    $self->{label} = $code_hash{$code};
-    return $self;
-}
-
-sub code  { my $self = shift; @_ and $self->{code } = shift; return $self->{code }; }
-sub label { my $self = shift; @_ and $self->{label} = shift; return $self->{label}; }
-sub desc  {
-    my $self = shift;
-    local $_ = $self->label();
-    my @humps;
-    foreach(/([A-Z][a-z]+)/g) {
-        push @humps, lc($_);
-    }
-    return ucfirst join ' ', @humps;
-}
+sub list { return \%code_hash; }
 
 END_OF_PERL
 
@@ -87,7 +57,7 @@ while ($_ = next_line) {
 
 }
 print ");\n";
-print "\n1;\n" if @ARGV;
+print "\n1;\n";
 
 __END__
 Example UN doc formatting in EDED/EDEDI1.09B :

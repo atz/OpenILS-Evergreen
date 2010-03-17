@@ -30,7 +30,7 @@ sub new {       # constructor: override me if you want
     my $code  = shift or carp "No code argument for CodeList type '$class' specified";
     $code or return;
     my $self = bless({}, $class);
-    unless ($self->init($code)) {
+    unless ($self->init($code, @_)) {
         carp "init() failed for code '$code'";
         return;
     }
@@ -46,6 +46,7 @@ sub init {
     $self->{code } = $code;
     $self->{label} = $codes->{$code}->[0];
     $self->{desc}  = $codes->{$code}->[1];
+    $self->{value} = shift if @_;
     return $self;
 }
 
@@ -59,6 +60,7 @@ sub init {
 
 sub code  { my $self = shift; @_ and $self->{code } = shift; return $self->{code }; }
 sub label { my $self = shift; @_ and $self->{label} = shift; return $self->{label}; }
-sub desc  { my $self = shift; @_ and $self->{desc } = shift; return $self->{desc} ; }
+sub desc  { my $self = shift; @_ and $self->{desc } = shift; return $self->{desc }; }
+sub desc  { my $self = shift; @_ and $self->{value} = shift; return $self->{value}; }
 
 1;
