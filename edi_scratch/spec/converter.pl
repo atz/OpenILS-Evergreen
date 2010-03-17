@@ -6,44 +6,23 @@
 # Spec obtained from:
 #   http://www.unece.org/trade/untdid/down_index.htm
 #
+# Example use:
+# 
 
 use strict;
 use warnings;
 
+use Business::EDI::Generator qw/ :all /;
+
 our $line;
 my %count = ();
-
-sub next_line {
-    $line = <STDIN>;
-    defined($line) or return;
-    $line =~ s/\s*$//;      # kill trailing spaces
-    $line .= "\n";          # replacing ^M DOS line endings
-    if (@_ and $_[0]) {
-        next_line() while ($line !~ /\S/);    # skip empties
-    }
-    return $line;
-}
-
-sub next_chunk {
-    my $chunk = '';
-    my $piece;
-    while ($piece = next_line) { # need to get back a blank line (no '1' for next_line())
-        defined($piece) or last;
-        $piece =~ /\S/ or last;  # blank means we're done
-        $piece =~ s/^\s*//;      # kill leading  spaces
-        $piece =~ s/\s*$//;      # kill trailing spaces
-        $chunk .= ' ' if $chunk; # add a space, if necessary, to keep words from runningtogether.
-        $chunk .= $piece;
-    }
-    return $chunk;
-}
 
 sub comment_until {
     my $re = shift;
     $line =~ s/^\s*//;
     print "# ", $line;
     until ($line =~ /$re/) {
-        next_line(1);
+        $line = next_line(1);
         $line =~ s/^\s*//;      # kill leading spaces
         print "# ", $line;
     }
@@ -58,20 +37,6 @@ sub close_file {
     close STDOUT;
 }
 
-sub quotify {
-    my $string = shift or return '';
-    $string =~ /'/ or return     "'$string'"    ;   # easiest case, safe for single quotes
-    $string =~ /"/ or return '"' . $string . '"';   # contains single quotes, but no doubles.  use doubles
-    $string =~ s/'/\\'/g;                           # otherwise it has both, so we'll escape the singles
-    return  "'$string'" ;
-}
-
-sub safename {
-    my $string = shift; 
-    $string =~ s/-//;
-    return $string;
-}
-
 my $file;
 my $intro = 1;
 
@@ -79,7 +44,7 @@ while ($_ = next_line) {
     if (/-{25}/) {  # Doc separator line
         $intro or close_file($file);
         $intro = 0;
-        next_line(1);
+        $line = next_line(1);
         $line =~ /^.\s+(\d{4})\s+(.+)\s\s+\[(.)\]\s*/;
         $file = safename(join '', map {ucfirst} split ' ', ($2 || 'unknown code'));
         open STDOUT, ">$file.pm" or die "Cannot write $file.pm";

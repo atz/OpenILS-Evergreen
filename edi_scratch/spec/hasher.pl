@@ -7,32 +7,15 @@
 #   http://www.unece.org/trade/untdid/down_index.htm
 #
 # Example use:
-#   ./spec/hasher.pl 1 <spec/EDED/EDEDI1.09B >DataElements.pm
+#   ./spec/hasher.pl 1 <spec/EDED/EDEDI1.09B >DataElement.pm
 
 use strict;
 use warnings;
 
+use Business::EDI::Generator qw/ :all /;
+
 our $line;
 my %count = ();
-
-sub next_line {
-    $line = <STDIN>;
-    defined($line) or return;
-    $line =~ s/\s*$//;      # kill trailing spaces
-    $line .= "\n";          # replacing ^M DOS line endings
-    if (@_ and $_[0]) {
-        next_line() while ($line !~ /\S/);    # skip empties
-    }
-    return $line;
-}
-
-sub quotify {
-    my $string = shift or return '';
-    $string =~ /'/ or return     "'$string'"    ;   # easiest case, safe for single quotes
-    $string =~ /"/ or return '"' . $string . '"';   # contains single quotes, but no doubles.  use doubles
-    $string =~ s/'/\\'/g;                           # otherwise it has both, so we'll escape the singles
-    return  "'$string'" ;
-}
 
 my $intro = 1;
 my %types = (   # TODO: maybe preserve some of the bracket data in another hash 
@@ -41,11 +24,54 @@ my %types = (   # TODO: maybe preserve some of the bracket data in another hash
     I => [],
 );
 
+print <<'END_OF_PERL';
+package Business::EDI::DataElement;
+use Carp;
+use strict;
+use warnings;
+
+my %code_hash;
+
+sub new {       # constructor:
+    my $class = shift;
+    my $code  = shift or carp "No code argument for DataElement type '$class' specified";
+    $code or return;
+    my $self = bless({}, $class);
+    unless ($self->init($code)) {
+        carp "init() failed for code '$code'";
+        return;
+    }
+    return $self;
+}
+
+sub init {
+    my $self = shift;
+    my $code = shift or return;
+    $code_hash{$code} or return;
+    $self->{code } = $code;
+    $self->{label} = $code_hash{$code};
+    return $self;
+}
+
+sub code  { my $self = shift; @_ and $self->{code } = shift; return $self->{code }; }
+sub label { my $self = shift; @_ and $self->{label} = shift; return $self->{label}; }
+sub desc  {
+    my $self = shift;
+    local $_ = $self->label();
+    my @humps;
+    foreach(/([A-Z][a-z]+)/g) {
+        push @humps, lc($_);
+    }
+    return ucfirst join ' ', @humps;
+}
+
+END_OF_PERL
+
 while ($_ = next_line) {
     chomp;
     if (/^     Tag   Name/) {  # Doc separator line
         $intro = 0;
-        print "\nmy %code_hash = (\n";
+        print "\n%code_hash = (\n";
         $_ = next_line(1);
     } elsif ($intro) {
         next;
@@ -56,6 +82,7 @@ while ($_ = next_line) {
     $name or die "Could not interpret line $.";
     $name =~ s/\s+\[(.?)\]\s*$//;   # back bracket flag and spaces
     my $type = uc($1 || '');
+    $name = safename(join '', map {ucfirst} split ' ', ($name || 'unknown code'));
     printf "$tag => %-65s # %s\n", (quotify($name) . ','), $type;
 
 }
