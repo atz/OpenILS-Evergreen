@@ -7,40 +7,19 @@ use Data::Dumper;
 
 use OpenILS::Application::Acq::EDI;
 use Business::EDI::DataElement;
+use Business::EDI::Segment::RFF;
 use vars qw/%code_hash/;
 
 require Business::EDI::DataElement;
 
 my $slurp = join '', <DATA>;
 
-my @lines = OpenILS::Application::Acq::EDI->process_jedi($slurp);
-
-print "Number of lines: ", scalar(@lines), "\n";
+my ($aref, $whole) = OpenILS::Application::Acq::EDI->process_jedi($slurp);
 
 $Data::Dumper::Indent = 1;
-#print Dumper(@lines);
-my @innards;
+# print Dumper($aref);
+my @innards = @$aref;
 my @rffs;
-
-foreach my $top (@lines) {
-    my ($body, $ordrsp, $lin);
-    unless ($body = $top->{body}) {
-        print "Body not found.  Next.\n";
-        next;
-    }
-    print "Body chunks: ", scalar(@$body), "\n";
-    foreach my $part (@$body) {
-        unless ($ordrsp = $part->{ORDRSP}) {
-            print "ORDRSP not found in body part. ref(body part): ", ref($part), "\n";
-            next;
-        }
-        foreach my $seg (@$ordrsp) {
-            my ($type, $segbody) = ($seg->[0], $seg->[1]);
-            print " ==> $type\n";
-            $type eq 'LIN' and push @innards, $segbody;
-        }
-    }
-}
 
 # `print Dumper(\@innards);
 
@@ -70,11 +49,12 @@ foreach my $top (@lines) {
 my @qtys = ();
 foreach (@innards) {
     
-    my $count = scalar(@{$_->{SG26}});
-    print STDERR "->{SG26} has $count pieces: ";
-    for (my $i = 0; $i < $count; $i++) {
-        my $label = $_->{SG26}->[$i]->[0];
-        my $body  = $_->{SG26}->[$i]->[1];
+#   my $count = scalar(@{$_->{SG26}});
+   my $count = scalar(@$_);
+   print STDERR "->{SG26} has $count pieces: ";
+   for (my $i = 0; $i < $count; $i++) {
+        my $label = $_->[$i]->[0];
+        my $body  = $_->[$i]->[1];
         print STDERR "$label ";
         $label eq 'QTY' and push @qtys, $body;
         $label eq 'RFF' and push @rffs, $body;
@@ -86,22 +66,33 @@ foreach (@innards) {
 printf "%4d LINs found\n", scalar(@innards);
 printf "%4d QTYs found\n", scalar(@qtys);
 printf "%4d RFFs found (inside LINs)\n", scalar(@rffs);
-my $example = $qtys[-1];
-print "\nexample QTY: ", Dumper($example);
-foreach (keys %{$example->{C186}}) {
-    # no warnings 'uninitialized';
-    my $x = Business::EDI::DataElement->new($_);
-    print $x->label, " ($_) : ", $example->{C186}->{$_}, "\n";
+
+sub example_dump {
+    my $example = shift or return;
+    print "\nexample QTY: ", Dumper($example);
+    foreach (keys %{$example->{C186}}) {
+        # no warnings 'uninitialized';
+        my $x = Business::EDI::DataElement->new($_);
+        print $x->label, " ($_) : ", $example->{C186}->{$_}, "\n";
+    }
 }
+
+# example_dump($qtys[-1]);
 
 # We want: RFF > C506 > 1154 where 1153 = LI
 foreach my $rff (@rffs) {
+    my $obj = Business::EDI::Segment::RFF->new($rff);
+    print Dumper ($obj);
     foreach my $subrff (keys %$rff) {
-        $subrff  eq 'C506' or next;
+        $subrff eq 'C506' or next;
+        my $i = 0;
         foreach (sort keys %{$rff->{$subrff}}) {
             my $x = Business::EDI::DataElement->new($_, $rff->{$subrff}->{$_});
-            print $x->label, " ($_) : ", $x->value, "\n";
+            $x or warn "Unknown DataElement code $_";
+            print "$_ ", $x->label, " ", $x->value, " ";
+            $i++ == 0 and print "==> ";
         }
+        print "\n";
     }
 }
 print "\ndone\n";

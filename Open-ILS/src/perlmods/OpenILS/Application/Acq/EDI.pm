@@ -375,12 +375,13 @@ sub process_jedi {
                 $logger->warn("EDI interchange message $i contains unhandled type '$key'.  Ignoring.");
                 next;
             }
-            @li = __PACKAGE__->parse_ordrsp($part->{$key}, $e);
-            $logger->info("EDI $key parsing returned " . scalar(@li) . " line items");
+            my @li_chunk = __PACKAGE__->parse_ordrsp($part->{$key}, $e);
+            $logger->info("EDI $key parsing returned " . scalar(@li_chunk) . " line items");
+            push @li, @li_chunk;
 # TODO: process lineitems
         }
     }
-    return $perl;   # TODO process perl
+    return \@li, $perl;   # TODO process perl
 }
 
 # return array of lineitems
@@ -415,8 +416,28 @@ sub parse_ordrsp {
             }
         } elsif ($tag eq 'LIN') {
             my @chunks = @{$segbody->{SG26}};
-            $logger->debug("EDI LIN/SG26 has " . scalar(@chunks) . " chunks");
-            push @lins, @chunks;
+            my $count = scalar(@chunks);
+            $logger->debug("EDI LIN/SG26 has $count chunks");
+# CHUNK:
+# ["RFF", {
+#   "C506": {
+#      "1153": "LI",
+#      "1154": "4639/1"
+#   }
+# }]
+            foreach (@chunks) {
+                my $label = $_->[0];
+                my $body  = $_->[1];
+                # $label eq 'QTY' and push @qtys, $body;
+                $label eq 'RFF' or next;
+                my $obj;
+                unless ($obj = Business::EDI::Segment::RFF->new($body)) {   # assignment, not comparison
+                    $logger->error("EDI $tag/$label failed to convert to an object");
+                }
+                $obj->seg1153 and $obj->seg1153->value eq 'LI' or $logger->warn("EDI $tag/$label object unexpected 1153 value (not 'LI')");
+                __PACKAGE__->update_li($obj->seg1154->value, $e);
+            }
+            push @lins, \@chunks;
         } else {
             $logger->debug("EDI: ignoring segment '$tag'");
         }
@@ -424,15 +445,14 @@ sub parse_ordrsp {
     return @lins;
 }
 
-sub process_eval_msg {
-    my ($class, $msg, $e) = @_;
-    $msg or return;
+sub update_li {
+    my ($class, $id, $e) = @_;
     $e ||= new_editor();
-## Do all the hard work.
-#   ID the message type
-#   Find PO references
-#   update POs & lineitems(?)
+    print STDERR "Here we would update lineitem $id\n";
 }
 
+sub objectify {
+    my $perl = shift or return;
+}
 1;
 
