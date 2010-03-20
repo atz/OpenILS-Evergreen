@@ -61,6 +61,6 @@ sub init {
 sub code  { my $self = shift; @_ and $self->{code } = shift; return $self->{code }; }
 sub label { my $self = shift; @_ and $self->{label} = shift; return $self->{label}; }
 sub desc  { my $self = shift; @_ and $self->{desc } = shift; return $self->{desc }; }
-sub desc  { my $self = shift; @_ and $self->{value} = shift; return $self->{value}; }
+sub value { my $self = shift; @_ and $self->{value} = shift; return $self->{value}; }
 
 1;
