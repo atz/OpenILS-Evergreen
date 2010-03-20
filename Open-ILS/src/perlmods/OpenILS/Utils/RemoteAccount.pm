@@ -542,11 +542,6 @@ sub _error {
     return _pkg($self->error(join(' ',@_)));
 }
 
-sub _error {
-    my $self = shift;
-    return _pkg($self->error(join(' ',@_)));
-}
-
 sub init {
     my $self   = shift;
     my $params = shift;
