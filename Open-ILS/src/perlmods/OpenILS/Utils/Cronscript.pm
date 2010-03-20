@@ -31,6 +31,7 @@ use OpenSRF::Utils::JSON;
 use OpenSRF::EX qw(:try);
 use OpenILS::Utils::Fieldmapper;
 use OpenILS::Utils::Lockfile;
+use OpenILS::Utils::CStoreEditor q/:funcs/;
 
 use File::Basename qw/fileparse/;
 
@@ -266,6 +267,19 @@ sub bootstrap {
         $self->{bootstrapped} = 0;
         warn shift;
     };
+}
+
+sub editor_init {
+    my $self = shift or return;
+    OpenILS::Utils::CStoreEditor::init();   # no return value to check
+    $self->{editor_inited} = 1;
+}
+
+sub editor {
+    my $self = shift or return;
+    $self->{bootstrapped}  or $self->bootstrap();
+    $self->{editor_inited} or $self->editor_init();
+    return new_editor(@_);
 }
 
 1;
