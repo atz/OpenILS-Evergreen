@@ -10,12 +10,14 @@ use OpenSRF::EX qw/:try/;
 use OpenSRF::Utils::Logger qw(:logger);
 use OpenSRF::Utils::JSON;
 
+use OpenILS::Application::Acq::Lineitem;
 use OpenILS::Utils::RemoteAccount;
 use OpenILS::Utils::CStoreEditor q/new_editor/;
 use OpenILS::Utils::Fieldmapper;
 use OpenILS::Application::Acq::EDI::Translator;
 
 use Business::EDI;
+use Business::EDI::Segment::BGM;
 
 use Data::Dumper;
 our $verbose = 0;
@@ -404,12 +406,14 @@ sub parse_ordrsp {
                 $logger->warn("EDI segment $tag/S009/0051 does not designate 'UN' as controlling agency.  Will attempt to process anyway");
             }
         } elsif ($tag eq 'BGM') {
+            my $bgm = Business::EDI::Segment::BGM->new($segbody);
             my $msgtype = Business::EDI->codelist('ResponseTypeCode', $segbody->{4343});
             unless ($msgtype) {
                 $logger->warn(sprintf "EDI $tag/4343 Response Type Code '%s' unrecognized", ($segbody->{4343} || ''));
             }
-            $logger->info(sprintf "EDI $tag/4343 response type: %s - %s", $msgtype->code, $msgtype->label);
-            my $fcn = Business::EDI->codelist('MessageFunctionCode', $segbody->{1225});
+            $logger->info(sprintf "EDI $tag/4343 response type: %s - %s (%s)", $msgtype->code, $msgtype->label, $msgtype->value);
+            $logger->info(sprintf "EDI $tag/4343 response type: %s - %s (%s)", $bgm->seg4343->code, $bgm->seg4343->label, $bgm->seg4343->value);
+            my $fcn = $bgm->seg1225;
             unless ($fcn) {
                 $logger->error(sprintf "EDI $tag/1225 Message Function Code '%s' unrecognized.  Aborting", ($segbody->{1225} || ''));
                 return;
@@ -448,11 +452,11 @@ sub parse_ordrsp {
 sub update_li {
     my ($class, $id, $e) = @_;
     $e ||= new_editor();
+    $id =~ s#^.*\/##;   # Temporary fix for mbklein's testdata
     print STDERR "Here we would update lineitem $id\n";
+    my $li = OpenILS::Application::Acq::Lineitem::retrieve_lineitem_impl($e, $id); # Could send {options}
+    print STDERR Dumper($li);
 }
 
-sub objectify {
-    my $perl = shift or return;
-}
 1;
 
