@@ -13,7 +13,7 @@ Abstract object class for UN/EDIFACT objects that do not have further descendant
 
 our $verbose = 0;
 
-sub new_codelist {      # constructor: NOT to be overridden
+sub new_codelist {      # constructor: NOT to be overridden, first argument is string name like 'ResponseTypeCode'
     my $class = shift;  # note: we don't return objects of this class
     my $type  = shift or carp "No CodeList object type specified";
     $type or return;
