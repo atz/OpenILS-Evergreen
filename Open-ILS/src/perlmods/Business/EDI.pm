@@ -20,4 +20,19 @@ sub codelist {
     Business::EDI::CodeList->new_codelist(@_);
 }
 
+sub segment {
+    my $self = shift;
+#    Business::EDI::Segment->new(@_);
+}
+
+sub message {
+    my $self = shift;
+#    Business::EDI::Message->new(@_);
+}
+
+sub dataelement {
+    my $self = shift;
+#    Business::EDI::DataElement->new(@_);
+}
+
 1;
