@@ -5,12 +5,16 @@ use strict; use warnings;
 
 use Data::Dumper;
 
+use OpenILS::Utils::Cronscript;
 use OpenILS::Application::Acq::EDI;
 use Business::EDI::DataElement;
 use Business::EDI::Segment::RFF;
 use vars qw/%code_hash/;
 
 require Business::EDI::DataElement;
+
+my $core = OpenILS::Utils::Cronscript->new();
+my $editor = $core->editor;
 
 my $slurp = join '', <DATA>;
 
