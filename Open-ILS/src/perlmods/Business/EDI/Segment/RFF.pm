@@ -52,6 +52,7 @@ sub new {
     $body->{$top}->{1154};
 }
 
+sub DESTROY {}
 sub AUTOLOAD {
     my $self  = shift;
     my $class = ref($self) or croak "AUTOLOAD error: $self is not an object";
