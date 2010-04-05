@@ -30,4 +30,6 @@ CREATE TABLE acq.edi_message (
 
 ALTER TABLE actor.org_address ADD COLUMN san TEXT;
 
+ALTER TABLE acq.edi_account ADD COLUMN vendcode TEXT;
+
 COMMIT;

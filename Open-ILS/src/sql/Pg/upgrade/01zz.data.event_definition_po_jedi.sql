@@ -8,22 +8,22 @@ $$[%- USE date -%]
 [%# start JEDI document -%]
 [%- BLOCK big_block -%]
 {
- "recipient":"[% target.provider.san %]",
- "sender":"[% target.ordering_agency.mailing_address.san %]",
- "msg_type": "ORDERS",
- "msg": ["order", {
-    "po_number":[% target.id %],
-    "date":"[% date.format(date.now, '%Y%m%d') %]",
-    "buyer":[{
-        "id":"[% target.ordering_agency.mailing_address.san %]"
-    }],
-    "vendor":[ 
-        [%- # target.provider.name (target.provider.id) -%]
-        "[% target.provider.san %]",
-        {"id-qualifier": 92, "id":"[% target.provider.id %]"}
-    ],
-    "currency":"[% target.provider.currency_type %]",
-    "items":[
+   "recipient":"[% target.provider.san %]",
+   "sender":"[% target.ordering_agency.mailing_address.san %]",
+   "body": [{
+     "ORDERS":[ "order", {
+        "po_number":[% target.id %],
+        "date":"[% date.format(date.now, '%Y%m%d') %]",
+        "buyer":[{
+           "id":"[% target.ordering_agency.mailing_address.san %]"
+        }],
+        "vendor":[ 
+            [%- # target.provider.name (target.provider.id) -%]
+            "[% target.provider.san %]",
+            {"id-qualifier": 92, "id":"[% target.provider.id %]"}
+        ],
+        "currency":"[% target.provider.currency_type %]",
+        "items":[
         [% FOR li IN target.lineitems %]
         {
             "identifiers":[
@@ -38,12 +38,13 @@ $$[%- USE date -%]
                 {"BPH":"[% helpers.get_li_attr('pagination','', li.attributes) %]"}
             ],
             "quantity":[% li.lineitem_details.size %]
-            [%-# TODO: lineitem details (later) -%]
+        [%-# TODO: lineitem details (later) -%]
         }[% UNLESS loop.last %],[% END %]
         [% END %]
-    ],
-    "line_items":[% target.lineitems.size %]
- }]
+        ],
+        "line_items":[% target.lineitems.size %]
+     }]  [% # close ORDERS array %]
+   }]    [% # close  body  array %]
 }
 [% END %]
 [% tempo = PROCESS big_block; helpers.escape_json(tempo) %]
@@ -51,6 +52,10 @@ $$
 );
 
 /*
+Other possible TT formations (e.g. in "buyer"):
+[%- "reference":{"91": "[% target.provider.edi_default.vendcode %]"} -%]
+[%- "reference":{"API":"target.ordering_agency.mailing_address.san"} -%]
+
 // API : additional party identification -- supplier’s code for library acct or dept (EAN code) 
 // IA  : internal vendor number (vendor profile number)
 // VA  : VAT registered number.... TODO
@@ -76,10 +81,11 @@ INSERT INTO action_trigger.environment (event_def, path) VALUES
   ((SELECT id FROM action_trigger.event_definition WHERE name='PO JEDI'), 'lineitems.lineitem_details'), 
   ((SELECT id FROM action_trigger.event_definition WHERE name='PO JEDI'), 'lineitems.lineitem_notes'), 
   ((SELECT id FROM action_trigger.event_definition WHERE name='PO JEDI'), 'ordering_agency.mailing_address'), 
-  ((SELECT id FROM action_trigger.event_definition WHERE name='PO JEDI'), 'provider');
+  ((SELECT id FROM action_trigger.event_definition WHERE name='PO JEDI'), 'provider'),
+  ((SELECT id FROM action_trigger.event_definition WHERE name='PO JEDI'), 'provider.edi_default');
 
 -- The environment insert has to happen here because it relies on subquerying the user-editable field "name" to
--- provide the FK.  Outside of this tranasaction, we cannot be sure the user hasn't changed the name to something else.
+-- provide the FK.  Outside of this transaction, we cannot be sure the user hasn't changed the name to something else.
 
 COMMIT;
 
