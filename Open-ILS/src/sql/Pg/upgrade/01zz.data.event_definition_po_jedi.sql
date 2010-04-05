@@ -15,7 +15,12 @@ $$[%- USE date -%]
         "po_number":[% target.id %],
         "date":"[% date.format(date.now, '%Y%m%d') %]",
         "buyer":[{
-           "id":"[% target.ordering_agency.mailing_address.san %]"
+            [%- IF target.provider.edi_default.vendcode -%]
+            "id":"[% target.ordering_agency.mailing_address.san _ ' ' _ target.provider.edi_default.vendcode %]", 
+            "id-qualifier": 91
+            [%- ELSE -%]
+            "id":"[% target.ordering_agency.mailing_address.san %]"
+            [%- END  -%]
         }],
         "vendor":[ 
             [%- # target.provider.name (target.provider.id) -%]
