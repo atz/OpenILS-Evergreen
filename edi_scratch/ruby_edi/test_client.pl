@@ -58,6 +58,9 @@ if ($commands[0] eq 'json2edi' or $commands[0] eq 'edi2json') {
     my $string;
     my $type = $commands[0] eq 'json2edi' ? 'JSON' : 'EDI';
     while ($string = get_in($type)) {  # assignment
+        if ($commands[0] ne 'json2edi') {
+            $string =~ s/ORDRSP:0(:...:UN::)/ORDRSP:D$1/ and print "Corrected broken data 'ORDRSP:0' ==> 'ORDRSP:D'\n";
+        }
         my $resp = $commands[0] eq 'json2edi' ?
                    $client->send_request('json2edi', $string) :
                    $client->send_request('edi2json', $string) ;
