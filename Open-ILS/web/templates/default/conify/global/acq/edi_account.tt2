@@ -1,0 +1,33 @@
+[% WRAPPER default/base.tt2 %]
+<script src='[% ctx.media_prefix %]/js/ui/default/conify/global/acq/edi_account.js'> </script>
+
+<div>EDI Account info lives here!!!!</div>
+<div id='provider-list-div'>
+    <div dojoType="dijit.layout.ContentPane" layoutAlign='top'>
+        <div dojoType="dijit.layout.ContentPane" layoutAlign="top" class='oils-header-panel'>
+            <div>Provider</div>
+            <div>
+                <button dojoType='dijit.form.Button' onClick='pListGrid.showCreateDialog()'>New Account</button>
+                <button dojoType='dijit.form.Button' onClick='pListGrid.deleteSelected()'>Delete Selected</button> 
+            </div>
+        </div>
+    </div>
+    <div dojoType="dijit.layout.ContentPane" layoutAlign="client">
+        <table  jsId="pListGrid"
+                dojoType="openils.widget.AutoGrid"
+                fieldOrder="['id', 'name', 'code', 'owner', 'currency_type']"
+                query="{id: '*'}"
+                defaultCellWidth='"auto"'
+                autoHeight='true'
+                fmClass='acqedi'
+                showPaginator='true'
+                editOnEnter='true'>
+            <thead>
+                <tr><th field='name' get='getProviderName' formatter='formatName'/></tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+[% END %]
+
