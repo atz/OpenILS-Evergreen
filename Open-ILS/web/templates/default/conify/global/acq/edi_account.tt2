@@ -1,8 +1,26 @@
 [% WRAPPER default/base.tt2 %]
-<script src='[% ctx.media_prefix %]/js/ui/default/conify/global/acq/edi_account.js'> </script>
+<script type="text/javascript" src='[% ctx.media_prefix %]/js/ui/default/conify/global/acq/edi_account.js'> </script>
+
+<script type="text/javascript">
+var targetId = '[% ctx.page_args.0 %]';
+
+function getName(rowIndex, item) {
+    if (!item) return '';
+    var name = this.grid.store.getValue(item, 'label');
+    var id   = this.grid.store.getValue(item, 'id');
+    return id + ':' + name;
+}
+
+function formatName(value) {
+    if (value) {
+        var vals = value.split(/:/);
+        return '<a href="[% ctx.base_path %]/conify/global/acq/edi_account/'+vals[0]+'">'+vals[1]+'</a>';
+    }
+}
+</script>
 
 <div>EDI Account info lives here!!!!</div>
-<div id='provider-list-div'>
+<div id='main-list-div'>
     <div dojoType="dijit.layout.ContentPane" layoutAlign='top'>
         <div dojoType="dijit.layout.ContentPane" layoutAlign="top" class='oils-header-panel'>
             <div>Provider</div>
@@ -15,7 +33,7 @@
     <div dojoType="dijit.layout.ContentPane" layoutAlign="client">
         <table  jsId="pListGrid"
                 dojoType="openils.widget.AutoGrid"
-                fieldOrder="['id', 'name', 'code', 'owner', 'currency_type']"
+                fieldOrder="['id', 'label', 'host', 'username', 'password', 'account', 'path', 'owner', 'last_activity', 'provider', 'in_dir', 'vendcode']"
                 query="{id: '*'}"
                 defaultCellWidth='"auto"'
                 autoHeight='true'
@@ -23,7 +41,7 @@
                 showPaginator='true'
                 editOnEnter='true'>
             <thead>
-                <tr><th field='name' get='getProviderName' formatter='formatName'/></tr>
+                <tr><th field='name' get='getName' formatter='formatName'/></tr>
             </thead>
         </table>
     </div>
