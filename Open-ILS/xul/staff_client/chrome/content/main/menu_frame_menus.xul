@@ -87,6 +87,7 @@
     <command id="cmd_acq_view_fund" />
     <command id="cmd_acq_view_funding_source" />
     <command id="cmd_acq_view_provider" />
+    <command id="cmd_acq_view_edi_account" />
     <command id="cmd_acq_view_currency_type" />
     <command id="cmd_acq_view_exchange_rate" />
     <command id="cmd_acq_view_distrib_formula" />
