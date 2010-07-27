@@ -1,0 +1,154 @@
+// ID: 356
+$VAR1 = {
+  'body' => [
+    {
+      'ORDERS' => [
+        'order',
+        {
+          'currency' => 'USD',
+          'line_items' => 4,
+          'date' => '20100831',
+          'buyer' => [
+            {
+              'id' => '6666666'
+            }
+          ],
+          'po_number' => 17,
+          'items' => [
+            {
+              'identifiers' => [
+                {
+                  'id' => '0439139597',
+                  'id-qualifier' => 'IB'
+                },
+                {
+                  'id' => '27',
+                  'id-qualifier' => 'IN'
+                }
+              ],
+              'free-text' => '20M2361',
+              'desc' => [
+                {
+                  'BTI' => 'Harry Potter and the goblet of fire /'
+                },
+                {
+                  'BPU' => 'Arthur A. Levine Books,'
+                },
+                {
+                  'BPD' => 'c2000.'
+                },
+                {
+                  'BPH' => 'xi, 734 p. :'
+                }
+              ],
+              'quantity' => 19,
+              'price' => 16,
+              'line_index' => '27'
+            },
+            {
+              'identifiers' => [
+                {
+                  'id' => '0786222735',
+                  'id-qualifier' => 'IB'
+                },
+                {
+                  'id' => '30',
+                  'id-qualifier' => 'IN'
+                }
+              ],
+              'desc' => [
+                {
+                  'BTI' => 'Harry Potter and the Chamber of Secrets /'
+                },
+                {
+                  'BPU' => 'Thorndike Press,'
+                },
+                {
+                  'BPD' => '1999.'
+                },
+                {
+                  'BPH' => '464 p. ; 22 cm.'
+                }
+              ],
+              'quantity' => 4,
+              'price' => 16,
+              'line_index' => '30'
+            },
+            {
+              'identifiers' => [
+                {
+                  'id' => '0393048799',
+                  'id-qualifier' => 'IB'
+                },
+                {
+                  'id' => '40',
+                  'id-qualifier' => 'IN'
+                }
+              ],
+              'free-text' => '20M2361',
+              'desc' => [
+                {
+                  'BTI' => 'The twilight of American culture /'
+                },
+                {
+                  'BPU' => 'Norton,'
+                },
+                {
+                  'BPD' => 'c2000.'
+                },
+                {
+                  'BPH' => 'xiv, 205 p. ;'
+                }
+              ],
+              'quantity' => 3,
+              'price' => 11,
+              'line_index' => '40'
+            },
+            {
+              'identifiers' => [
+                {
+                  'id' => '38',
+                  'id-qualifier' => 'IN'
+                }
+              ],
+              'desc' => [
+                {
+                  'BTI' => 'Twilight zone/twilight tone /'
+                },
+                {
+                  'BPU' => 'Jenson Publications,'
+                },
+                {
+                  'BPD' => '1982, c1979'
+                },
+                {
+                  'BPH' => '1 score + parts'
+                }
+              ],
+              'quantity' => 4,
+              'price' => 22,
+              'line_index' => '38'
+            }
+          ],
+          'vendor' => [
+            '1697978',
+            {
+              'id' => '9',
+              'id-qualifier' => 92
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  'recipient' => '1697978',
+  'sender' => '6666666'
+};
+
+
+UNA:+.? 'UNB+UNOB:3+6666666:31B+1697978:31B+100831:2248+1'UNH+1+ORDERS:D:96A:UN'BGM+220+17+9'DTM+137:20100831:102'NAD+BY+6666666::31B'NAD+SU+1697978::31B'NAD+SU+9::92'CUX+2:USD:9'LIN+27++0439139597:IB'PIA+5+0439139597:IB+27:IN'IMD+F+BTI+:::Harry Potter and the goblet of fire: /'IMD+F+BPU+:::Arthur A. Levine Books,'IMD+F+BPD+:::c2000.'IMD+F+BPH+:::xi, 734 p. ?:'QTY+21:19'PRI+AAB:16'RFF+LI:17/27'LIN+30++0786222735:IB'PIA+5+0786222735:IB+30:IN'IMD+F+BTI+:::Harry Potter and the Chamber of Sec:rets /'IMD+F+BPU+:::Thorndike Press,'IMD+F+BPD+:::1999.'IMD+F+BPH+:::464 p. ; 22 cm.'QTY+21:4'PRI+AAB:16'RFF+LI:17/30'LIN+40++0393048799:IB'PIA+5+0393048799:IB+40:IN'IMD+F+BTI+:::The twilight of American culture /'IMD+F+BPU+:::Norton,'IMD+F+BPD+:::c2000.'IMD+F+BPH+:::xiv, 205 p. ;'QTY+21:3'PRI+AAB:11'RFF+LI:17/40'LIN+38++38:IN'PIA+5+38:IN'IMD+F+BTI+:::Twilight zone/twilight tone /'IMD+F+BPU+:::Jenson Publications,'IMD+F+BPD+:::1982, c1979'IMD+F+BPH+:::1 score ?+ parts'QTY+21:4'PRI+AAB:22'RFF+LI:17/38'UNS+S'CNT+2:4'UNT+46+1'UNZ+1+1'
+
+=============================================
+
+
+done

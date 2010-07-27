@@ -1,0 +1,152 @@
+// ID: 344
+$VAR1 = {
+  'body' => [
+    {
+      'ORDERS' => [
+        'order',
+        {
+          'currency' => 'USD',
+          'line_items' => 3,
+          'date' => '20100728',
+          'buyer' => [
+            {
+              'id' => '6666666 0001',
+              'id-qualifier' => 91
+            }
+          ],
+          'po_number' => 9,
+          'items' => [
+            {
+              'identifiers' => [
+                {
+                  'id' => '9787777777777',
+                  'id-qualifier' => 'EN'
+                },
+                {
+                  'id' => '61',
+                  'id-qualifier' => 'SA'
+                }
+              ],
+              'desc' => [
+                {
+                  'BTI' => 'Fake Book'
+                },
+                {
+                  'BPU' => ''
+                },
+                {
+                  'BPD' => ''
+                },
+                {
+                  'BPH' => ''
+                }
+              ],
+              'quantity' => 3,
+              'price' => 5,
+              'line_index' => '61'
+            },
+            {
+              'identifiers' => [
+                {
+                  'id' => '9781591430476',
+                  'id-qualifier' => 'EN'
+                },
+                {
+                  'id' => '159143047X',
+                  'id-qualifier' => 'IB'
+                },
+                {
+                  'id' => '63',
+                  'id-qualifier' => 'SA'
+                }
+              ],
+              'desc' => [
+                {
+                  'BTI' => 'Merlin and the discovery of Avalon in the New World /'
+                },
+                {
+                  'BPU' => 'Bear & Co.,'
+                },
+                {
+                  'BPD' => 'c2005.'
+                },
+                {
+                  'BPH' => 'vi, 231, [14] p. of plates :'
+                }
+              ],
+              'quantity' => 5,
+              'price' => 7,
+              'line_index' => '63'
+            },
+            {
+              'identifiers' => [
+                {
+                  'id' => '9780446310062',
+                  'id-qualifier' => 'EN'
+                },
+                {
+                  'id' => '0446310069',
+                  'id-qualifier' => 'IB'
+                },
+                {
+                  'id' => '0446313033',
+                  'id-qualifier' => 'IB'
+                },
+                {
+                  'id' => '9780446313032',
+                  'id-qualifier' => 'EN'
+                },
+                {
+                  'id' => '0446314129',
+                  'id-qualifier' => 'IB'
+                },
+                {
+                  'id' => '9780446314121',
+                  'id-qualifier' => 'EN'
+                },
+                {
+                  'id' => '62',
+                  'id-qualifier' => 'SA'
+                }
+              ],
+              'desc' => [
+                {
+                  'BTI' => 'Shroud for a nightingale /'
+                },
+                {
+                  'BPU' => 'Warner Books,'
+                },
+                {
+                  'BPD' => '1982, c1971.'
+                },
+                {
+                  'BPH' => '287 p. ;'
+                }
+              ],
+              'quantity' => 10,
+              'price' => 8,
+              'line_index' => '62'
+            }
+          ],
+          'vendor' => [
+            '1556150',
+            {
+              'id' => '8',
+              'id-qualifier' => 92
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  'recipient' => '1556150',
+  'sender' => '6666666'
+};
+
+
+UNA:+.? 'UNB+UNOB:3+6666666:31B+1556150:31B+100728:1714+1'UNH+1+ORDERS:D:96A:UN'BGM+220+9+9'DTM+137:20100728:102'NAD+BY+6666666 0001::91'NAD+SU+1556150::31B'NAD+SU+8::92'CUX+2:USD:9'LIN+1++9787777777777:EN'PIA+5+9787777777777:EN+61:SA'IMD+F+BTI+:::Fake Book'QTY+21:3'PRI+AAB:5'RFF+LI:9/1'LIN+2++9781591430476:EN'PIA+5+9781591430476:EN+159143047X:IB+63:SA'IMD+F+BTI+:::Merlin and the discovery of Avalon :in the New World /'IMD+F+BPU+:::Bear & Co.,'IMD+F+BPD+:::c2005.'IMD+F+BPH+:::vi, 231, [14] p. of plates ?:'QTY+21:5'PRI+AAB:7'RFF+LI:9/2'LIN+3++9780446310062:EN'PIA+5+9780446310062:EN+0446310069:IB+0446313033:IB+9780446313032:EN+0446314129:IB'PIA+5+9780446314121:EN+62:SA'IMD+F+BTI+:::Shroud for a nightingale /'IMD+F+BPU+:::Warner Books,'IMD+F+BPD+:::1982, c1971.'IMD+F+BPH+:::287 p. ;'QTY+21:10'PRI+AAB:8'RFF+LI:9/3'UNS+S'CNT+2:3'UNT+35+1'UNZ+1+1'
+
+=============================================
+
+
+done

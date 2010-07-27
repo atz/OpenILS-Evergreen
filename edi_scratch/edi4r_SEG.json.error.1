@@ -1,0 +1,30 @@
+Trying host: http://localhost:9191/EDI
+[
+    "order", {
+        "BGM":{
+            "1225":9,
+            "C002":{"1001":220},
+            "1004":"12345678"
+        },
+        "DTM":{
+            "C507": {
+                "2379":102,
+                "2380":"20090101",
+                "2005":137
+            }
+        },
+        "currency": "USD"
+    }
+]
+    
+
+# json2edi Response: 
+$VAR1 = bless( {
+  'faultString' => bless( do{\(my $o = 'Uncaught exception can\'t convert String into Integer in method json2edi')}, 'RPC::XML::string' ),
+  'faultCode' => bless( do{\(my $o = '2')}, 'RPC::XML::i4' )
+}, 'RPC::XML::fault' );
+
+
+ERROR code 2 received:
+Uncaught exception can't convert String into Integer in method json2edi
+...
