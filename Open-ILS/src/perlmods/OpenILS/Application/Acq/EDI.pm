@@ -105,31 +105,33 @@ sub retrieve_core {
 #           $rf_starter =~ s/((\/)?[^\/]*)\*+[^\/]*$//;  # kill up to the first (possible) slash before the asterisk: keep the preceeding static dir
 #           $rf_starter .= '/' if $rf_starter or $2;   # recap the dir, or replace leading "/" if there was one (but don't add if empty)
         }
-        my @files    = ($server->ls({remote_file => ($account->in_dir || './')}));
-        my @ok_files = grep {$_ !~ /\/\.?\.$/ and $_ ne '0'} @files;
-        $logger->info(sprintf "%s of %s files at %s/%s", scalar(@ok_files), scalar(@files), $account->host, $account->in_dir);   
-        # $server->remote_path(undef);
-        foreach my $remote_file (@ok_files) {
-            # my $remote_file = $rf_starter . $_;
-            my $description = sprintf "%s/%s", $account->host, $remote_file;
-            
-            # deduplicate vs. acct/filenames already in DB
+        my @files = ($server->ls({remote_file => ($account->in_dir || './')}));
+        @files = grep {$_ !~ /\/\.?\.$/ and $_ ne '0'} @files;
+        my @ok_files = grep {
+            # deduplicate vs. acct/filenames already in DB.  same filename is OK for a different acct.
             my $hits = $e->search_acq_edi_message([
                 {
                     account     => $account->id,
-                    remote_file => $remote_file,
-                    status      => {'in' => [qw/ processed /]},     # if it never got processed, go ahead and get the new one (try again)
+                    remote_file => $_,
+                    status      => {'in' => [qw/ processed complete /]},    # if it never got processed, go ahead and get the new one (try again)
                     # create_time => 'NOW() - 60 DAYS',     # if we wanted to allow filenames to be reused after a certain time
                     # ideally we would also use the date from FTP, but that info isn't available via RemoteAccount
                 }
                 # { flesh => 1, flesh_fields => {...}, }
             ]);
             if (scalar(@$hits)) {
-                $logger->debug("EDI: $remote_file already retrieved.  Skipping");
-                warn "EDI: $remote_file already retrieved.  Skipping";
-                next;
+                $logger->debug("EDI: $_ already retrieved.  Skipping");
             }
+            not scalar(@$hits);
+        } @files;
 
+        my $summary = sprintf("%s of %s files targeted (%s duplicates) at %s/%s",
+                    scalar(@ok_files), scalar(@files), scalar(@files) - scalar(@ok_files), $account->host, $account->in_dir);   
+        $logger->info($summary);
+        print STDERR "$summary\n";
+
+        foreach my $remote_file (@ok_files) {
+            my $description = sprintf "%s/%s", $account->host, $remote_file;
             ++$count;
             $max and $count > $max and last;
             $logger->info(sprintf "%s of %s targets: %s", $count, scalar(@ok_files), $description);
@@ -174,15 +176,17 @@ sub process_retrieval {
     $e->xact_begin;
     $e->create_acq_edi_message($incoming);
     $e->xact_commit;
-    # refresh: send process_jedi the updated row
-    my $res = __PACKAGE__->process_jedi($e->retrieve_acq_edi_message($incoming->id), $server, $account, $e);
-    my $outgoing = $e->retrieve_acq_edi_message($incoming->id);  # refresh again!
+    my $res = __PACKAGE__->process_jedi($incoming->id, $server, $account, $e);
+    my $outgoing = $e->retrieve_acq_edi_message($incoming->id);  # refresh! (same id)
     $outgoing->status($res ? 'processed' : 'proc_error');
-    if ($res) {
-        $e->xact_begin;
-        $e->update_acq_edi_message($outgoing);
-        $e->xact_commit;
+    $outgoing->process_time('NOW');
+    unless ($res) {
+        $outgoing->error_time('NOW');
+        $outgoing->error('Semantic processing error') if not $outgoing->error;  # if no other description given
     }
+    $e->xact_begin;
+    $e->update_acq_edi_message($outgoing);
+    $e->xact_commit;
     return $outgoing;
 }
 
@@ -399,11 +403,12 @@ our @datecodes = (35, 359, 17, 191, 69, 76, 75, 79, 85, 74, 84, 223);
 our @noop_6063 = (21);
 
 # ->process_jedi($message, $server, $remote, $e)
-# $message is an edi_message object
+# $message is an edi_message id
 #
 sub process_jedi {
-    my ($class, $message, $server, $remote, $e) = @_;
-    $message or return;
+    my ($class, $message_id, $server, $remote, $e) = @_;
+    $message_id or return;
+    my $message = $e->retrieve_acq_edi_message($message_id) or return;  # refresh again!
     $server ||= {};  # context
     $remote ||= {};  # context
     $e ||= new_editor;
@@ -412,6 +417,7 @@ sub process_jedi {
         $logger->warn("EDI process_jedi missing required argument (edi_message object with jedi)!");
         return;
     }
+    my @feedback = ();
     my $perl  = __PACKAGE__->jedi2perl($jedi);
     my $error = '';
     if (ref($message) and not $perl) {
@@ -424,12 +430,12 @@ sub process_jedi {
         $error = "EDI interchange body not a populated arrayref!";
     }
     if ($error) {
-        $logger->warn($error);
+        push @feedback, $logger->warn($error);
         $message->error($error);
         $message->error_time('NOW');
-        $e->xact_begin;
-        $e->update_acq_edi_message($message) or $logger->warn("EDI update_acq_edi_message failed! $!");
-        $e->xact_commit;
+        # $e->xact_begin;
+        # $e->update_acq_edi_message($message) or $logger->warn("EDI update_acq_edi_message failed! $!");
+        # $e->xact_commit;
         return;
     }
 
@@ -440,37 +446,36 @@ sub process_jedi {
 # So you might access it like:
 #   $obj->{body}->[0]->{ORDERS}->[0]->[0] eq 'UNH'
 
-    $logger->info("EDI interchange body has " . scalar(@{$perl->{body}}) . " message(s)");
+    push @feedback, $logger->info("EDI interchange body has " . scalar(@{$perl->{body}}) . " message(s)");
     my @ok_msg_codes = qw/ORDRSP OSTRPT/;
     my @messages;
     my $i = 0;
     foreach my $part (@{$perl->{body}}) {
         $i++;
         unless (ref $part and scalar keys %$part) {
-            $logger->warn("EDI interchange message $i lacks structure.  Skipping it.");
+            push @feedback, $logger->warn("EDI interchange message $i lacks structure.  Skipping it.");
             next;
         }
         foreach my $key (keys %$part) {
             if (! grep {$_ eq $key} @ok_msg_codes) {     # We only do one type for now.  TODO: other types here
-                $logger->warn("EDI interchange $i contains unhandled '$key' message.  Ignoring it.");
+                push @feedback, $logger->warn("EDI interchange $i contains unhandled '$key' message.  Ignoring it.");
                 next;
             }
             my $msg = __PACKAGE__->message_object($part->{$key}) or next;
             push @messages, $msg;
 
-            my $bgm = $msg->xpath('BGM') or $logger->warn("EDI No BGM segment found?!");
+            my $bgm = $msg->xpath('BGM') or push @feedback, $logger->warn("EDI No BGM segment found?!");
             my $tag4343 = $msg->xpath('BGM/4343');
             my $tag1225 = $msg->xpath('BGM/1225');
-            if (ref $tag4343) {
-                $logger->info(sprintf "EDI $key BGM/4343 Response Type: %s - %s", $tag4343->value, $tag4343->label)
-            } else {
-                $logger->warn("EDI $key BGM/4343 Response Type Code unrecognized"); # next; #?
-            }
-            if (ref $tag1225) {
-                $logger->info(sprintf "EDI $key BGM/1225 Message Function: %s - %s", $tag1225->value, $tag1225->label);
-            } else {
-                $logger->warn("EDI $key BGM/1225 Message Function Code unrecognized"); # next; #?
-            }
+            push @feedback, (
+                ref($tag4343) ?
+                $logger->info(sprintf "EDI $key BGM/4343 Response Type: %s - %s", $tag4343->value, $tag4343->label) :
+                $logger->warn("EDI $key BGM/4343 Response Type Code unrecognized")
+            ), (
+                ref($tag1225) ?
+                $logger->info(sprintf "EDI $key BGM/1225 Message Function: %s - %s", $tag1225->value, $tag1225->label) :
+                $logger->warn("EDI $key BGM/1225 Message Function Code unrecognized")
+            );
 
             # TODO: currency check, just to be paranoid
             # *should* be unnecessary (vendor should reply in currency we send in ORDERS)
@@ -503,6 +508,8 @@ sub process_jedi {
                 my $price   = $detail->xpath_value('line_price/PRI/5118') || '';
                 $eg_line->expected_recv_time($li_date) if $li_date;
                 $eg_line->estimated_unit_price($price) if $price;
+                push @feedback, $logger->debug("EDI: Setting est. rec'v date: $li_date") if $li_date;
+                push @feedback, $logger->debug("EDI: Setting est. unit price: $price"  ) if $price;
                 if (not $message->purchase_order) {                     # first good lineitem sets the message PO link
                     $message->purchase_order($eg_line->purchase_order); # EG $message object NOT Business::EDI $msg object
                     $e->xact_begin;
@@ -513,7 +520,7 @@ sub process_jedi {
                 my $touches = 0;
                 my $eg_lids = $e->search_acq_lineitem_detail({lineitem => $eg_line->id}); # should be the same as $eg_line->lineitem_details
                 my $lidcount = scalar(@$eg_lids);
-                $lidcount == $eg_line->item_count or $logger->warn(
+                $lidcount == $eg_line->item_count or push @feedback, $logger->warn(
                     sprintf "EDI: LI %s itemcount (%d) mismatch, %d LIDs found", $eg_line->id, $eg_line->item_count, $lidcount
                 );
                 foreach my $qty ($detail->part('all_QTY')) {
@@ -521,17 +528,17 @@ sub process_jedi {
                     my $val_6063 = $qty->xpath_value('6063');
                     $ubound > 0 or next; # don't be crazy!
                     if (! $val_6063) {
-                        $logger->warn("EDI: Response for LI " . $eg_line->id . " specifies quantity $ubound with no 6063 code! Contact vendor to resolve.");
+                        push @feedback, $logger->warn("EDI: Response for LI " . $eg_line->id . " specifies quantity $ubound with no 6063 code! Contact vendor to resolve.");
                         next;
                     }
                     
                     my $eg_reason = $e->retrieve_acq_cancel_reason(1200 + $val_6063);  # DB populated w/ 6063 keys in 1200's
                     if (! $eg_reason) {
-                        $logger->warn("EDI: Unhandled quantity code '$val_6063' (LI " . $eg_line->id . ") $ubound items unprocessed");
+                        push @feedback, $logger->warn("EDI: Unhandled quantity code '$val_6063' (LI " . $eg_line->id . ") $ubound items unprocessed");
                         next;
                     } elsif (grep {$val_6063 == $_} @noop_6063) {      # an FYI like "ordered quantity"
                         $ubound eq $lidcount
-                            or $logger->warn("EDI: LI " . $eg_line->id . " -- Vendor says we ordered $ubound, but we have $lidcount LIDs!)");
+                            or push @feedback, $logger->warn("EDI: LI " . $eg_line->id . " -- Vendor says we ordered $ubound, but we have $lidcount LIDs!)");
                         next;
                     }
                     # elsif ($val_6063 == 83) { # backorder
@@ -540,7 +547,7 @@ sub process_jedi {
                             # despatched, in transit, urgent delivery, or quantity manifested
                    #}
                     if ($touches >= $lidcount) {
-                        $logger->warn("EDI: LI "  . $eg_line->id . ", We already updated $touches of $lidcount LIDS, " .
+                        push @feedback, $logger->warn("EDI: LI "  . $eg_line->id . ", We already updated $touches of $lidcount LIDS, " .
                                       "but message wants QTY $ubound more set to " . $eg_reason->label . ".  Ignoring!");
                         next;
                     }
@@ -548,7 +555,7 @@ sub process_jedi {
                     foreach (1 .. $ubound) {
                         my $eg_lid = shift @$eg_lids or $logger->warn("EDI: Used up all $lidcount LIDs!  Ignoring extra status " . $eg_reason->label);
                         $eg_lid or next;
-                        $logger->debug(sprintf "Updating LID %s to %s", $eg_lid->id, $eg_reason->label);
+                        push @feedback, $logger->debug(sprintf "Updating LID %s to %s", $eg_lid->id, $eg_reason->label);
                         $eg_lid->cancel_reason($eg_reason->id);
                         $e->update_acq_lineitem_detail($eg_lid);
                         $touches++;
@@ -560,7 +567,7 @@ sub process_jedi {
                 }
                 $eg_line->edit_time('NOW'); # TODO: have this field automatically updated via ON UPDATE trigger.  
                 $e->xact_begin;
-                $e->update_acq_lineitem($eg_line) or $logger->warn("EDI: update_acq_lineitem FAILED");
+                $e->update_acq_lineitem($eg_line) or push @feedback, $logger->warn("EDI: update_acq_lineitem FAILED");
                 $e->xact_commit;
                 # print STDERR "Lineitem update: ", Dumper($eg_line);
             }
@@ -650,8 +657,8 @@ sub eg_li {
     }
 
     if ($id and $val_1082 and $val_1082 ne $id) {
-        $logger->warn("EDI ORDRSP LIN/1082 Line Item ID mismatch ($id vs. $val_1082): cannot target update");
-        return;
+        $logger->warn("EDI ORDRSP Line Item ID mismatch, RFF/1154 vs. LIN/1082 ($id vs. $val_1082): using RFF/1154");
+        # return;
     }
     $id ||= $val_1082 || '';
     print STDERR "EDI retrieve/update lineitem $id\n";
