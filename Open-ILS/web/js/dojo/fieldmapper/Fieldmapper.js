@@ -141,30 +141,30 @@ if(!dojo._hasResource["fieldmapper.Fieldmapper"]){
     // XXX This is now deprecated in preference to fieldmapper.AutoIDL
     if ( !(fieldmapper.IDL && fieldmapper.IDL.loaded) ) {
 
-        fieldmapper.cmsa.Identifier = 'alias';
-        fieldmapper.cmc.Identifier = 'name';
+        fieldmapper.cmsa.Identifier   = 'alias';
+        fieldmapper.cmc.Identifier    = 'name';
     	fieldmapper.i18n_l.Identifier = 'code';
-    	fieldmapper.ccpbt.Identifier = 'code';
-    	fieldmapper.ccnbt.Identifier = 'code';
+    	fieldmapper.ccpbt.Identifier  = 'code';
+    	fieldmapper.ccnbt.Identifier  = 'code';
     	fieldmapper.cbrebt.Identifier = 'code';
-    	fieldmapper.cubt.Identifier = 'code';
-    	fieldmapper.ccm.Identifier = 'code';
-    	fieldmapper.cvrfm.Identifier = 'code';
-    	fieldmapper.clm.Identifier = 'code';
-    	fieldmapper.cam.Identifier = 'code';
-    	fieldmapper.cifm.Identifier = 'code';
-    	fieldmapper.citm.Identifier = 'code';
-    	fieldmapper.cblvl.Identifier = 'code';
-    	fieldmapper.clfm.Identifier = 'code';
-    	fieldmapper.mous.Identifier = 'usr';
-    	fieldmapper.moucs.Identifier = 'usr';
-    	fieldmapper.mucs.Identifier = 'usr';
-    	fieldmapper.mus.Identifier = 'usr';
-    	fieldmapper.rxbt.Identifier = 'xact';
-    	fieldmapper.rxpt.Identifier = 'xact';
-    	fieldmapper.cxt.Identifier = 'name';
-    	fieldmapper.amtr.Identifier = 'matchpoint';
-    	fieldmapper.coust.Identifier = 'name';
+    	fieldmapper.cubt.Identifier   = 'code';
+    	fieldmapper.ccm.Identifier    = 'code';
+    	fieldmapper.cvrfm.Identifier  = 'code';
+    	fieldmapper.clm.Identifier    = 'code';
+    	fieldmapper.cam.Identifier    = 'code';
+    	fieldmapper.cifm.Identifier   = 'code';
+    	fieldmapper.citm.Identifier   = 'code';
+    	fieldmapper.cblvl.Identifier  = 'code';
+    	fieldmapper.clfm.Identifier   = 'code';
+    	fieldmapper.mous.Identifier   = 'usr';
+    	fieldmapper.moucs.Identifier  = 'usr';
+    	fieldmapper.mucs.Identifier   = 'usr';
+    	fieldmapper.mus.Identifier    = 'usr';
+    	fieldmapper.rxbt.Identifier   = 'xact';
+    	fieldmapper.rxpt.Identifier   = 'xact';
+    	fieldmapper.cxt.Identifier    = 'name';
+    	fieldmapper.amtr.Identifier   = 'matchpoint';
+    	fieldmapper.coust.Identifier  = 'name';
 
     }
 

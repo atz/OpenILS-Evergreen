@@ -16,7 +16,7 @@ function AcqPoNoteTable() {
     this.notesRow = this.notesTbody.removeChild(dojo.byId("acq-po-notes-row"));
 
     dojo.byId("acq-po-notes-back-button").onclick = function() { self.hide(); };
-    dojo.byId("acq-po-view-notes").onclick = function() { self.show(); };
+    dojo.byId("acq-po-view-notes"       ).onclick = function() { self.show(); };
 
     /* widgets' event properties are cased likeThis */
     acqPoCreateNoteSubmit.onClick = function() {
@@ -299,16 +299,16 @@ function prepareInvoiceFeatures() {
 }
 
 function renderPo() {
-    dojo.byId("acq-po-view-id").innerHTML = PO.id();
+    dojo.byId("acq-po-view-id"  ).innerHTML = PO.id();
     dojo.byId("acq-po-view-name").innerHTML = PO.name();
     makeProviderLink(
         dojo.byId("acq-po-view-provider"),
         PO.provider()
     );
-    dojo.byId("acq-po-view-total-li").innerHTML = PO.lineitem_count();
-    dojo.byId("acq-po-view-total-enc").innerHTML = PO.amount_encumbered().toFixed(2);
+    dojo.byId("acq-po-view-total-li"   ).innerHTML = PO.lineitem_count();
+    dojo.byId("acq-po-view-total-enc"  ).innerHTML = PO.amount_encumbered().toFixed(2);
     dojo.byId("acq-po-view-total-spent").innerHTML = PO.amount_spent().toFixed(2);
-    dojo.byId("acq-po-view-state").innerHTML = PO.state(); // TODO i18n
+    dojo.byId("acq-po-view-state"      ).innerHTML = PO.state(); // TODO i18n
 
     if(PO.order_date()) {
         openils.Util.show('acq-po-activated-on', 'inline');
